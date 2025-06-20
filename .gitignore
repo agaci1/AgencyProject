@@ -32,6 +32,10 @@ agency.frontend/.next/
 .env.local
 .env.*.local
 
+# ─── Spring Boot credentials ─────────────────────────────────────
+# ignore the real application.properties; track only the template
+/agency.backend/backend/src/main/resources/application.properties
+
 # ─── OS trash / cache ────────────────────────────────────────────
 Thumbs.db
 ehthumbs.db
