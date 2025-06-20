@@ -26,7 +26,12 @@ agency.frontend/.next/
 # (if you ever use a separate "dist" or "build" folder, add it here too)
 # agency.frontend/dist/
 
+# ─── Environment variable files ──────────────────────────────────
+# keep your real creds out of Git
+.env
+.env.local
+.env.*.local
+
 # ─── OS trash / cache ────────────────────────────────────────────
 Thumbs.db
 ehthumbs.db
-
