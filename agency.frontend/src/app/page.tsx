@@ -3,18 +3,28 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Star, Users, MapPin, Instagram, MessageCircle, Phone, Mail, MapPinIcon, Clock, Mountain } from "lucide-react"
-import { LoginForm } from "@/components/login-form"
+import {
+  Star,
+  Users,
+  MapPin,
+  Instagram,
+  MessageCircle,
+  Phone,
+  Mail,
+  MapPinIcon,
+  Clock,
+  Mountain,
+} from "lucide-react"
 import { Navigation } from "@/components/navigation"
 import { ToursPage } from "@/components/tours-page"
 import { AboutPage } from "@/components/about-page"
-import { BookingsPage } from "@/components/bookings-page"
 
 const destinations = [
   {
     id: "1",
     name: "Tropoja",
-    description: "A hidden gem in the Albanian Alps, known for its pristine nature and traditional mountain culture.",
+    description:
+      "A hidden gem in the Albanian Alps, known for its pristine nature and traditional mountain culture.",
     image: "/placeholder.svg?height=300&width=400",
     highlights: ["Alpine landscapes", "Traditional villages", "Hiking trails"],
   },
@@ -28,7 +38,8 @@ const destinations = [
   {
     id: "3",
     name: "Valbona",
-    description: "The crown jewel of Albanian Alps with breathtaking valley views and pristine wilderness.",
+    description:
+      "The crown jewel of Albanian Alps with breathtaking valley views and pristine wilderness.",
     image: "/placeholder.svg?height=300&width=400",
     highlights: ["Valley views", "River rafting", "Wildlife spotting"],
   },
@@ -42,131 +53,56 @@ const destinations = [
 ]
 
 export default function TravelAgency() {
-  const [currentPage, setCurrentPage] = useState<"home" | "tours" | "about" | "bookings">("home")
-  const [showLogin, setShowLogin] = useState(false)
-  const [showMenu, setShowMenu] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null)
+  const [currentPage, setCurrentPage] = useState<"home" | "tours" | "about">("home")
 
   // Scroll to top when page changes
   useEffect(() => {
     window.scrollTo(0, 0)
-  }, [currentPage, showLogin])
+  }, [currentPage])
 
-  const handleLogin = (userData: { name: string; email: string }) => {
-    setIsLoggedIn(true)
-    setUser(userData)
-    setShowLogin(false)
-  }
+  const handleViewAllTours = () => setCurrentPage("tours")
+  const handleBackToHome = () => setCurrentPage("home")
+  const handleOpenAbout = () => setCurrentPage("about")
 
-  const handleLogout = () => {
-    setIsLoggedIn(false)
-    setUser(null)
-  }
-
-  const handleViewAllTours = () => {
-    setCurrentPage("tours")
-    setShowMenu(false)
-  }
-
-  const handleBackToHome = () => {
-    setCurrentPage("home")
-    setShowMenu(false)
-  }
-
-  const handleOpenAbout = () => {
-    setCurrentPage("about")
-    setShowMenu(false)
-  }
-
-  if (showLogin) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <Navigation
-  isLoggedIn={isLoggedIn}
-  user={user}
-  onLogout={handleLogout}
-  onLoginClick={() => setShowLogin(true)}
-  onNavigate={(page) => {
-    if (page === "login") setShowLogin(true)
-    else if (page === "tours") setCurrentPage("tours")
-    else if (page === "home") setCurrentPage("home")
-    else if (page === "about") setCurrentPage("about")
-    else if (page === "bookings") setCurrentPage("bookings")
-  }}
-/>
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-md mx-auto">
-            <LoginForm onLogin={handleLogin} onCancel={() => setShowLogin(false)} />
-          </div>
-        </div>
-      </div>
-    )
-  }
-
+  // Tours page
   if (currentPage === "tours") {
     return (
       <ToursPage
-        isLoggedIn={isLoggedIn}
-        user={user}
-        onLogout={handleLogout}
         onBackToHome={handleBackToHome}
-        onLoginClick={() => setShowLogin(true)}
         onOpenAbout={handleOpenAbout}
       />
     )
   }
 
+  // About page
   if (currentPage === "about") {
     return (
       <AboutPage
-        isLoggedIn={isLoggedIn}
-        user={user}
-        onLogout={handleLogout}
         onBackToHome={handleBackToHome}
-        onLoginClick={() => setShowLogin(true)}
         onViewTours={handleViewAllTours}
       />
     )
   }
 
-  if (currentPage === "bookings") {
-    return (
-      <BookingsPage
-        isLoggedIn={isLoggedIn}
-        user={user}
-        onLogout={handleLogout}
-        onBackToHome={handleBackToHome}
-        onLoginClick={() => setShowLogin(true)}
-        onViewTours={handleViewAllTours}
-        onOpenAbout={handleOpenAbout}
-        bookings={[]} // replace with fetched bookings if applicable
-      />
-    )
-  }
-
+  // Home page
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-     <Navigation
-  isLoggedIn={isLoggedIn}
-  user={user}
-  onLogout={handleLogout}
-  onLoginClick={() => setShowLogin(true)}
-  onNavigate={(page) => {
-    if (page === "login") setShowLogin(true)
-    else if (page === "tours") setCurrentPage("tours")
-    else if (page === "home") setCurrentPage("home")
-    else if (page === "about") setCurrentPage("about")
-    else if (page === "bookings") setCurrentPage("bookings")
-  }}
-/>
+      <Navigation
+        onNavigate={(page) => {
+          if (page === "tours") setCurrentPage("tours")
+          else if (page === "home") setCurrentPage("home")
+          else if (page === "about") setCurrentPage("about")
+        }}
+      />
+
       {/* Hero Section */}
       <section className="relative py-20 px-4">
         <div className="container mx-auto text-center">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">Albanian Alps Adventures</h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Discover the untouched beauty of the Albanian Alps with our expert-guided tours. From pristine mountain
-            villages to breathtaking valleys, we offer authentic experiences in one of Europe's last hidden gems.
+            Discover the untouched beauty of the Albanian Alps with our expert-guided tours. From pristine
+            mountain villages to breathtaking valleys, we offer authentic experiences in one of Europe's last hidden
+            gems.
           </p>
           <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-500 mb-8">
             <div className="flex items-center gap-2">
@@ -201,9 +137,7 @@ export default function TravelAgency() {
                   <MapPin className="h-8 w-8 text-blue-600" />
                 </div>
                 <h3 className="text-xl font-semibold mb-2">Local Expertise</h3>
-                <p className="text-gray-600">
-                  Born and raised in the Albanian Alps, our guides know every trail and story
-                </p>
+                <p className="text-gray-600">Born and raised in the Albanian Alps, our guides know every trail and story</p>
               </div>
               <div className="text-center">
                 <div className="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
@@ -249,9 +183,9 @@ export default function TravelAgency() {
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
-                    {destination.highlights.map((highlight, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs">
-                        {highlight}
+                    {destination.highlights.map((hl, i) => (
+                      <Badge key={i} variant="secondary" className="text-xs">
+                        {hl}
                       </Badge>
                     ))}
                   </div>
@@ -307,13 +241,22 @@ export default function TravelAgency() {
             <div>
               <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
               <div className="space-y-2">
-                <button onClick={handleBackToHome} className="block text-gray-300 hover:text-white transition-colors">
+                <button
+                  onClick={handleBackToHome}
+                  className="block text-gray-300 hover:text-white transition-colors"
+                >
                   Home
                 </button>
-                <button onClick={handleOpenAbout} className="block text-gray-300 hover:text-white transition-colors">
+                <button
+                  onClick={handleOpenAbout}
+                  className="block text-gray-300 hover:text-white transition-colors"
+                >
                   About Us
                 </button>
-                <button onClick={handleViewAllTours} className="block text-gray-300 hover:text-white transition-colors">
+                <button
+                  onClick={handleViewAllTours}
+                  className="block text-gray-300 hover:text-white transition-colors"
+                >
                   Available Tours
                 </button>
                 <button
