@@ -4,6 +4,7 @@ import com.agency.backend.model.Tour;
 import com.agency.backend.repository.TourRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,29 +14,31 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class TourController {
 
+    private final TourRepository tourRepository;
+
     @Autowired
-    private TourRepository tourRepository;
+    public TourController(TourRepository tourRepository) {
+        this.tourRepository = tourRepository;
+    }
 
     @GetMapping
-    public List<Tour> getAllTours() {
-        return tourRepository.findAll();
+    public ResponseEntity<List<Tour>> getAllTours() {
+        List<Tour> tours = tourRepository.findAll();
+        return ResponseEntity.ok(tours);
     }
 
     @PostMapping
-    public Tour createTour(@RequestBody Tour tour) {
-        return tourRepository.save(tour);
+    public ResponseEntity<Tour> createTour(@RequestBody Tour tour) {
+        Tour savedTour = tourRepository.save(tour);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedTour);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTour(@PathVariable Long id) {
-        if (tourRepository.existsById(id)) {
-            tourRepository.deleteById(id);
-            return ResponseEntity.noContent().build(); // 204 No Content
-        } else {
-            return ResponseEntity.notFound().build(); // 404 Not Found
+        if (!tourRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
         }
+        tourRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
-
-
 }
-
