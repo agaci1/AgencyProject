@@ -1,19 +1,12 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetTrigger, SheetContent, SheetClose } from "@/components/ui/sheet"
 import { Separator } from "@/components/ui/separator"
-import {
-  Mountain,
-  Menu,
-  Home,
-  MapPin,
-  Info,
-  Star,
-  Phone as PhoneIcon,
-} from "lucide-react"
-import { ContactModal } from "@/components/contact-modal"
+import { Mountain, Menu, Home, MapPin, Info, Star, PhoneIcon } from "lucide-react"
 
 interface NavigationProps {
   onNavigate: (page: "home" | "tours" | "about" | "rate") => void
@@ -22,13 +15,12 @@ interface NavigationProps {
 export function Navigation({ onNavigate }: NavigationProps) {
   const [showContactModal, setShowContactModal] = useState(false)
 
-  const links: { label: string; icon: React.ReactNode; page: Parameters<typeof onNavigate>[0] }[] =
-    [
-      { label: "Home", icon: <Home className="h-5 w-5" />, page: "home" },
-      { label: "Tours", icon: <MapPin className="h-5 w-5" />, page: "tours" },
-      { label: "About", icon: <Info className="h-5 w-5" />, page: "about" },
-      { label: "Rate us", icon: <Star className="h-5 w-5" />, page: "rate" },
-    ]
+  const links: { label: string; icon: React.ReactNode; page: Parameters<typeof onNavigate>[0] }[] = [
+    { label: "Home", icon: <Home className="h-5 w-5" />, page: "home" },
+    { label: "Tours", icon: <MapPin className="h-5 w-5" />, page: "tours" },
+    { label: "About", icon: <Info className="h-5 w-5" />, page: "about" },
+    { label: "Rate us", icon: <Star className="h-5 w-5" />, page: "rate" },
+  ]
 
   return (
     <>
@@ -57,7 +49,6 @@ export function Navigation({ onNavigate }: NavigationProps) {
                 {link.label}
               </Button>
             ))}
-
             {/* Contact is its own modal trigger */}
             <Button
               variant="ghost"
@@ -81,7 +72,6 @@ export function Navigation({ onNavigate }: NavigationProps) {
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-
             <SheetContent side="right" className="w-80 p-0">
               <div className="flex flex-col h-full">
                 {/* Sheet header */}
@@ -109,7 +99,6 @@ export function Navigation({ onNavigate }: NavigationProps) {
                       </Button>
                     </SheetClose>
                   ))}
-
                   <SheetClose asChild>
                     <Button
                       variant="ghost"
@@ -123,6 +112,7 @@ export function Navigation({ onNavigate }: NavigationProps) {
                 </div>
 
                 <Separator className="my-6" />
+
                 <div className="p-6 border-t bg-gray-50 text-center">
                   <p className="text-xs text-gray-500">© 2024 Albanian Alps Adventures</p>
                 </div>
@@ -134,5 +124,29 @@ export function Navigation({ onNavigate }: NavigationProps) {
 
       <ContactModal isOpen={showContactModal} onClose={() => setShowContactModal(false)} />
     </>
+  )
+}
+
+// ContactModal component
+function ContactModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
+        <h3 className="text-lg font-semibold mb-4">Contact Us</h3>
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <PhoneIcon className="h-4 w-4 text-blue-400" />
+            <a href="tel:+355123456789" className="text-gray-700 hover:text-blue-600">
+              +355 123 456 789
+            </a>
+          </div>
+        </div>
+        <Button onClick={onClose} className="mt-4 w-full">
+          Close
+        </Button>
+      </div>
+    </div>
   )
 }

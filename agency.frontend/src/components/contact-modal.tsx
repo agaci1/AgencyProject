@@ -2,15 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import {
-  Phone,
-  Mail,
-  Instagram,
-  MessageCircle,
-  MapPinIcon,
-  Clock,
-  Bus,
-} from "lucide-react"
+import { Phone, Mail, Instagram, MessageCircle, MapPinIcon, Clock, Bus } from "lucide-react"
 
 interface ContactModalProps {
   isOpen: boolean
@@ -153,7 +145,7 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
               <Button
                 type="button"
                 variant="outline"
-                className="flex-1 hover:bg-blue-50"
+                className="flex-1 hover:bg-blue-50 bg-transparent"
                 onClick={() => window.open("tel:+355123456789", "_self")}
               >
                 <Phone className="h-4 w-4 mr-2" />

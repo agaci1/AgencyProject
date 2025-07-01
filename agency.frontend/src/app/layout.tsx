@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script"; // ✅ Import Script
 import "./globals.css";
 
 const geistSans = Geist({
@@ -24,6 +25,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <Script
+  src="https://www.paypal.com/sdk/js?client-id=AcQpqkzCDAR2KEZdLgUzYC4hCDz-aFxblV2qH9cYLKPDs4rSJWFs6nLDP6jIG5b5MHsFP_t02pVU_hEy&currency=USD&components=buttons,funding-eligibility"
+  data-sdk-integration-source="button-factory"
+  strategy="afterInteractive"
+/>
+
+
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

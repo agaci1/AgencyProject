@@ -3,18 +3,7 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import {
-  Star,
-  Users,
-  MapPin,
-  Instagram,
-  MessageCircle,
-  Phone,
-  Mail,
-  MapPinIcon,
-  Clock,
-  Mountain,
-} from "lucide-react"
+import { Star, Users, MapPin, Instagram, MessageCircle, Phone, Mail, MapPinIcon, Clock, Mountain } from "lucide-react"
 import { Navigation } from "@/components/navigation"
 import { ToursPage } from "@/components/tours-page"
 import { AboutPage } from "@/components/about-page"
@@ -23,8 +12,7 @@ const destinations = [
   {
     id: "1",
     name: "Tropoja",
-    description:
-      "A hidden gem in the Albanian Alps, known for its pristine nature and traditional mountain culture.",
+    description: "A hidden gem in the Albanian Alps, known for its pristine nature and traditional mountain culture.",
     image: "/placeholder.svg?height=300&width=400",
     highlights: ["Alpine landscapes", "Traditional villages", "Hiking trails"],
   },
@@ -38,8 +26,7 @@ const destinations = [
   {
     id: "3",
     name: "Valbona",
-    description:
-      "The crown jewel of Albanian Alps with breathtaking valley views and pristine wilderness.",
+    description: "The crown jewel of Albanian Alps with breathtaking valley views and pristine wilderness.",
     image: "/placeholder.svg?height=300&width=400",
     highlights: ["Valley views", "River rafting", "Wildlife spotting"],
   },
@@ -55,7 +42,6 @@ const destinations = [
 export default function TravelAgency() {
   const [currentPage, setCurrentPage] = useState<"home" | "tours" | "about">("home")
 
-  // Scroll to top when page changes
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [currentPage])
@@ -64,27 +50,14 @@ export default function TravelAgency() {
   const handleBackToHome = () => setCurrentPage("home")
   const handleOpenAbout = () => setCurrentPage("about")
 
-  // Tours page
   if (currentPage === "tours") {
-    return (
-      <ToursPage
-        onBackToHome={handleBackToHome}
-        onOpenAbout={handleOpenAbout}
-      />
-    )
+    return <ToursPage onBackToHome={handleBackToHome} onOpenAbout={handleOpenAbout} />
   }
 
-  // About page
   if (currentPage === "about") {
-    return (
-      <AboutPage
-        onBackToHome={handleBackToHome}
-        onViewTours={handleViewAllTours}
-      />
-    )
+    return <AboutPage onBackToHome={handleBackToHome} onViewTours={handleViewAllTours} />
   }
 
-  // Home page
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <Navigation
@@ -100,9 +73,8 @@ export default function TravelAgency() {
         <div className="container mx-auto text-center">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">Albanian Alps Adventures</h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Discover the untouched beauty of the Albanian Alps with our expert-guided tours. From pristine
-            mountain villages to breathtaking valleys, we offer authentic experiences in one of Europe's last hidden
-            gems.
+            Discover the untouched beauty of the Albanian Alps with our expert-guided tours. From pristine mountain
+            villages to breathtaking valleys, we offer authentic experiences in one of Europe's last hidden gems.
           </p>
           <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-500 mb-8">
             <div className="flex items-center gap-2">
@@ -137,7 +109,9 @@ export default function TravelAgency() {
                   <MapPin className="h-8 w-8 text-blue-600" />
                 </div>
                 <h3 className="text-xl font-semibold mb-2">Local Expertise</h3>
-                <p className="text-gray-600">Born and raised in the Albanian Alps, our guides know every trail and story</p>
+                <p className="text-gray-600">
+                  Born and raised in the Albanian Alps, our guides know every trail and story
+                </p>
               </div>
               <div className="text-center">
                 <div className="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
@@ -225,7 +199,6 @@ export default function TravelAgency() {
       <footer className="bg-gray-900 text-white py-16 px-4">
         <div className="container mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {/* Company Info */}
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <Mountain className="h-6 w-6 text-blue-400" />
@@ -237,26 +210,16 @@ export default function TravelAgency() {
               <p className="text-sm text-gray-400">Thank you for choosing us for your adventure!</p>
             </div>
 
-            {/* Quick Links */}
             <div>
               <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
               <div className="space-y-2">
-                <button
-                  onClick={handleBackToHome}
-                  className="block text-gray-300 hover:text-white transition-colors"
-                >
+                <button onClick={handleBackToHome} className="block text-gray-300 hover:text-white transition-colors">
                   Home
                 </button>
-                <button
-                  onClick={handleOpenAbout}
-                  className="block text-gray-300 hover:text-white transition-colors"
-                >
+                <button onClick={handleOpenAbout} className="block text-gray-300 hover:text-white transition-colors">
                   About Us
                 </button>
-                <button
-                  onClick={handleViewAllTours}
-                  className="block text-gray-300 hover:text-white transition-colors"
-                >
+                <button onClick={handleViewAllTours} className="block text-gray-300 hover:text-white transition-colors">
                   Available Tours
                 </button>
                 <button
@@ -270,7 +233,6 @@ export default function TravelAgency() {
               </div>
             </div>
 
-            {/* Contact Info */}
             <div>
               <h3 className="text-lg font-semibold mb-4">Contact Us</h3>
               <div className="space-y-3">
@@ -314,7 +276,6 @@ export default function TravelAgency() {
               </div>
             </div>
 
-            {/* Location & Hours */}
             <div>
               <h3 className="text-lg font-semibold mb-4">Visit Us</h3>
               <div className="space-y-3">

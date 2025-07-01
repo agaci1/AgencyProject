@@ -45,7 +45,7 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Lombok (optional) -->
+        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -53,13 +53,11 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Email (for booking confirmations) -->
+        <!-- Email -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
-
-        <!-- *** Security removed so all endpoints are public *** -->
 
         <!-- Developer Tools -->
         <dependency>
@@ -67,6 +65,12 @@
             <artifactId>spring-boot-devtools</artifactId>
             <scope>runtime</scope>
             <optional>true</optional>
+        </dependency>
+
+        <!-- Validation (new) -->
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
         </dependency>
 
         <!-- Testing -->

@@ -1,11 +1,12 @@
 package com.agency.backend.controller;
 
-import com.agency.backend.controller.BookingPost;
+import com.agency.backend.dto.BookingRequest;
 import com.agency.backend.model.Booking;
 import com.agency.backend.model.Tour;
 import com.agency.backend.repository.BookingRepository;
 import com.agency.backend.repository.TourRepository;
 import com.agency.backend.service.EmailService;
+import com.agency.backend.service.PaymentService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +26,7 @@ public class BookingController {
     private final BookingRepository bookingRepository;
     private final TourRepository tourRepository;
     private final EmailService emailService;
+    private final PaymentService paymentService;
 
     @Value("${app.agency.email}")
     private String agencyEmail;
@@ -31,14 +34,16 @@ public class BookingController {
     @Autowired
     public BookingController(BookingRepository bookingRepository,
                              TourRepository tourRepository,
-                             EmailService emailService) {
+                             EmailService emailService,
+                             PaymentService paymentService) {
         this.bookingRepository = bookingRepository;
-        this.tourRepository    = tourRepository;
-        this.emailService      = emailService;
+        this.tourRepository = tourRepository;
+        this.emailService = emailService;
+        this.paymentService = paymentService;
     }
 
     @PostMapping
-    public ResponseEntity<?> createBooking(@RequestBody BookingPost req) {
+    public ResponseEntity<?> createBooking(@RequestBody BookingRequest req) {
         // 1) find the Tour
         Optional<Tour> tourOpt = tourRepository.findById(req.getTourId());
         if (tourOpt.isEmpty()) {
@@ -50,25 +55,44 @@ public class BookingController {
         // 2) map DTO → entity
         Booking booking = new Booking();
         booking.setTour(tourOpt.get());
-        booking.setUserName(req.getUserName());
-        booking.setUserEmail(req.getUserEmail());
-        booking.setDepartureDate(req.getDepartureDate());
-        booking.setReturnDate(req.getReturnDate());
-        booking.setGuests(req.getGuests());
+        booking.setUserName(req.getName());
+        booking.setUserEmail(req.getEmail());
+        try {
+            booking.setDepartureDate(LocalDate.parse(req.getDepartureDate()));
+            if (req.getReturnDate() != null) {
+                booking.setReturnDate(LocalDate.parse(req.getReturnDate()));
+            }
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Invalid date format.");
+        }
 
-        // 3) save
+        booking.setGuests(req.getGuests());
+        booking.setPaymentMethod(req.getPaymentMethod());
+
+        // 3) process payment (dummy)
+        try {
+            boolean paid = paymentService.processPayment(req, booking);
+            booking.setStatus(paid ? "PAID" : "FAILED");
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Payment failed: " + ex.getMessage());
+        }
+
+        // 4) save booking
         Booking saved = bookingRepository.save(booking);
 
-        // 4) compute receipt amounts
+        // 5) compute receipt amounts
         double pricePerPerson = saved.getTour().getPrice();
-        int    guests         = saved.getGuests();
-        double subtotal       = pricePerPerson * guests;
-        double taxes          = subtotal * 0.10;    // 10% tax
-        double total          = subtotal + taxes;
+        int guests = saved.getGuests();
+        double subtotal = pricePerPerson * guests;
+        double taxes = subtotal * 0.10;
+        double total = subtotal + taxes;
 
-        // 5a) email the customer with an itemized receipt
+        // 6a) email customer
         String customerSubject = "Your Booking Receipt — " + saved.getTourName();
-        String customerText    = String.format(
+        String customerText = String.format(
                 "Dear %s,%n%n" +
                         "Thank you for booking \"%s\"!%n" +
                         "Booking ID: %d%n%n" +
@@ -97,9 +121,9 @@ public class BookingController {
         );
         emailService.sendSimpleMessage(saved.getUserEmail(), customerSubject, customerText);
 
-        // 5b) email the agency owner
+        // 6b) email agency
         String ownerSubject = "New Booking Received — ID " + saved.getId();
-        String ownerText    = String.format(
+        String ownerText = String.format(
                 "New booking received:%n%n" +
                         "  • Customer: %s <%s>%n" +
                         "  • Tour:     %s%n" +
@@ -124,7 +148,7 @@ public class BookingController {
         );
         emailService.sendSimpleMessage(agencyEmail, ownerSubject, ownerText);
 
-        // 6) return 201 with saved booking
+        // 7) return booking
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(saved);
