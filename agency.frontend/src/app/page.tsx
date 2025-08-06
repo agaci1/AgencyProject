@@ -48,49 +48,118 @@ export default function TravelAgency() {
         }}
       />
 
-      {/* Hero Section */}
+      {/* Hero Section with 3D Layered Effect */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        {/* Layered Background for Mobile */}
+        {/* Background Container */}
         <div className="absolute inset-0 z-0">
-          {/* Top Layer - home12.jpeg (Mobile Only) */}
-          <div className="md:hidden absolute top-0 left-0 w-full h-1/3 z-10">
-            <img
-              src="/home12.jpeg"
-              alt="Top Background"
-              className="w-full h-full object-cover opacity-90"
-            />
-          </div>
           
-          {/* Middle Layer - Current Background (3D Effect) */}
-          <div className="absolute inset-0 z-20 flex items-center justify-center">
-            <div className="w-[120%] h-[120%] -m-[10%]">
+          {/* Top Layer - home12.jpeg */}
+          <div className="absolute top-0 left-0 w-full h-1/3 z-10 transform transition-all duration-1000 hover:scale-105">
+            <div className="relative w-full h-full">
               <img
-                src="/homee2.jpg"
-                alt="Home Background"
-                className="w-full h-full object-cover hero-background"
+                src="/home12.jpeg"
+                alt="Top Background"
+                className="w-full h-full object-cover opacity-85"
                 style={{
-                  objectPosition: "center center",
-                  filter: "brightness(0.95) contrast(1.05) drop-shadow(0 20px 40px rgba(0,0,0,0.4))",
-                  transform: "perspective(1000px) rotateX(5deg) translateZ(50px)",
-                  borderRadius: "20px",
+                  filter: "brightness(0.9) contrast(1.1) saturate(1.2)",
+                  transform: "perspective(1000px) rotateX(-2deg) translateZ(-20px)",
                 }}
               />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/10"></div>
             </div>
           </div>
           
-          {/* Bottom Layer - home13.jpeg (Mobile Only) */}
-          <div className="md:hidden absolute bottom-0 left-0 w-full h-1/3 z-10">
-            <img
-              src="/home13.jpeg"
-              alt="Bottom Background"
-              className="w-full h-full object-cover opacity-90"
-            />
+          {/* Middle Layer - homee2.jpg (3D Pop-out Effect) */}
+          <div className="absolute inset-0 z-30 flex items-center justify-center">
+            <div 
+              className="relative w-[130%] h-[130%] -m-[15%] transform transition-all duration-1000 hover:scale-105"
+              style={{
+                animation: "float 6s ease-in-out infinite",
+              }}
+            >
+              <img
+                src="/homee2.jpg"
+                alt="Home Background"
+                className="w-full h-full object-cover rounded-3xl shadow-2xl"
+                style={{
+                  objectPosition: "center center",
+                  filter: "brightness(1.1) contrast(1.15) saturate(1.3) drop-shadow(0 25px 50px rgba(0,0,0,0.5))",
+                  transform: "perspective(1200px) rotateX(8deg) translateZ(80px) rotateY(-2deg)",
+                  border: "3px solid rgba(255,255,255,0.3)",
+                }}
+              />
+              {/* Glowing border effect */}
+              <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-blue-400/20 via-transparent to-pink-400/20 pointer-events-none"></div>
+              <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-transparent via-white/5 to-transparent pointer-events-none"></div>
+            </div>
           </div>
           
-          {/* Subtle fade overlay for depth */}
-          <div className="md:hidden absolute inset-0 z-15 bg-gradient-to-b from-transparent via-transparent to-black/5 pointer-events-none"></div>
+          {/* Bottom Layer - home13.jpeg */}
+          <div className="absolute bottom-0 left-0 w-full h-1/3 z-10 transform transition-all duration-1000 hover:scale-105">
+            <div className="relative w-full h-full">
+              <img
+                src="/home13.jpeg"
+                alt="Bottom Background"
+                className="w-full h-full object-cover opacity-85"
+                style={{
+                  filter: "brightness(0.9) contrast(1.1) saturate(1.2)",
+                  transform: "perspective(1000px) rotateX(2deg) translateZ(-20px)",
+                }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-transparent to-black/10"></div>
+            </div>
+          </div>
+          
+          {/* Depth Overlay */}
+          <div className="absolute inset-0 z-20 bg-gradient-to-b from-transparent via-transparent to-black/5 pointer-events-none"></div>
+          
+          {/* Floating Particles Effect */}
+          <div className="absolute inset-0 z-25 pointer-events-none">
+            <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-white/30 rounded-full animate-pulse" style={{ animationDelay: "0s" }}></div>
+            <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-blue-300/40 rounded-full animate-pulse" style={{ animationDelay: "1s" }}></div>
+            <div className="absolute bottom-1/3 left-1/3 w-1.5 h-1.5 bg-pink-300/40 rounded-full animate-pulse" style={{ animationDelay: "2s" }}></div>
+            <div className="absolute top-2/3 right-1/4 w-1 h-1 bg-green-300/40 rounded-full animate-pulse" style={{ animationDelay: "3s" }}></div>
+          </div>
+        </div>
+
+        {/* Content Overlay */}
+        <div className="relative z-40 text-center text-white px-4">
+          <div className="backdrop-blur-sm bg-black/20 rounded-2xl p-8 border border-white/20 shadow-2xl">
+            <h1 
+              className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 text-shadow-lg"
+              style={{
+                fontFamily: "Georgia, serif",
+                textShadow: "2px 2px 4px rgba(0,0,0,0.8), 0 0 20px rgba(255,255,255,0.3)",
+                animation: "glow 3s ease-in-out infinite alternate",
+              }}
+            >
+              RILINDI SHPK
+            </h1>
+            <p className="text-lg md:text-xl lg:text-2xl mb-6 text-shadow-md font-medium">
+              Discover the Beauty of Albanian Alps
+            </p>
+            <button
+              onClick={handleViewAllTours}
+              className="bg-gradient-to-r from-blue-600 to-pink-600 hover:from-blue-700 hover:to-pink-700 text-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl border-2 border-white/30"
+            >
+              Explore Our Tours
+            </button>
+          </div>
         </div>
       </section>
+
+      {/* CSS Animations */}
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% { transform: perspective(1200px) rotateX(8deg) translateZ(80px) rotateY(-2deg) translateY(0px); }
+          50% { transform: perspective(1200px) rotateX(8deg) translateZ(80px) rotateY(-2deg) translateY(-10px); }
+        }
+        
+        @keyframes glow {
+          from { text-shadow: 2px 2px 4px rgba(0,0,0,0.8), 0 0 20px rgba(255,255,255,0.3); }
+          to { text-shadow: 2px 2px 4px rgba(0,0,0,0.8), 0 0 30px rgba(255,255,255,0.5), 0 0 40px rgba(255,255,255,0.3); }
+        }
+      `}</style>
 
       {/* Company Introduction Section */}
       <section className="py-8 sm:py-12 md:py-16 px-4 bg-gradient-to-br from-green-50 via-blue-50 to-pink-50">
