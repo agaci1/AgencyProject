@@ -7,7 +7,11 @@ export {};
 declare global {
   interface Window {
     paypal?: {
-      Buttons: (options: any) => {
+      Buttons: (options: {
+        createOrder: (data: unknown, actions: unknown) => Promise<string>
+        onApprove: (data: { orderID: string }, actions: unknown) => Promise<void>
+        onError: (err: Error) => void
+      }) => {
         render: (selector: string) => void;
       };
       FUNDING: {

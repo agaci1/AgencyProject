@@ -2,20 +2,22 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
-import { MapPin, Calendar, Users, CreditCard, Lock, Info } from "lucide-react"
+import { MapPin, Clock, Users, CreditCard, Lock, Info } from "lucide-react"
+import api from "@/lib/api"
 
 interface Tour {
   id: number
   title: string
   description: string
   price: number
-  duration: string
+  departureTime: string // changed from duration
   location: string
   rating: number
   image: string
@@ -41,8 +43,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
 
   const basePrice = tour.price * bookingData.guests
   const totalPrice = bookingData.tripType === "round-trip" ? basePrice * 2 : basePrice
-  const taxes = Math.round(totalPrice * 0.1)
-  const finalTotal = totalPrice + taxes
+  const finalTotal = totalPrice 
 
   const [notification, setNotification] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
@@ -60,7 +61,6 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
       if (window.paypal) {
         console.log("PayPal already loaded")
         setPaypalLoaded(true)
-        initializePayPal()
         return
       }
 
@@ -72,7 +72,6 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
         existingScript.addEventListener("load", () => {
           if (window.paypal) {
             setPaypalLoaded(true)
-            initializePayPal()
           }
         })
         return
@@ -80,7 +79,9 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
 
       console.log("Loading PayPal SDK...")
       const script = document.createElement("script")
-      script.src = "https://www.paypal.com/sdk/js?client-id=test&currency=USD"
+      const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "YOUR_CLIENT_ID"
+      const currency = process.env.NEXT_PUBLIC_PAYPAL_CURRENCY || "EUR"
+      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}`
       script.async = true
 
       script.onload = () => {
@@ -88,11 +89,11 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
         if (window.paypal && typeof window.paypal.Buttons === "function") {
           setPaypalLoaded(true)
           setPaypalError(null)
-          initializePayPal()
         } else {
           setPaypalError("PayPal SDK loaded but Buttons not available")
         }
       }
+      
 
       script.onerror = () => {
         console.error("Failed to load PayPal SDK")
@@ -116,6 +117,13 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
       if (timeoutId) clearTimeout(timeoutId)
     }
   }, [step, paypalLoaded])
+
+  useEffect(() => {
+    if (step === "payment" && paypalLoaded) {
+      initializePayPal()
+    }
+  }, [step, paypalLoaded])
+  
 
   const initializePayPal = () => {
     if (typeof window === "undefined" || !window.paypal || typeof window.paypal.Buttons !== "function") {
@@ -142,57 +150,54 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
             label: "pay",
             height: 50,
           },
-          createOrder: (_data: any, actions: any) => {
+          createOrder: (_data: unknown, actions: unknown) => {
             console.log("Creating PayPal order for:", finalTotal)
             return actions.order.create({
               purchase_units: [
                 {
                   amount: {
                     value: finalTotal.toString(),
-                    currency_code: "USD",
+                    currency_code: "EUR",
                   },
                   description: `${tour.title} - ${bookingData.guests} guest(s)`,
                 },
               ],
             })
           },
-          onApprove: async (_data: any, actions: any) => {
+          onApprove: async (_data: unknown, actions: unknown) => {
             setIsProcessing(true)
             try {
               const details = await actions.order.capture()
               console.log("Payment captured:", details)
 
               // Send booking request to your backend
-              const res = await fetch("http://localhost:8080/bookings", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  tourId: tour.id,
-                  name: `${details.payer.name.given_name} ${details.payer.name.surname}`,
+              const bookingPayload = {
+                tourId: tour.id,
+                name: `${details.payer.name.given_name} ${details.payer.name.surname}`,
+                email: details.payer.email_address,
+                departureDate: bookingData.departureDate,
+                returnDate: bookingData.tripType === "round-trip" ? bookingData.returnDate : null,
+                guests: bookingData.guests,
+                paymentMethod: "paypal",
+                paypal: {
+                  transactionId: details.id,
                   email: details.payer.email_address,
-                  departureDate: bookingData.departureDate,
-                  returnDate: bookingData.tripType === "round-trip" ? bookingData.returnDate : null,
-                  guests: bookingData.guests,
-                  paymentMethod: "paypal",
-                  paypal: {
-                    transactionId: details.id,
-                    email: details.payer.email_address,
-                  },
-                }),
-              })
+                },
+              }
 
-              if (!res.ok) throw new Error("Booking failed")
+              const res = await api.post("/bookings", bookingPayload)
 
               setNotification("Payment successful! A confirmation email has been sent.")
               setTimeout(() => onComplete(), 2000)
             } catch (error) {
               console.error("Payment error:", error)
-              alert("Payment was successful but booking failed. Please contact support.")
+              setPaypalError("Payment was successful but booking failed. Please contact support.")
+              setIsProcessing(false)
             } finally {
               setIsProcessing(false)
             }
           },
-          onError: (err: any) => {
+          onError: (err: Error) => {
             console.error("PayPal error:", err)
             setPaypalError("Payment failed. Please try again.")
             setIsProcessing(false)
@@ -220,7 +225,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
   // PAYMENT STEP
   if (step === "payment") {
     return (
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto bg-white/70 backdrop-blur-xl shadow-lg rounded-xl p-6">
         {notification && <div className="mb-4 p-4 bg-green-600 text-white rounded">{notification}</div>}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -255,8 +260,8 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
               {/* PayPal Payment Section */}
               <div className="space-y-4">
                 <div className="text-center">
-                  <h3 className="text-lg font-semibold mb-2">Pay ${finalTotal}</h3>
-                  <p className="text-sm text-gray-600 mb-4">Choose PayPal or Credit/Debit Card in the next step</p>
+                  <h3 className="text-lg font-semibold mb-2">Pay €{finalTotal}</h3>
+                  <p className="text-sm text-gray-600 mb-4 font-playfair">Choose PayPal or Credit/Debit Card in the next step</p>
                 </div>
 
                 {/* PayPal Button Container */}
@@ -281,14 +286,14 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                   <div className="space-y-3">
                     <div id="paypal-button-container" className="min-h-[50px]" />
                     {isProcessing && (
-                      <div className="text-center text-sm text-gray-600">Processing your payment...</div>
+                      <div className="text-center text-sm text-gray-600 font-playfair">Processing your payment...</div>
                     )}
                   </div>
                 ) : (
                   <div className="text-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                    <p className="text-sm text-gray-600 mb-2">Loading secure payment options...</p>
-                    <p className="text-xs text-gray-400 mb-4">This may take a few seconds</p>
+                                <p className="text-sm text-gray-600 mb-2 font-playfair">Loading secure payment options...</p>
+            <p className="text-xs text-gray-400 mb-4 font-playfair">This may take a few seconds</p>
                     <Button
                       variant="outline"
                       size="sm"
@@ -380,12 +385,12 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                 </div>
                 <div className="flex justify-between">
                   <span>Price per person:</span>
-                  <span>${tour.price}</span>
+                  <span>€{tour.price}</span>
                 </div>
                 {bookingData.specialRequests && (
                   <div className="flex justify-between">
                     <span>Special Requests:</span>
-                    <span className="text-sm text-gray-600">{bookingData.specialRequests}</span>
+                    <span className="text-sm text-gray-600 font-playfair">{bookingData.specialRequests}</span>
                   </div>
                 )}
               </div>
@@ -393,23 +398,15 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
               <Separator />
 
               <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span>Subtotal:</span>
-                  <span>${totalPrice}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Taxes & Fees:</span>
-                  <span>${taxes}</span>
-                </div>
-                <div className="flex justify-between font-semibold text-lg border-t pt-2">
+                <div className="flex justify-between font-semibold text-lg">
                   <span>Total Amount:</span>
-                  <span className="text-blue-600">${finalTotal}</span>
+                  <span className="text-blue-600">€{finalTotal}</span>
                 </div>
               </div>
 
               {/* Payment Methods Accepted */}
               <div className="bg-gray-50 p-3 rounded text-center">
-                <p className="text-xs text-gray-600 mb-2">We accept:</p>
+                <p className="text-xs text-gray-600 mb-2 font-playfair">We accept:</p>
                 <div className="flex justify-center items-center gap-2 text-xs text-gray-500">
                   <span>PayPal</span> • <span>Visa</span> • <span>Mastercard</span> • <span>American Express</span> •{" "}
                   <span>Discover</span>
@@ -487,7 +484,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                         returnDate: e.target.value,
                       }))
                     }
-                    min={bookingData.departureDate || new Date().toISOString().split("T")[0]}
+                    min={bookingData.departureDate ? new Date(bookingData.departureDate).toISOString().split("T")[0] : new Date().toISOString().split("T")[0]}
                     required
                   />
                 </div>
@@ -497,10 +494,11 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
               <div className="space-y-2">
                 <Label htmlFor="guests">Number of Guests</Label>
                 <Select
+                  value={bookingData.guests.toString()}
                   onValueChange={(val) =>
                     setBookingData((p) => ({
                       ...p,
-                      guests: Number.parseInt(val),
+                      guests: Number.parseInt(val) || 1,
                     }))
                   }
                 >
@@ -556,33 +554,38 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
 
         {/* Tour Info */}
         <Card>
-          <CardHeader>
-            <CardTitle>{tour.title}</CardTitle>
-            <CardDescription className="flex items-center gap-4">
-              <MapPin className="h-4 w-4" /> {tour.location} &nbsp;
-              <Calendar className="h-4 w-4" /> {tour.duration} &nbsp;
-              <Users className="h-4 w-4" /> Max {tour.maxGuests}
-            </CardDescription>
-          </CardHeader>
+        <CardHeader>
+  <CardTitle>{tour.title}</CardTitle>
+  <CardDescription className="flex items-center gap-4">
+    <MapPin className="h-4 w-4" /> {tour.location} &nbsp;
+    <Clock className="h-4 w-4" /> {tour.departureTime} &nbsp;
+    <Users className="h-4 w-4" /> Max {tour.maxGuests}
+  </CardDescription>
+</CardHeader>
           <CardContent className="space-y-4">
             <img src={tour.image || "/placeholder.svg"} alt={tour.title} className="w-full h-48 object-cover rounded" />
 
             <p className="text-gray-600">{tour.description}</p>
+            {/* Highlights */}
+<div className="space-y-2">
+  <h4 className="font-semibold">Highlights:</h4>
+  <div className="flex flex-wrap gap-2">
+    {tour.highlights && tour.highlights.length > 0 ? (
+      tour.highlights.map((hl, i) => (
+        <span key={i} className="bg-gray-200 px-2 py-1 rounded text-sm">
+          {hl}
+        </span>
+      ))
+    ) : (
+                  <p className="text-sm text-gray-500 font-playfair">No highlights provided.</p>
+    )}
+  </div>
+</div>
 
-            <div>
-              <h4 className="font-semibold mb-2">Highlights:</h4>
-              <div className="flex flex-wrap gap-2">
-                {tour.highlights.map((hl, i) => (
-                  <span key={i} className="px-2 py-1 bg-gray-200 rounded text-sm">
-                    {hl}
-                  </span>
-                ))}
-              </div>
-            </div>
 
             <div className="bg-blue-50 p-4 rounded">
-              <div className="text-2xl font-bold text-blue-600">${tour.price}</div>
-              <div className="text-sm text-gray-600">per person</div>
+            <div className="text-2xl font-bold text-blue-600">€{tour.price}</div>
+              <div className="text-sm text-gray-600 font-playfair">per person</div>
             </div>
           </CardContent>
         </Card>

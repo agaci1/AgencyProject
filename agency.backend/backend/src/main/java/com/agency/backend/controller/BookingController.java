@@ -8,6 +8,8 @@ import com.agency.backend.repository.TourRepository;
 import com.agency.backend.service.EmailService;
 import com.agency.backend.service.PaymentService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +24,8 @@ import java.util.Optional;
 @RequestMapping("/bookings")
 @CrossOrigin(origins = "*")
 public class BookingController {
+
+    private static final Logger logger = LoggerFactory.getLogger(BookingController.class);
 
     private final BookingRepository bookingRepository;
     private final TourRepository tourRepository;
@@ -44,9 +48,13 @@ public class BookingController {
 
     @PostMapping
     public ResponseEntity<?> createBooking(@RequestBody BookingRequest req) {
+        logger.info("Received booking request for tour ID: {}, guests: {}, payment method: {}", 
+                   req.getTourId(), req.getGuests(), req.getPaymentMethod());
+        
         // 1) find the Tour
         Optional<Tour> tourOpt = tourRepository.findById(req.getTourId());
         if (tourOpt.isEmpty()) {
+            logger.error("Invalid tour ID requested: {}", req.getTourId());
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body("Invalid tourId: " + req.getTourId());
@@ -55,12 +63,49 @@ public class BookingController {
         // 2) map DTO → entity
         Booking booking = new Booking();
         booking.setTour(tourOpt.get());
-        booking.setUserName(req.getName());
-        booking.setUserEmail(req.getEmail());
+        
+        // Sanitize and validate input
+        String sanitizedName = req.getName() != null ? req.getName().trim() : "";
+        String sanitizedEmail = req.getEmail() != null ? req.getEmail().trim().toLowerCase() : "";
+        
+        if (sanitizedName.isEmpty()) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Name is required.");
+        }
+        
+        if (sanitizedEmail.isEmpty() || !sanitizedEmail.contains("@")) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Valid email is required.");
+        }
+        
+        booking.setUserName(sanitizedName);
+        booking.setUserEmail(sanitizedEmail);
         try {
-            booking.setDepartureDate(LocalDate.parse(req.getDepartureDate()));
+            LocalDate departureDate = LocalDate.parse(req.getDepartureDate());
+            LocalDate today = LocalDate.now();
+            
+            // Validate departure date is not in the past
+            if (departureDate.isBefore(today)) {
+                return ResponseEntity
+                        .status(HttpStatus.BAD_REQUEST)
+                        .body("Departure date cannot be in the past.");
+            }
+            
+            booking.setDepartureDate(departureDate);
+            
             if (req.getReturnDate() != null) {
-                booking.setReturnDate(LocalDate.parse(req.getReturnDate()));
+                LocalDate returnDate = LocalDate.parse(req.getReturnDate());
+                
+                // Validate return date is after departure date
+                if (returnDate.isBefore(departureDate)) {
+                    return ResponseEntity
+                            .status(HttpStatus.BAD_REQUEST)
+                            .body("Return date must be after departure date.");
+                }
+                
+                booking.setReturnDate(returnDate);
             }
         } catch (Exception e) {
             return ResponseEntity
@@ -68,7 +113,34 @@ public class BookingController {
                     .body("Invalid date format.");
         }
 
+        // Validate number of guests
+        if (req.getGuests() <= 0) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Number of guests must be at least 1.");
+        }
+        
+        if (req.getGuests() > tourOpt.get().getMaxGuests()) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Number of guests (" + req.getGuests() + ") exceeds maximum capacity (" + tourOpt.get().getMaxGuests() + ").");
+        }
+        
         booking.setGuests(req.getGuests());
+        
+        // Validate payment method
+        if (req.getPaymentMethod() == null || req.getPaymentMethod().trim().isEmpty()) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Payment method is required.");
+        }
+        
+        if (!req.getPaymentMethod().equalsIgnoreCase("paypal") && !req.getPaymentMethod().equalsIgnoreCase("card")) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Invalid payment method. Only 'paypal' and 'card' are supported.");
+        }
+        
         booking.setPaymentMethod(req.getPaymentMethod());
 
         // 3) process payment (dummy)
@@ -86,9 +158,11 @@ public class BookingController {
         // 5) compute receipt amounts
         double pricePerPerson = saved.getTour().getPrice();
         int guests = saved.getGuests();
-        double subtotal = pricePerPerson * guests;
-        double taxes = subtotal * 0.10;
-        double total = subtotal + taxes;
+        double baseTotal = pricePerPerson * guests;
+        
+        // Check if this is a round-trip booking (has return date)
+        boolean isRoundTrip = saved.getReturnDate() != null;
+        double total = isRoundTrip ? baseTotal * 2 : baseTotal;
 
         // 6a) email customer
         String customerSubject = "Your Booking Receipt — " + saved.getTourName();
@@ -97,29 +171,39 @@ public class BookingController {
                         "Thank you for booking \"%s\"!%n" +
                         "Booking ID: %d%n%n" +
                         "Trip Details:%n" +
+                        "  • Trip Type:       %s%n" +
                         "  • Departure Date: %s%n" +
                         "  • Return Date:    %s%n" +
                         "  • Guests:         %d%n%n" +
                         "Payment Breakdown:%n" +
-                        "  • Price/person:   $%.2f%n" +
-                        "  • Subtotal:        $%.2f%n" +
-                        "  • Taxes (10%%):     $%.2f%n" +
-                        "  • Total Charged:   $%.2f%n%n" +
+                        "  • Price/person:   €%.2f%n" +
+                        "  • Base Total:     €%.2f%n" +
+                        "%s" +
+                        "  • Total Charged:   €%.2f%n%n" +
                         "We hope you enjoy your trip!%n%n" +
                         "Safe travels,%n" +
                         "Albanian Alps Adventures",
                 saved.getUserName(),
                 saved.getTourName(),
                 saved.getId(),
+                isRoundTrip ? "Round Trip" : "One Way",
                 saved.getDepartureDate(),
                 saved.getReturnDate() == null ? "—" : saved.getReturnDate(),
                 guests,
                 pricePerPerson,
-                subtotal,
-                taxes,
+                baseTotal,
+                isRoundTrip ? "  • Round Trip (x2): €" + String.format("%.2f", baseTotal) + "\\n" : "",
                 total
         );
-        emailService.sendSimpleMessage(saved.getUserEmail(), customerSubject, customerText);
+        
+        // 6a) email customer
+        try {
+            emailService.sendSimpleMessage(saved.getUserEmail(), customerSubject, customerText);
+            logger.info("Customer confirmation email sent to: {}", saved.getUserEmail());
+        } catch (Exception e) {
+            logger.error("Failed to send customer confirmation email to: {}", saved.getUserEmail(), e);
+            // Don't fail the booking if email fails
+        }
 
         // 6b) email agency
         String ownerSubject = "New Booking Received — ID " + saved.getId();
@@ -127,28 +211,41 @@ public class BookingController {
                 "New booking received:%n%n" +
                         "  • Customer: %s <%s>%n" +
                         "  • Tour:     %s%n" +
+                        "  • Trip Type: %s%n" +
                         "  • Departure: %s%n" +
                         "  • Return:    %s%n" +
                         "  • Guests:   %d%n" +
                         "Booking ID:  %d%n%n" +
                         "Payment:%n" +
-                        "  • Subtotal: $%.2f%n" +
-                        "  • Taxes:    $%.2f%n" +
-                        "  • Total:    $%.2f%n",
+                        "  • Base Total: €%.2f%n" +
+                        "%s" +
+                        "  • Total:    €%.2f%n",
                 saved.getUserName(),
                 saved.getUserEmail(),
                 saved.getTourName(),
+                isRoundTrip ? "Round Trip" : "One Way",
                 saved.getDepartureDate(),
                 saved.getReturnDate() == null ? "—" : saved.getReturnDate(),
                 guests,
                 saved.getId(),
-                subtotal,
-                taxes,
+                baseTotal,
+                isRoundTrip ? "  • Round Trip (x2): €" + String.format("%.2f", baseTotal) + "\\n" : "",
                 total
         );
-        emailService.sendSimpleMessage(agencyEmail, ownerSubject, ownerText);
+        
+        // 6b) email agency
+        try {
+            emailService.sendSimpleMessage(agencyEmail, ownerSubject, ownerText);
+            logger.info("Agency notification email sent to: {}", agencyEmail);
+        } catch (Exception e) {
+            logger.error("Failed to send agency notification email to: {}", agencyEmail, e);
+            // Don't fail the booking if email fails
+        }
 
         // 7) return booking
+        logger.info("Booking created successfully. ID: {}, Customer: {}, Total: €{}", 
+                   saved.getId(), saved.getUserName(), total);
+        
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(saved);

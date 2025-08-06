@@ -2,6 +2,9 @@ package com.agency.backend.model;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "tours")
 public class Tour {
@@ -13,7 +16,7 @@ public class Tour {
     private String title;
     private String description;
     private String location;
-    private String duration;
+    private String departureTime; // <- replaced duration with departureTime
     private String image;
     private double price;
     private double rating;
@@ -22,31 +25,37 @@ public class Tour {
     private String routeDescription;
     private String startLocationLink;
 
+    @ElementCollection
+    @CollectionTable(name = "tour_highlights", joinColumns = @JoinColumn(name = "tour_id"))
+    @Column(name = "highlight")
+    private List<String> highlights = new ArrayList<>();
+
     public Tour() { }
 
     public Tour(String title,
                 String description,
                 String location,
-                String duration,
+                String departureTime,
                 String image,
                 double price,
                 double rating,
                 int maxGuests,
                 String routeDescription,
-                String startLocationLink) {
+                String startLocationLink,
+                List<String> highlights) {
         this.title = title;
         this.description = description;
         this.location = location;
-        this.duration = duration;
+        this.departureTime = departureTime;
         this.image = image;
         this.price = price;
         this.rating = rating;
         this.maxGuests = maxGuests;
         this.routeDescription = routeDescription;
         this.startLocationLink = startLocationLink;
+        this.highlights = highlights;
     }
 
-    // —— Getters & Setters —— //
 
     public Long getId() {
         return id;
@@ -80,12 +89,12 @@ public class Tour {
         this.location = location;
     }
 
-    public String getDuration() {
-        return duration;
+    public String getDepartureTime() {
+        return departureTime;
     }
 
-    public void setDuration(String duration) {
-        this.duration = duration;
+    public void setDepartureTime(String departureTime) {
+        this.departureTime = departureTime;
     }
 
     public String getImage() {
@@ -134,5 +143,13 @@ public class Tour {
 
     public void setStartLocationLink(String startLocationLink) {
         this.startLocationLink = startLocationLink;
+    }
+
+    public List<String> getHighlights() {
+        return highlights;
+    }
+
+    public void setHighlights(List<String> highlights) {
+        this.highlights = highlights;
     }
 }

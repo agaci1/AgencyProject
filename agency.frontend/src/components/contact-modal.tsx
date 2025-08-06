@@ -1,8 +1,22 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Phone, Mail, Instagram, MessageCircle, MapPinIcon, Clock, Bus } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  Phone,
+  Mail,
+  Instagram,
+  MessageCircle,
+  MapPinIcon,
+  Clock,
+  Bus,
+  Facebook,
+} from "lucide-react"
 
 interface ContactModalProps {
   isOpen: boolean
@@ -14,10 +28,11 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader className="flex-shrink-0">
+          <DialogTitle className="sr-only">Contact Us</DialogTitle>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Bus className="h-6 w-6 text-blue-600" />
-              <DialogTitle className="text-xl font-bold text-gray-900">Contact Us</DialogTitle>
+              <span className="text-xl font-bold text-gray-900 font-playfair">Contact RILINDI SHPK</span>
             </div>
           </div>
         </DialogHeader>
@@ -25,7 +40,7 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
         <div className="flex-1 overflow-y-auto pr-2 -mr-2">
           <div className="space-y-6 py-4">
             <p className="text-gray-600 text-center">
-              Ready to start your Albanian Alps adventure? Get in touch with us through any of these channels:
+              Ready for a safe and comfortable journey? Reach us through one of the following channels:
             </p>
 
             {/* Contact Methods */}
@@ -37,16 +52,16 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-gray-900">Call Us</h3>
-                  <p className="text-sm text-gray-600">Available 9 AM - 6 PM</p>
+                  <p className="text-sm text-gray-600 font-playfair">+355 672 121 800</p>
                 </div>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => window.open("tel:+355123456789", "_self")}
+                  onClick={() => window.open("tel:+355672121800", "_self")}
                   className="hover:bg-blue-600 hover:text-white flex-shrink-0"
                 >
-                  +355 123 456 789
+                  Call Now
                 </Button>
               </div>
 
@@ -57,13 +72,13 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-gray-900">WhatsApp</h3>
-                  <p className="text-sm text-gray-600">Quick responses 24/7</p>
+                  <p className="text-sm text-gray-600 font-playfair">+355 676 905 555</p>
                 </div>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => window.open("https://wa.me/355123456789", "_blank")}
+                  onClick={() => window.open("https://wa.me/355676905555", "_blank")}
                   className="hover:bg-green-600 hover:text-white flex-shrink-0"
                 >
                   Chat Now
@@ -77,13 +92,13 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-gray-900">Email</h3>
-                  <p className="text-sm text-gray-600">Detailed inquiries welcome</p>
+                  <p className="text-sm text-gray-600 font-playfair">rilindi-shpk@hotmail.com</p>
                 </div>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => window.open("mailto:info@albanianalpstours.com", "_self")}
+                  onClick={() => window.open("mailto:rilindi-shpk@hotmail.com", "_self")}
                   className="hover:bg-red-600 hover:text-white flex-shrink-0"
                 >
                   Send Email
@@ -97,36 +112,60 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-gray-900">Instagram</h3>
-                  <p className="text-sm text-gray-600">Follow our adventures</p>
+                  <p className="text-sm text-gray-600 font-playfair">@rilindi_shpk</p>
                 </div>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => window.open("https://instagram.com/albanianalpstours", "_blank")}
+                  onClick={() =>
+                    window.open("https://www.instagram.com/rilindi_shpk?igsh=bzJwdmJ1a2JrczZq", "_blank")
+                  }
                   className="hover:bg-pink-600 hover:text-white flex-shrink-0"
                 >
-                  Follow Us
+                  Follow
+                </Button>
+              </div>
+
+              {/* Facebook */}
+              <div className="flex items-center gap-4 p-4 bg-blue-100 rounded-lg hover:bg-blue-200 transition-colors">
+                <div className="bg-blue-600 rounded-full p-3 flex-shrink-0">
+                  <Facebook className="h-5 w-5 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-gray-900">Facebook</h3>
+                  <p className="text-sm text-gray-600 font-playfair">Rilindi Shpk</p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    window.open("https://www.facebook.com/share/16qYyk2afu/?mibextid=wvXlfr", "_blank")
+                  }
+                  className="hover:bg-blue-600 hover:text-white flex-shrink-0"
+                >
+                  Visit
                 </Button>
               </div>
             </div>
 
             {/* Office Info */}
             <div className="border-t pt-6">
-              <h3 className="font-semibold text-gray-900 mb-4 text-center">Visit Our Office</h3>
+              <h3 className="font-semibold text-gray-900 mb-4 text-center">Our Office</h3>
               <div className="space-y-3">
                 <div className="flex items-center gap-3 justify-center">
                   <MapPinIcon className="h-4 w-4 text-blue-600 flex-shrink-0" />
-                  <div className="text-sm text-gray-600 text-center">
-                    <p>Rruga Kol Idromeno</p>
-                    <p>Shkodër, Albania</p>
+                  <div className="text-sm text-gray-600 text-center font-playfair">
+                    <p>Across from the Museum</p>
+                    <p>Bajram Curri, Tropojë</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 justify-center">
                   <Clock className="h-4 w-4 text-green-600 flex-shrink-0" />
-                  <div className="text-sm text-gray-600 text-center">
-                    <p>Mon - Fri: 9:00 AM - 6:00 PM</p>
-                    <p>Sat - Sun: 10:00 AM - 4:00 PM</p>
+                  <div className="text-sm text-gray-600 text-center font-playfair">
+                    <p>Mon – Fri: 08:00 – 19:00</p>
+                    <p>Saturday & Sunday: 08:00 – 16:00</p>
                   </div>
                 </div>
               </div>
@@ -137,7 +176,7 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
               <Button
                 type="button"
                 className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                onClick={() => window.open("https://wa.me/355123456789", "_blank")}
+                onClick={() => window.open("https://wa.me/355676905555", "_blank")}
               >
                 <MessageCircle className="h-4 w-4 mr-2" />
                 WhatsApp
@@ -146,14 +185,13 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
                 type="button"
                 variant="outline"
                 className="flex-1 hover:bg-blue-50 bg-transparent"
-                onClick={() => window.open("tel:+355123456789", "_self")}
+                onClick={() => window.open("tel:+355672121800", "_self")}
               >
                 <Phone className="h-4 w-4 mr-2" />
-                Call Now
+                Call
               </Button>
             </div>
 
-            {/* Additional spacing at bottom for better scrolling */}
             <div className="h-4" />
           </div>
         </div>

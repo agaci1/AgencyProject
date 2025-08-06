@@ -1,50 +1,30 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Star, Users, MapPin, Instagram, MessageCircle, Phone, Mail, MapPinIcon, Clock, Mountain } from "lucide-react"
+import { Instagram, MessageCircle, Phone, Mail, MapPinIcon, Clock, Mountain, Info } from "lucide-react"
 import { Navigation } from "@/components/navigation"
 import { ToursPage } from "@/components/tours-page"
 import { AboutPage } from "@/components/about-page"
+import { fetchTours } from "@/lib/api"
+import { Tour } from "@/types/tour"
 
-const destinations = [
-  {
-    id: "1",
-    name: "Tropoja",
-    description: "A hidden gem in the Albanian Alps, known for its pristine nature and traditional mountain culture.",
-    image: "/placeholder.svg?height=300&width=400",
-    highlights: ["Alpine landscapes", "Traditional villages", "Hiking trails"],
-  },
-  {
-    id: "2",
-    name: "Theth",
-    description: "A spectacular mountain village surrounded by dramatic peaks and crystal-clear streams.",
-    image: "/placeholder.svg?height=300&width=400",
-    highlights: ["Waterfall hikes", "Stone houses", "Mountain peaks"],
-  },
-  {
-    id: "3",
-    name: "Valbona",
-    description: "The crown jewel of Albanian Alps with breathtaking valley views and pristine wilderness.",
-    image: "/placeholder.svg?height=300&width=400",
-    highlights: ["Valley views", "River rafting", "Wildlife spotting"],
-  },
-  {
-    id: "4",
-    name: "Koman Lake",
-    description: "Often called the 'Norwegian fjords of Albania' with stunning turquoise waters.",
-    image: "/placeholder.svg?height=300&width=400",
-    highlights: ["Boat tours", "Scenic views", "Photography"],
-  },
-]
+
 
 export default function TravelAgency() {
   const [currentPage, setCurrentPage] = useState<"home" | "tours" | "about">("home")
+  const [tours, setTours] = useState<Tour[]>([])
 
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [currentPage])
+
+  useEffect(() => {
+    fetchTours()
+      .then((data) => setTours(data.slice(0, 2)))
+      .catch((err) => console.error("Error loading tours:", err))
+  }, [])
 
   const handleViewAllTours = () => setCurrentPage("tours")
   const handleBackToHome = () => setCurrentPage("home")
@@ -59,7 +39,7 @@ export default function TravelAgency() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-green-100 via-blue-100 to-pink-100">
       <Navigation
         onNavigate={(page) => {
           if (page === "tours") setCurrentPage("tours")
@@ -69,241 +49,261 @@ export default function TravelAgency() {
       />
 
       {/* Hero Section */}
-      <section className="relative py-20 px-4">
-        <div className="container mx-auto text-center">
-          <h1 className="text-5xl font-bold text-gray-900 mb-6">Albanian Alps Adventures</h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Discover the untouched beauty of the Albanian Alps with our expert-guided tours. From pristine mountain
-            villages to breathtaking valleys, we offer authentic experiences in one of Europe's last hidden gems.
-          </p>
-          <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-500 mb-8">
-            <div className="flex items-center gap-2">
-              <Star className="h-4 w-4 text-yellow-500" />
-              <span>4.9+ Average Rating</span>
+      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+        {/* Background image */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src="/homee2.jpg"
+            alt="Home Background"
+            className="w-full h-full object-cover brightness-75 border-[5px] border-transparent rounded-lg"
+            style={{
+              borderImage: "linear-gradient(45deg, #4ade80, #60a5fa, #f472b6) 1",
+            }}
+          />
+        </div>
+
+
+      </section>
+
+      {/* Company Introduction Section */}
+      <section className="py-8 sm:py-12 md:py-16 px-4 bg-gradient-to-br from-green-50 via-blue-50 to-pink-50">
+        <div className="container mx-auto">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12">
+            {/* Logo */}
+            <div className="flex-shrink-0 mb-6 sm:mb-8 md:mb-0">
+              <div className="w-40 h-40 sm:w-48 sm:h-48 md:w-80 md:h-80 rounded-full p-2 shadow-lg"
+                style={{
+                  background: "linear-gradient(to right, #4ade80, #60a5fa, #f472b6)",
+                }}
+              >
+                <img
+                  src="/agjensiLogo.jpg"
+                  alt="RILINDI SHPK Logo"
+                  className="w-full h-full object-cover rounded-full"
+                />
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-blue-500" />
-              <span>5,000+ Happy Travelers</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-green-500" />
-              <span>15+ Destinations</span>
+
+            {/* Company Info */}
+            <div className="text-center md:text-left max-w-2xl px-4 md:px-0">
+              <h2
+                className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 text-blue-900"
+                style={{
+                  fontFamily: "Georgia, serif"
+                }}
+              >
+                RILINDI SHPK
+              </h2>
+              
+              <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-700 mb-4 sm:mb-6 leading-relaxed font-medium font-playfair">
+                Discover the natural beauty and rich culture of the Albanian Alps through our authentic tours, 
+                guided by experienced local experts. We specialize in providing unforgettable travel experiences 
+                that showcase the stunning landscapes, historical sites, and warm hospitality of Albania.
+              </p>
+              
+              <p className="text-xs sm:text-sm md:text-base lg:text-lg text-gray-600 leading-relaxed font-playfair">
+                With years of experience in the tourism industry, RILINDI SHPK has been connecting travelers 
+                with the hidden gems of Albania. Our commitment to quality service, safety, and authentic 
+                cultural experiences makes us your trusted partner for exploring this beautiful country.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* About Section */}
-      <section id="about-section" className="py-16 px-4 bg-white">
+      {/* Featured Tours */}
+      <section className="py-8 sm:py-12 px-4">
         <div className="container mx-auto">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl font-bold mb-8">About Albanian Alps Adventures</h2>
-            <p className="text-lg text-gray-600 mb-8">
-              Founded by local mountain guides with over 15 years of experience, we specialize in showcasing the raw
-              beauty and rich culture of the Albanian Alps. Our small-group tours ensure personalized attention while
-              supporting local communities and preserving the natural environment.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="text-center">
-                <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                  <MapPin className="h-8 w-8 text-blue-600" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">Local Expertise</h3>
-                <p className="text-gray-600">
-                  Born and raised in the Albanian Alps, our guides know every trail and story
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                  <Users className="h-8 w-8 text-green-600" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">Small Groups</h3>
-                <p className="text-gray-600">
-                  Maximum 8 people per tour for a more intimate and personalized experience
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="bg-purple-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                  <Star className="h-8 w-8 text-purple-600" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">Sustainable Tourism</h3>
-                <p className="text-gray-600">Supporting local communities while preserving natural beauty</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+        <h2
+  className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-6 sm:mb-8 md:mb-12 text-blue-900 px-4"
+  style={{
+    fontFamily: "Georgia, serif"
+  }}
+>
+    Our Top Tours 
+</h2>
 
-      {/* Destinations Section */}
-      <section className="py-16 px-4">
-        <div className="container mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-12">Discover Our Destinations</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {destinations.map((destination) => (
-              <Card key={destination.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+            {tours.map((tour) => (
+              <Card key={tour.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="relative">
                   <img
-                    src={destination.image || "/placeholder.svg"}
-                    alt={destination.name}
+                    src={tour.image || "/placeholder.svg"}
+                    alt={tour.title}
                     className="w-full h-64 object-cover"
                   />
                   <div className="absolute top-4 left-4">
-                    <Badge className="bg-white text-gray-900 font-semibold">{destination.name}</Badge>
+                    <Badge className="bg-white text-gray-900 font-semibold">{tour.location}</Badge>
                   </div>
                 </div>
                 <CardHeader>
-                  <CardTitle className="text-xl">{destination.name}</CardTitle>
-                  <CardDescription className="text-base">{destination.description}</CardDescription>
+                  <CardTitle className="text-xl">{tour.title}</CardTitle>
+                  <CardDescription className="text-base">{tour.description}</CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {destination.highlights.map((hl, i) => (
-                      <Badge key={i} variant="secondary" className="text-xs">
-                        {hl}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
               </Card>
             ))}
           </div>
-        </div>
-      </section>
 
-      {/* Why Choose Us Section */}
-      <section className="py-16 px-4 bg-white">
-        <div className="container mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-12">Why Choose Us</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="text-4xl font-bold text-blue-600 mb-2">15+</div>
-              <div className="text-gray-600">Years Experience</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-green-600 mb-2">5000+</div>
-              <div className="text-gray-600">Happy Customers</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-purple-600 mb-2">15+</div>
-              <div className="text-gray-600">Destinations</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-orange-600 mb-2">4.9</div>
-              <div className="text-gray-600">Average Rating</div>
-            </div>
+          <div className="text-center mt-12">
+            <button
+              onClick={handleViewAllTours}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-lg"
+            >
+              View All Tours
+            </button>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-16 px-4">
-        <div className="container mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Mountain className="h-6 w-6 text-blue-400" />
-                <span className="text-lg font-bold">Albanian Alps Adventures</span>
-              </div>
-              <p className="text-gray-300 mb-4">
-                Discover the untouched beauty of the Albanian Alps with our expert-guided tours.
-              </p>
-              <p className="text-sm text-gray-400">Thank you for choosing us for your adventure!</p>
-            </div>
+      {/* Fleet Section */}
+<section className="mt-8 sm:mt-12 md:mt-16">
+<h2
+  className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-4 sm:mb-6 text-blue-900 px-4"
+  style={{
+    fontFamily: "Georgia, serif"
+  }}
+>
+Our Exclusive Bus Fleet
+</h2>
 
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-              <div className="space-y-2">
-                <button onClick={handleBackToHome} className="block text-gray-300 hover:text-white transition-colors">
-                  Home
-                </button>
-                <button onClick={handleOpenAbout} className="block text-gray-300 hover:text-white transition-colors">
-                  About Us
-                </button>
-                <button onClick={handleViewAllTours} className="block text-gray-300 hover:text-white transition-colors">
-                  Available Tours
-                </button>
-                <button
-                  onClick={() =>
-                    window.open("https://www.google.com/search?q=Albanian+Alps+Adventures+reviews", "_blank")
-                  }
-                  className="block text-gray-300 hover:text-white transition-colors"
-                >
-                  Rate us on Google
-                </button>
-              </div>
-            </div>
+<p className="text-sm sm:text-base md:text-lg text-center text-blue-900 max-w-3xl mx-auto mb-6 sm:mb-8 md:mb-10 font-medium px-4 font-playfair">
+  Travel with high comfort and maximum safety! Our buses are equipped with the latest technology,
+  air conditioning, and ultra-comfortable seats for an unforgettable travel experience.
+</p>
 
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Contact Us</h3>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <Phone className="h-4 w-4 text-blue-400" />
-                  <a href="tel:+355123456789" className="text-gray-300 hover:text-white transition-colors">
-                    +355 123 456 789
-                  </a>
-                </div>
-                <div className="flex items-center gap-3">
-                  <MessageCircle className="h-4 w-4 text-green-400" />
-                  <a
-                    href="https://wa.me/355123456789"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-300 hover:text-white transition-colors"
-                  >
-                    WhatsApp
-                  </a>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Mail className="h-4 w-4 text-red-400" />
-                  <a
-                    href="mailto:info@albanianalpstours.com"
-                    className="text-gray-300 hover:text-white transition-colors"
-                  >
-                    info@albanianalpstours.com
-                  </a>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Instagram className="h-4 w-4 text-pink-400" />
-                  <a
-                    href="https://instagram.com/albanianalpstours"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-300 hover:text-white transition-colors"
-                  >
-                    Follow us on Instagram
-                  </a>
-                </div>
-              </div>
-            </div>
+<div className="overflow-x-auto whitespace-nowrap py-2 sm:py-4">
+  <div className="flex gap-2 sm:gap-3 md:gap-4 px-4" style={{ minWidth: "max-content" }}>
+    <div className="rounded-lg overflow-hidden shadow-md w-56 sm:w-64 md:w-72 lg:w-80 shrink-0">
+      <img src="/auto1.JPG" alt="Autobus 1" className="w-full h-48 sm:h-64 md:h-80 lg:h-[40rem] object-cover rounded-lg" />
+    </div>
+    <div className="rounded-lg overflow-hidden shadow-md w-56 sm:w-64 md:w-72 lg:w-80 shrink-0">
+      <img src="/auto2.JPG" alt="Autobus 2" className="w-full h-48 sm:h-64 md:h-80 lg:h-[40rem] object-cover rounded-lg" />
+    </div>
+    <div className="rounded-lg overflow-hidden shadow-md w-56 sm:w-64 md:w-72 lg:w-80 shrink-0">
+      <img src="/auto3.JPG" alt="Autobus 3" className="w-full h-48 sm:h-64 md:h-80 lg:h-[40rem] object-cover rounded-lg" />
+    </div>
+    <div className="rounded-lg overflow-hidden shadow-md w-56 sm:w-64 md:w-72 lg:w-80 shrink-0">
+      <img src="/auto4.JPG" alt="Autobus 4" className="w-full h-48 sm:h-64 md:h-80 lg:h-[40rem] object-cover rounded-lg" />
+    </div>
+    <div className="rounded-lg overflow-hidden shadow-md w-56 sm:w-64 md:w-72 lg:w-80 shrink-0">
+      <img src="/auto5.JPG" alt="Autobus 5" className="w-full h-48 sm:h-64 md:h-80 lg:h-[40rem] object-cover rounded-lg" />
+    </div>
+  </div>
+</div>
 
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Visit Us</h3>
-              <div className="space-y-3">
-                <div className="flex items-start gap-3">
-                  <MapPinIcon className="h-4 w-4 text-blue-400 mt-1" />
-                  <div className="text-gray-300">
-                    <p>Rruga Kol Idromeno</p>
-                    <p>Shkodër, Albania</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Clock className="h-4 w-4 text-yellow-400 mt-1" />
-                  <div className="text-gray-300">
-                    <p>Mon - Fri: 9:00 AM - 6:00 PM</p>
-                    <p>Sat - Sun: 10:00 AM - 4:00 PM</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+</section>
+
+
+<footer className="bg-gradient-to-br from-blue-200 via-green-100 to-pink-100 text-blue-900 py-16 px-4">
+  <div className="container mx-auto">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      
+      {/* Company Info */}
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <Mountain className="h-6 w-6 text-blue-500" />
+          <span className="text-lg font-bold text-blue-900 text-xl">RILINDI SHPK</span>
+        </div>
+        <p className="text-green-900 mb-4 text-base font-medium">
+          A travel agency based in the heart of Tropoja, offering unforgettable experiences in the Albanian Alps.
+        </p>
+        <p className="text-sm text-green-900 font-medium">Thank you for choosing Rilindi for your journey!</p>
+      </div>
+
+      {/* Quick Links */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4 text-blue-900 text-xl">Quick Links</h3>
+        <div className="space-y-2">
+          <button onClick={handleBackToHome} className="block text-green-900 hover:text-blue-900 transition-colors font-medium text-base">
+            Home
+          </button>
+          <button onClick={handleOpenAbout} className="block text-green-900 hover:text-blue-900 transition-colors font-medium text-base">
+            About Us
+          </button>
+          <button onClick={handleViewAllTours} className="block text-green-900 hover:text-blue-900 transition-colors font-medium text-base">
+            Explore Tours
+          </button>
+          <a
+            href="https://www.instagram.com/rilindi_shpk?igsh=bzJwdmJ1a2JrczZq"
+            target="_blank"
+            className="block text-green-900 hover:text-blue-900 transition-colors font-medium text-base"
+          >
+            Instagram Profile
+          </a>
+        </div>
+      </div>
+
+      {/* Contact Info */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4 text-blue-900 text-xl">Contact Us</h3>
+        <div className="space-y-3 text-sm">
+          <div className="flex items-center gap-3">
+            <Phone className="h-4 w-4 text-blue-600" />
+            <a href="tel:+355672121800" className="text-green-900 hover:text-blue-900 font-medium text-base">+355 672 121 800</a>
           </div>
-
-          <div className="border-t border-gray-700 mt-12 pt-8 text-center">
-            <p className="text-gray-400">
-              © 2024 Albanian Alps Adventures. All rights reserved. | Designed with ❤️ for adventure seekers
-            </p>
+          <div className="flex items-center gap-3">
+            <Phone className="h-4 w-4 text-blue-600" />
+            <a href="tel:+355676905555" className="text-green-900 hover:text-blue-900 font-medium text-base">+355 676 905 555</a>
+          </div>
+          <div className="flex items-center gap-3">
+            <Mail className="h-4 w-4 text-red-500" />
+            <a href="mailto:rilindi-shpk@hotmail.com" className="text-green-900 hover:text-blue-900 font-medium text-base">
+              rilindi-shpk@hotmail.com
+            </a>
+          </div>
+          <div className="flex items-center gap-3">
+            <Instagram className="h-4 w-4 text-pink-500" />
+            <a
+              href="https://www.instagram.com/rilindi_shpk?igsh=bzJwdmJ1a2JrczZq"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-green-900 hover:text-blue-900 font-medium text-base"
+            >
+              @rilindi_shpk
+            </a>
+          </div>
+          <div className="flex items-center gap-3">
+            <MessageCircle className="h-4 w-4 text-green-500" />
+            <a href="https://wa.me/355672121800" target="_blank" className="text-green-900 hover:text-blue-900 font-medium text-base">
+              WhatsApp available
+            </a>
           </div>
         </div>
-      </footer>
+      </div>
+
+      {/* Office Info */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4 text-blue-900 text-xl">Visit Our Office</h3>
+        <div className="space-y-2 text-sm text-green-900 font-medium text-base">
+          <div className="flex items-start gap-3">
+            <MapPinIcon className="h-4 w-4 text-blue-500 mt-1" />
+            <p>Across the Museum, Bajram Curri, Tropoja</p>
+          </div>
+          <div className="flex items-start gap-3">
+            <Clock className="h-4 w-4 text-yellow-500 mt-1" />
+            <div>
+              <p>Monday – Friday: 08:00 – 19:00</p>
+              <p>Saturday & Sunday: 08:00 – 16:00</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <Info className="h-4 w-4 text-green-500 mt-1" />
+            <p>Full refund if canceled 48 hours before departure.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div className="border-t border-blue-300 mt-12 pt-8 text-center text-green-900 text-sm font-semibold text-base">
+      © {new Date().getFullYear()} RILINDI SHPK – Travel Agency. All rights reserved.
+    </div>
+    <div className="mt-1 pt-2 text-center text-green-900 text-sm font-semibold text-base">
+     Designed by Alkeo Gaci & Ornela Geci.
+     +355 69 685 1089
+    </div> 
+  </div>
+</footer>
     </div>
   )
 }
