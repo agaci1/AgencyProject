@@ -50,8 +50,18 @@ export default function TravelAgency() {
 
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        {/* Background image */}
+        {/* Layered Background for Mobile */}
         <div className="absolute inset-0 z-0">
+          {/* Top Layer - home12.jpeg (Mobile Only) */}
+          <div className="md:hidden absolute top-0 left-0 w-full h-1/3 z-10">
+            <img
+              src="/home12.jpeg"
+              alt="Top Background"
+              className="w-full h-full object-cover"
+            />
+          </div>
+          
+          {/* Middle Layer - Current Background */}
           <img
             src="/homee2.jpg"
             alt="Home Background"
@@ -61,6 +71,15 @@ export default function TravelAgency() {
               objectPosition: "center center",
             }}
           />
+          
+          {/* Bottom Layer - home13.jpeg (Mobile Only) */}
+          <div className="md:hidden absolute bottom-0 left-0 w-full h-1/3 z-10">
+            <img
+              src="/home13.jpeg"
+              alt="Bottom Background"
+              className="w-full h-full object-cover"
+            />
+          </div>
         </div>
       </section>
 
