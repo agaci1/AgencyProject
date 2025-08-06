@@ -12,9 +12,9 @@
 
 ## 📝 **Add Tour Endpoint**
 
-### **POST /api/tours**
+### **POST /tours**
 
-**URL**: `{{base_url}}/api/tours`
+**URL**: `{{base_url}}/tours`
 
 **Headers**:
 ```
@@ -131,17 +131,17 @@ Content-Type: application/json
 
 ## 🔍 **Other Useful Endpoints**
 
-### **GET /api/tours** - Get all tours
-**URL**: `{{base_url}}/api/tours`
+### **GET /tours** - Get all tours
+**URL**: `{{base_url}}/tours`
 
-### **GET /api/tours/{id}** - Get specific tour
-**URL**: `{{base_url}}/api/tours/1`
+### **GET /tours/{id}** - Get specific tour
+**URL**: `{{base_url}}/tours/1`
 
-### **PUT /api/tours/{id}** - Update tour
-**URL**: `{{base_url}}/api/tours/1`
+### **PUT /tours/{id}** - Update tour
+**URL**: `{{base_url}}/tours/1`
 
-### **DELETE /api/tours/{id}** - Delete tour
-**URL**: `{{base_url}}/api/tours/1`
+### **DELETE /tours/{id}** - Delete tour
+**URL**: `{{base_url}}/tours/1`
 
 ## 🎨 **Available Images**
 
@@ -159,9 +159,9 @@ Use these image paths in your tour data:
 
 ## ✅ **Testing Steps**
 
-1. **Start your backend** (should be running on port 8080)
+1. **Start your backend** (should be running on port 8080) **OR use production URL**
 2. **Open Postman**
-3. **Create a new POST request** to `http://localhost:8080/api/tours`
+3. **Create a new POST request** to `https://agencyproject-production-dbfc.up.railway.app/tours`
 4. **Add the JSON body** with tour data
 5. **Send the request**
 6. **Check the response** - should return the created tour
