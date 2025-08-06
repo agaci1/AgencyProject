@@ -52,7 +52,7 @@ mvnw
 mvnw.cmd
 
 # Spring Boot
-application-*.properties
+# application-*.properties
 !application.properties
 
 # Temporary files
