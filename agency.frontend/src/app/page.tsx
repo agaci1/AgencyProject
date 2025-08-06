@@ -13,11 +13,21 @@ import { Tour } from "@/types/tour"
 
 
 export default function TravelAgency() {
-  const [currentPage, setCurrentPage] = useState<"home" | "tours" | "about">("home")
+  const [currentPage, setCurrentPage] = useState<"home" | "tours" | "about">(() => {
+    // Try to get the saved page from localStorage, default to "home"
+    if (typeof window !== 'undefined') {
+      const savedPage = localStorage.getItem('currentPage') as "home" | "tours" | "about"
+      return savedPage || "home"
+    }
+    return "home"
+  })
   const [tours, setTours] = useState<Tour[]>([])
 
+  // Save current page to localStorage whenever it changes
   useEffect(() => {
-    window.scrollTo(0, 0)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('currentPage', currentPage)
+    }
   }, [currentPage])
 
   useEffect(() => {
@@ -48,159 +58,37 @@ export default function TravelAgency() {
         }}
       />
 
-      {/* Hero Section with 3D Layered Effect */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        {/* Background Container */}
-        <div className="absolute inset-0 z-0">
-          
-          {/* Top Layer - home12.jpeg */}
-          <div className="absolute top-0 left-0 w-full h-1/3 z-10 transform transition-all duration-1000 hover:scale-105">
-            <div className="relative w-full h-full">
-              <img
-                src="/home12.jpeg"
-                alt="Top Background"
-                className="w-full h-full object-cover opacity-85"
-                style={{
-                  filter: "brightness(0.9) contrast(1.1) saturate(1.2)",
-                  transform: "perspective(1000px) rotateX(-2deg) translateZ(-20px)",
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/10"></div>
-            </div>
-          </div>
-          
-          {/* Middle Layer - homee2.jpg (3D Pop-out Effect) */}
-          <div className="absolute inset-0 z-30 flex items-center justify-center">
-            <div 
-              className="relative w-[130%] h-[130%] -m-[15%] transform transition-all duration-1000 hover:scale-105"
-              style={{
-                animation: "float 6s ease-in-out infinite",
-              }}
-            >
-              <img
-                src="/homee2.jpg"
-                alt="Home Background"
-                className="w-full h-full object-cover rounded-3xl shadow-2xl"
-                style={{
-                  objectPosition: "center center",
-                  filter: "brightness(1.1) contrast(1.15) saturate(1.3) drop-shadow(0 25px 50px rgba(0,0,0,0.5))",
-                  transform: "perspective(1200px) rotateX(8deg) translateZ(80px) rotateY(-2deg)",
-                  border: "3px solid rgba(255,255,255,0.3)",
-                }}
-              />
-              {/* Glowing border effect */}
-              <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-blue-400/20 via-transparent to-pink-400/20 pointer-events-none"></div>
-              <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-transparent via-white/5 to-transparent pointer-events-none"></div>
-            </div>
-          </div>
-          
-          {/* Bottom Layer - home13.jpeg */}
-          <div className="absolute bottom-0 left-0 w-full h-1/3 z-10 transform transition-all duration-1000 hover:scale-105">
-            <div className="relative w-full h-full">
-              <img
-                src="/home13.jpeg"
-                alt="Bottom Background"
-                className="w-full h-full object-cover opacity-85"
-                style={{
-                  filter: "brightness(0.9) contrast(1.1) saturate(1.2)",
-                  transform: "perspective(1000px) rotateX(2deg) translateZ(-20px)",
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-transparent to-black/10"></div>
-            </div>
-          </div>
-          
-          {/* Depth Overlay */}
-          <div className="absolute inset-0 z-20 bg-gradient-to-b from-transparent via-transparent to-black/5 pointer-events-none"></div>
-          
-          {/* Floating Particles Effect */}
-          <div className="absolute inset-0 z-25 pointer-events-none">
-            <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-white/30 rounded-full animate-pulse" style={{ animationDelay: "0s" }}></div>
-            <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-blue-300/40 rounded-full animate-pulse" style={{ animationDelay: "1s" }}></div>
-            <div className="absolute bottom-1/3 left-1/3 w-1.5 h-1.5 bg-pink-300/40 rounded-full animate-pulse" style={{ animationDelay: "2s" }}></div>
-            <div className="absolute top-2/3 right-1/4 w-1 h-1 bg-green-300/40 rounded-full animate-pulse" style={{ animationDelay: "3s" }}></div>
-          </div>
+      {/* Hero Section - Simple Gallery Style */}
+      <section className="relative h-screen overflow-hidden">
+        {/* Top Image - home12.jpeg */}
+        <div className="absolute top-0 left-0 w-full h-1/3">
+          <img
+            src="/home12.jpeg"
+            alt="Top Background"
+            className="w-full h-full object-cover"
+          />
         </div>
-
-        {/* Content Overlay */}
-        <div className="relative z-40 flex items-center justify-center px-4">
-          <div 
-            className="relative w-[90%] h-[70%] max-w-4xl transform transition-all duration-1000 hover:scale-105"
-            style={{
-              animation: "float 6s ease-in-out infinite",
-            }}
-          >
-            <img
-              src="/homee2.jpg"
-              alt="Albanian Alps Map"
-              className="w-full h-full object-cover rounded-3xl shadow-2xl"
-              style={{
-                objectPosition: "center center",
-                filter: "brightness(1.1) contrast(1.15) saturate(1.3) drop-shadow(0 30px 60px rgba(0,0,0,0.6))",
-                transform: "perspective(1500px) rotateX(10deg) translateZ(120px) rotateY(-3deg)",
-                border: "4px solid rgba(255,255,255,0.4)",
-                boxShadow: "0 40px 80px rgba(0,0,0,0.5), 0 0 50px rgba(255,255,255,0.1)",
-              }}
-            />
-            {/* Enhanced glowing border effect */}
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-blue-500/30 via-transparent to-pink-500/30 pointer-events-none"></div>
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-transparent via-white/10 to-transparent pointer-events-none"></div>
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-tr from-yellow-400/20 via-transparent to-purple-400/20 pointer-events-none"></div>
-            
-            {/* Floating elements overlay */}
-            <div className="absolute inset-0 rounded-3xl pointer-events-none">
-              {/* RILINDI SHPK text overlay */}
-              <div className="absolute top-8 left-8 z-10">
-                <h1 
-                  className="text-2xl md:text-4xl lg:text-5xl font-bold text-white"
-                  style={{
-                    fontFamily: "Georgia, serif",
-                    textShadow: "2px 2px 4px rgba(0,0,0,0.8), 0 0 20px rgba(255,255,255,0.4)",
-                    animation: "glow 3s ease-in-out infinite alternate",
-                  }}
-                >
-                  RILINDI
-                </h1>
-                <h2 
-                  className="text-lg md:text-2xl lg:text-3xl font-bold text-white/90"
-                  style={{
-                    fontFamily: "Georgia, serif",
-                    textShadow: "1px 1px 3px rgba(0,0,0,0.8)",
-                  }}
-                >
-                  SHPK
-                </h2>
-              </div>
-              
-              {/* Call to action button */}
-              <div className="absolute bottom-8 right-8 z-10">
-                <button
-                  onClick={handleViewAllTours}
-                  className="bg-gradient-to-r from-blue-600/90 to-pink-600/90 hover:from-blue-700 hover:to-pink-700 text-white px-6 py-3 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl border-2 border-white/50 backdrop-blur-sm"
-                  style={{
-                    boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
-                  }}
-                >
-                  Explore Tours
-                </button>
-              </div>
-            </div>
-          </div>
+        
+        {/* Middle Image - homee2.jpg */}
+        <div className="absolute top-1/3 left-0 w-full h-1/3">
+          <img
+            src="/homee2.jpg"
+            alt="Middle Background"
+            className="w-full h-full object-cover"
+          />
+        </div>
+        
+        {/* Bottom Image - home13.jpeg */}
+        <div className="absolute bottom-0 left-0 w-full h-1/3">
+          <img
+            src="/home13.jpeg"
+            alt="Bottom Background"
+            className="w-full h-full object-cover"
+          />
         </div>
       </section>
 
-      {/* CSS Animations */}
-      <style jsx>{`
-        @keyframes float {
-          0%, 100% { transform: perspective(1500px) rotateX(10deg) translateZ(120px) rotateY(-3deg) translateY(0px); }
-          50% { transform: perspective(1500px) rotateX(10deg) translateZ(120px) rotateY(-3deg) translateY(-15px); }
-        }
-        
-        @keyframes glow {
-          from { text-shadow: 2px 2px 4px rgba(0,0,0,0.8), 0 0 20px rgba(255,255,255,0.4); }
-          to { text-shadow: 2px 2px 4px rgba(0,0,0,0.8), 0 0 30px rgba(255,255,255,0.6), 0 0 40px rgba(255,255,255,0.4); }
-        }
-      `}</style>
+
 
       {/* Company Introduction Section */}
       <section className="py-8 sm:py-12 md:py-16 px-4 bg-gradient-to-br from-green-50 via-blue-50 to-pink-50">

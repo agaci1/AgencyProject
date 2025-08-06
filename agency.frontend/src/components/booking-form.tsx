@@ -42,21 +42,36 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
   // Load state from localStorage on component mount
   const [step, setStep] = useState<"details" | "payment">(() => {
     if (typeof window !== 'undefined') {
-      const savedStep = localStorage.getItem(STORAGE_KEYS.BOOKING_STEP)
-      return savedStep === 'payment' ? 'payment' : 'details'
+      try {
+        const savedStep = localStorage.getItem(STORAGE_KEYS.BOOKING_STEP)
+        return savedStep === 'payment' ? 'payment' : 'details'
+      } catch (e) {
+        console.error('Failed to load saved step:', e)
+        return 'details'
+      }
     }
     return 'details'
   })
 
   const [bookingData, setBookingData] = useState(() => {
     if (typeof window !== 'undefined') {
-      const savedData = localStorage.getItem(STORAGE_KEYS.BOOKING_DATA)
-      if (savedData) {
-        try {
-          return JSON.parse(savedData)
-        } catch (e) {
-          console.error('Failed to parse saved booking data:', e)
+      try {
+        const savedData = localStorage.getItem(STORAGE_KEYS.BOOKING_DATA)
+        if (savedData) {
+          const parsed = JSON.parse(savedData)
+          // Validate the saved data structure
+          if (parsed && typeof parsed === 'object') {
+            return {
+              tripType: parsed.tripType || "one-way",
+              departureDate: parsed.departureDate || "",
+              returnDate: parsed.returnDate || "",
+              guests: parsed.guests || 1,
+              specialRequests: parsed.specialRequests || "",
+            }
+          }
         }
+      } catch (e) {
+        console.error('Failed to parse saved booking data:', e)
       }
     }
     return {
@@ -68,21 +83,47 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
     }
   })
 
+  const [isSaving, setIsSaving] = useState(false)
+  const [showRecoveryMessage, setShowRecoveryMessage] = useState(false)
+
+  // Check if we recovered data on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedData = localStorage.getItem(STORAGE_KEYS.BOOKING_DATA)
+      if (savedData) {
+        setShowRecoveryMessage(true)
+        setTimeout(() => setShowRecoveryMessage(false), 3000)
+      }
+    }
+  }, [])
+
   // Save state to localStorage whenever it changes
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEYS.BOOKING_STEP, step)
-      localStorage.setItem(STORAGE_KEYS.BOOKING_DATA, JSON.stringify(bookingData))
-      localStorage.setItem(STORAGE_KEYS.SELECTED_TOUR, JSON.stringify(tour))
+      setIsSaving(true)
+      try {
+        localStorage.setItem(STORAGE_KEYS.BOOKING_STEP, step)
+        localStorage.setItem(STORAGE_KEYS.BOOKING_DATA, JSON.stringify(bookingData))
+        localStorage.setItem(STORAGE_KEYS.SELECTED_TOUR, JSON.stringify(tour))
+        // Show saving indicator briefly
+        setTimeout(() => setIsSaving(false), 500)
+      } catch (e) {
+        console.error('Failed to save booking data:', e)
+        setIsSaving(false)
+      }
     }
   }, [step, bookingData, tour])
 
   // Clear localStorage when booking is completed or cancelled
   const clearStorage = () => {
     if (typeof window !== 'undefined') {
-      localStorage.removeItem(STORAGE_KEYS.BOOKING_STEP)
-      localStorage.removeItem(STORAGE_KEYS.BOOKING_DATA)
-      localStorage.removeItem(STORAGE_KEYS.SELECTED_TOUR)
+      try {
+        localStorage.removeItem(STORAGE_KEYS.BOOKING_STEP)
+        localStorage.removeItem(STORAGE_KEYS.BOOKING_DATA)
+        localStorage.removeItem(STORAGE_KEYS.SELECTED_TOUR)
+      } catch (e) {
+        console.error('Failed to clear storage:', e)
+      }
     }
   }
 
@@ -282,6 +323,14 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
     return (
       <div className="max-w-4xl mx-auto bg-white/70 backdrop-blur-xl shadow-lg rounded-xl p-6">
         {notification && <div className="mb-4 p-4 bg-green-600 text-white rounded">{notification}</div>}
+        {showRecoveryMessage && (
+          <div className="mb-4 p-4 bg-yellow-500 text-white rounded">
+            <p className="text-sm">
+              <strong>Recovery:</strong> Your booking details were restored from your last session.
+              Please review and complete your payment.
+            </p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <Card>
@@ -484,11 +533,27 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
   // DETAILS STEP
   return (
     <div className="max-w-4xl mx-auto">
+      {showRecoveryMessage && (
+        <div className="mb-4 p-4 bg-yellow-500 text-white rounded">
+          <p className="text-sm">
+            <strong>Recovery:</strong> Your booking details were restored from your last session.
+            You can continue from where you left off.
+          </p>
+        </div>
+      )}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Booking Details Form */}
         <Card>
           <CardHeader>
-            <CardTitle>Booking Details</CardTitle>
+            <CardTitle className="flex items-center justify-between">
+              Booking Details
+              {isSaving && (
+                <div className="flex items-center gap-2 text-sm text-green-600">
+                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-green-600"></div>
+                  Saving...
+                </div>
+              )}
+            </CardTitle>
             <CardDescription>Complete your booking information for {tour.title}</CardDescription>
           </CardHeader>
           <CardContent>
