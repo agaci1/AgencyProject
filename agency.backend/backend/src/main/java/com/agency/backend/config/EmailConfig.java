@@ -1,6 +1,7 @@
 package com.agency.backend.config;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -11,14 +12,19 @@ import java.util.Properties;
 @Configuration
 public class EmailConfig {
 
-    @Value("${mail.username}")
+    @Value("${mail.username:}")
     private String username;
 
-    @Value("${mail.password}")
+    @Value("${mail.password:}")
     private String password;
 
     @Bean
+    @ConditionalOnProperty(name = {"mail.username", "mail.password"}, havingValue = ".+", matchIfMissing = false)
     public JavaMailSender javaMailSender() {
+        if (username == null || username.isEmpty() || password == null || password.isEmpty()) {
+            return null;
+        }
+        
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
         mailSender.setHost("smtp-mail.outlook.com");
         mailSender.setPort(587);
