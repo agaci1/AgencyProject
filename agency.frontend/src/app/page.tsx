@@ -55,14 +55,34 @@ export default function TravelAgency() {
           <img
             src="/homee2.jpg"
             alt="Home Background"
-            className="w-full h-full object-cover brightness-75 border-[5px] border-transparent rounded-lg"
+            className="w-full h-full object-cover md:object-cover brightness-75 border-[5px] border-transparent rounded-lg hero-background"
             style={{
               borderImage: "linear-gradient(45deg, #4ade80, #60a5fa, #f472b6) 1",
+              objectPosition: "center center",
             }}
           />
         </div>
 
+        {/* Mobile overlay for better centering */}
+        <div className="absolute inset-0 z-10 bg-black bg-opacity-20 md:hidden"></div>
 
+        {/* Logo overlay for mobile */}
+        <div className="relative z-20 md:hidden">
+          <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full p-2 shadow-2xl mx-auto hero-logo"
+            style={{
+              background: "linear-gradient(to right, #4ade80, #60a5fa, #f472b6)",
+            }}
+          >
+            <img
+              src="/agjensiLogo.jpg"
+              alt="RILINDI SHPK Logo"
+              className="w-full h-full object-cover rounded-full"
+            />
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white text-center mt-4 drop-shadow-lg">
+            RILINDI SHPK
+          </h1>
+        </div>
       </section>
 
       {/* Company Introduction Section */}
@@ -71,7 +91,7 @@ export default function TravelAgency() {
           <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12">
             {/* Logo */}
             <div className="flex-shrink-0 mb-6 sm:mb-8 md:mb-0">
-              <div className="w-40 h-40 sm:w-48 sm:h-48 md:w-80 md:h-80 rounded-full p-2 shadow-lg"
+              <div className="w-48 h-48 sm:w-56 sm:h-56 md:w-80 md:h-80 rounded-full p-2 shadow-lg"
                 style={{
                   background: "linear-gradient(to right, #4ade80, #60a5fa, #f472b6)",
                 }}
