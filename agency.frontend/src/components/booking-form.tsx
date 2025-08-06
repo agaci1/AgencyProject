@@ -17,7 +17,7 @@ interface Tour {
   title: string
   description: string
   price: number
-  departureTime: string // changed from duration
+  departureTime: string
   location: string
   rating: number
   image: string
@@ -31,15 +31,60 @@ interface BookingFormProps {
   onCancel: () => void
 }
 
+// Local storage keys for state persistence
+const STORAGE_KEYS = {
+  BOOKING_STEP: 'booking_step',
+  BOOKING_DATA: 'booking_data',
+  SELECTED_TOUR: 'selected_tour'
+}
+
 export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
-  const [step, setStep] = useState<"details" | "payment">("details")
-  const [bookingData, setBookingData] = useState({
-    tripType: "one-way" as "one-way" | "round-trip",
-    departureDate: "",
-    returnDate: "",
-    guests: 1,
-    specialRequests: "",
+  // Load state from localStorage on component mount
+  const [step, setStep] = useState<"details" | "payment">(() => {
+    if (typeof window !== 'undefined') {
+      const savedStep = localStorage.getItem(STORAGE_KEYS.BOOKING_STEP)
+      return savedStep === 'payment' ? 'payment' : 'details'
+    }
+    return 'details'
   })
+
+  const [bookingData, setBookingData] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedData = localStorage.getItem(STORAGE_KEYS.BOOKING_DATA)
+      if (savedData) {
+        try {
+          return JSON.parse(savedData)
+        } catch (e) {
+          console.error('Failed to parse saved booking data:', e)
+        }
+      }
+    }
+    return {
+      tripType: "one-way" as "one-way" | "round-trip",
+      departureDate: "",
+      returnDate: "",
+      guests: 1,
+      specialRequests: "",
+    }
+  })
+
+  // Save state to localStorage whenever it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.BOOKING_STEP, step)
+      localStorage.setItem(STORAGE_KEYS.BOOKING_DATA, JSON.stringify(bookingData))
+      localStorage.setItem(STORAGE_KEYS.SELECTED_TOUR, JSON.stringify(tour))
+    }
+  }, [step, bookingData, tour])
+
+  // Clear localStorage when booking is completed or cancelled
+  const clearStorage = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(STORAGE_KEYS.BOOKING_STEP)
+      localStorage.removeItem(STORAGE_KEYS.BOOKING_DATA)
+      localStorage.removeItem(STORAGE_KEYS.SELECTED_TOUR)
+    }
+  }
 
   const basePrice = tour.price * bookingData.guests
   const totalPrice = bookingData.tripType === "round-trip" ? basePrice * 2 : basePrice
@@ -50,7 +95,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
   const [paypalLoaded, setPaypalLoaded] = useState(false)
   const [paypalError, setPaypalError] = useState<string | null>(null)
 
-  // Load PayPal SDK
+  // Load PayPal SDK with better error handling
   useEffect(() => {
     if (step !== "payment") return
 
@@ -58,9 +103,10 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
 
     const loadPayPalScript = () => {
       // Check if PayPal script is already loaded
-      if (window.paypal) {
-        console.log("PayPal already loaded")
+      if (window.paypal && typeof window.paypal.Buttons === "function") {
+        console.log("PayPal already loaded and ready")
         setPaypalLoaded(true)
+        setPaypalError(null)
         return
       }
 
@@ -68,36 +114,44 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
       const existingScript = document.querySelector('script[src*="paypal.com/sdk"]')
       if (existingScript) {
         console.log("PayPal script already loading, waiting...")
-        // Wait for existing script to load
-        existingScript.addEventListener("load", () => {
-          if (window.paypal) {
+        const checkPayPal = () => {
+          if (window.paypal && typeof window.paypal.Buttons === "function") {
             setPaypalLoaded(true)
+            setPaypalError(null)
+          } else {
+            setTimeout(checkPayPal, 100)
           }
-        })
+        }
+        checkPayPal()
         return
       }
 
       console.log("Loading PayPal SDK...")
       const script = document.createElement("script")
-      const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "YOUR_CLIENT_ID"
+      
+      // Use a fallback client ID if environment variable is not set
+      const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "AZiaAPXJQxzMqKGYAS49_T2fu-ihY700Kivl-8CqSkusYh48ee-9MXH-fszfpBhwkW9UjUjj8fraw99U"
       const currency = process.env.NEXT_PUBLIC_PAYPAL_CURRENCY || "EUR"
-      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}`
+      
+      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture`
       script.async = true
 
       script.onload = () => {
         console.log("PayPal SDK loaded successfully")
-        if (window.paypal && typeof window.paypal.Buttons === "function") {
-          setPaypalLoaded(true)
-          setPaypalError(null)
-        } else {
-          setPaypalError("PayPal SDK loaded but Buttons not available")
-        }
+        // Wait a bit for PayPal to initialize
+        setTimeout(() => {
+          if (window.paypal && typeof window.paypal.Buttons === "function") {
+            setPaypalLoaded(true)
+            setPaypalError(null)
+          } else {
+            setPaypalError("PayPal SDK loaded but Buttons not available")
+          }
+        }, 500)
       }
-      
 
       script.onerror = () => {
         console.error("Failed to load PayPal SDK")
-        setPaypalError("Failed to load payment system. Please refresh the page.")
+        setPaypalError("Failed to load payment system. Please check your internet connection and try again.")
       }
 
       document.head.appendChild(script)
@@ -107,7 +161,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
         if (!paypalLoaded) {
           setPaypalError("Payment system is taking too long to load. Please refresh the page.")
         }
-      }, 10000) // 10 second timeout
+      }, 15000) // 15 second timeout
     }
 
     loadPayPalScript()
@@ -123,7 +177,6 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
       initializePayPal()
     }
   }, [step, paypalLoaded])
-  
 
   const initializePayPal = () => {
     if (typeof window === "undefined" || !window.paypal || typeof window.paypal.Buttons !== "function") {
@@ -150,7 +203,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
             label: "pay",
             height: 50,
           },
-          createOrder: (_data: unknown, actions: unknown) => {
+          createOrder: (data: any, actions: any) => {
             console.log("Creating PayPal order for:", finalTotal)
             return actions.order.create({
               purchase_units: [
@@ -164,7 +217,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
               ],
             })
           },
-          onApprove: async (_data: unknown, actions: unknown) => {
+          onApprove: async (data: any, actions: any) => {
             setIsProcessing(true)
             try {
               const details = await actions.order.capture()
@@ -179,21 +232,19 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                 returnDate: bookingData.tripType === "round-trip" ? bookingData.returnDate : null,
                 guests: bookingData.guests,
                 paymentMethod: "paypal",
-                paypal: {
-                  transactionId: details.id,
-                  email: details.payer.email_address,
-                },
+                paypalEmail: details.payer.email_address,
+                paypalTransactionId: details.id,
               }
 
               const res = await api.post("/bookings", bookingPayload)
+              console.log("Booking created:", res.data)
 
               setNotification("Payment successful! A confirmation email has been sent.")
+              clearStorage() // Clear saved state
               setTimeout(() => onComplete(), 2000)
             } catch (error) {
               console.error("Payment error:", error)
               setPaypalError("Payment was successful but booking failed. Please contact support.")
-              setIsProcessing(false)
-            } finally {
               setIsProcessing(false)
             }
           },
@@ -209,7 +260,6 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
         })
         .render("#paypal-button-container")
 
-      // Add success logging after render
       console.log("PayPal buttons rendered successfully")
     } catch (error) {
       console.error("PayPal initialization error:", error)
@@ -220,6 +270,11 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
   const handleDetailsSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setStep("payment")
+  }
+
+  const handleCancel = () => {
+    clearStorage()
+    onCancel()
   }
 
   // PAYMENT STEP
@@ -275,11 +330,18 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                       onClick={() => {
                         setPaypalError(null)
                         setPaypalLoaded(false)
-                        window.location.reload()
+                        // Force reload PayPal
+                        const script = document.querySelector('script[src*="paypal.com/sdk"]')
+                        if (script) script.remove()
+                        window.paypal = undefined
+                        setTimeout(() => {
+                          setStep("details")
+                          setTimeout(() => setStep("payment"), 100)
+                        }, 100)
                       }}
                       variant="outline"
                     >
-                      Refresh Page
+                      Retry Payment System
                     </Button>
                   </div>
                 ) : paypalLoaded ? (
@@ -292,8 +354,8 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                 ) : (
                   <div className="text-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                                <p className="text-sm text-gray-600 mb-2 font-playfair">Loading secure payment options...</p>
-            <p className="text-xs text-gray-400 mb-4 font-playfair">This may take a few seconds</p>
+                    <p className="text-sm text-gray-600 mb-2 font-playfair">Loading secure payment options...</p>
+                    <p className="text-xs text-gray-400 mb-4 font-playfair">This may take a few seconds</p>
                     <Button
                       variant="outline"
                       size="sm"
@@ -333,7 +395,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={onCancel}
+                    onClick={handleCancel}
                     className="flex-1 bg-transparent"
                     disabled={isProcessing}
                   >
@@ -435,8 +497,9 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
               <div className="space-y-2">
                 <Label htmlFor="tripType">Trip Type</Label>
                 <Select
+                  value={bookingData.tripType}
                   onValueChange={(val) =>
-                    setBookingData((p) => ({
+                    setBookingData((p: any) => ({
                       ...p,
                       tripType: val as any,
                     }))
@@ -460,7 +523,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                   type="date"
                   value={bookingData.departureDate}
                   onChange={(e) =>
-                    setBookingData((p) => ({
+                    setBookingData((p: any) => ({
                       ...p,
                       departureDate: e.target.value,
                     }))
@@ -479,7 +542,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                     type="date"
                     value={bookingData.returnDate}
                     onChange={(e) =>
-                      setBookingData((p) => ({
+                      setBookingData((p: any) => ({
                         ...p,
                         returnDate: e.target.value,
                       }))
@@ -496,7 +559,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                 <Select
                   value={bookingData.guests.toString()}
                   onValueChange={(val) =>
-                    setBookingData((p) => ({
+                    setBookingData((p: any) => ({
                       ...p,
                       guests: Number.parseInt(val) || 1,
                     }))
@@ -523,7 +586,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                   placeholder="Any special requirements"
                   value={bookingData.specialRequests}
                   onChange={(e) =>
-                    setBookingData((p) => ({
+                    setBookingData((p: any) => ({
                       ...p,
                       specialRequests: e.target.value,
                     }))
@@ -533,7 +596,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
 
               {/* Actions */}
               <div className="flex gap-4 pt-4">
-                <Button type="button" variant="outline" onClick={onCancel} className="flex-1 bg-transparent">
+                <Button type="button" variant="outline" onClick={handleCancel} className="flex-1 bg-transparent">
                   Cancel
                 </Button>
                 <Button

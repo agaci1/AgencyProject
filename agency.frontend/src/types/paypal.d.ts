@@ -8,9 +8,17 @@ declare global {
   interface Window {
     paypal?: {
       Buttons: (options: {
+        style?: {
+          layout?: string;
+          color?: string;
+          shape?: string;
+          label?: string;
+          height?: number;
+        };
         createOrder: (data: unknown, actions: unknown) => Promise<string>
         onApprove: (data: { orderID: string }, actions: unknown) => Promise<void>
         onError: (err: Error) => void
+        onCancel?: () => void;
       }) => {
         render: (selector: string) => void;
       };
@@ -24,6 +32,15 @@ declare global {
   namespace paypal {
     interface ButtonsActions {
       order: {
+        create: (orderData: {
+          purchase_units: Array<{
+            amount: {
+              value: string;
+              currency_code: string;
+            };
+            description?: string;
+          }>;
+        }) => Promise<string>;
         capture: () => Promise<{
           id: string;
           payer: {
