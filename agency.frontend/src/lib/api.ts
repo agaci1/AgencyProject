@@ -1,7 +1,7 @@
 import axios from "axios"
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE || "https://agencyproject-production-dbfc.up.railway.app",
+  baseURL: "https://agencyproject-production-dbfc.up.railway.app",
   timeout: 10000, // 10 second timeout
   headers: {
     "Content-Type": "application/json",
