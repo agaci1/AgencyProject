@@ -54,30 +54,25 @@ export default function TravelAgency() {
         <div className="absolute inset-0 z-0">
           {/* Top Layer - home12.jpeg (Mobile Only) */}
           <div className="md:hidden absolute top-0 left-0 w-full h-1/3 z-10">
-            <div className="w-full h-full p-2">
-              <img
-                src="/home12.jpeg"
-                alt="Top Background"
-                className="w-full h-full object-cover rounded-lg border-2 border-white/30 shadow-lg opacity-80"
-                style={{
-                  filter: "brightness(0.8) contrast(1.1)",
-                }}
-              />
-            </div>
+            <img
+              src="/home12.jpeg"
+              alt="Top Background"
+              className="w-full h-full object-cover opacity-90"
+            />
           </div>
           
-          {/* Middle Layer - Current Background (Larger with 3D effect) */}
+          {/* Middle Layer - Current Background (3D Effect) */}
           <div className="absolute inset-0 z-20 flex items-center justify-center">
-            <div className="w-[95%] h-[90%] p-3">
+            <div className="w-[120%] h-[120%] -m-[10%]">
               <img
                 src="/homee2.jpg"
                 alt="Home Background"
-                className="w-full h-full object-cover rounded-xl border-4 border-white/40 shadow-2xl hero-background"
+                className="w-full h-full object-cover hero-background"
                 style={{
-                  borderImage: "linear-gradient(45deg, #4ade80, #60a5fa, #f472b6) 1",
                   objectPosition: "center center",
-                  filter: "brightness(0.9) contrast(1.05) drop-shadow(0 10px 20px rgba(0,0,0,0.3))",
-                  transform: "translateZ(20px)",
+                  filter: "brightness(0.95) contrast(1.05) drop-shadow(0 20px 40px rgba(0,0,0,0.4))",
+                  transform: "perspective(1000px) rotateX(5deg) translateZ(50px)",
+                  borderRadius: "20px",
                 }}
               />
             </div>
@@ -85,20 +80,15 @@ export default function TravelAgency() {
           
           {/* Bottom Layer - home13.jpeg (Mobile Only) */}
           <div className="md:hidden absolute bottom-0 left-0 w-full h-1/3 z-10">
-            <div className="w-full h-full p-2">
-              <img
-                src="/home13.jpeg"
-                alt="Bottom Background"
-                className="w-full h-full object-cover rounded-lg border-2 border-white/30 shadow-lg opacity-80"
-                style={{
-                  filter: "brightness(0.8) contrast(1.1)",
-                }}
-              />
-            </div>
+            <img
+              src="/home13.jpeg"
+              alt="Bottom Background"
+              className="w-full h-full object-cover opacity-90"
+            />
           </div>
           
-          {/* Fade overlay for 3D depth effect */}
-          <div className="md:hidden absolute inset-0 z-15 bg-gradient-to-b from-transparent via-transparent to-black/10 pointer-events-none"></div>
+          {/* Subtle fade overlay for depth */}
+          <div className="md:hidden absolute inset-0 z-15 bg-gradient-to-b from-transparent via-transparent to-black/5 pointer-events-none"></div>
         </div>
       </section>
 
