@@ -1,3 +1,10 @@
+-- SQL Commands to insert the 4 tours directly into Railway MySQL database
+-- Run these commands in your Railway MySQL database
+
+-- Clear existing tours (optional - only if you want to start fresh)
+-- DELETE FROM tour_highlights;
+-- DELETE FROM tours;
+
 -- Insert the 4 specific tours from Railway production database
 INSERT INTO tours (title, description, price, departure_time, location, rating, image, max_guests, route_description, start_location_link) VALUES 
 ('Tirana [Terminal] → Koman', 'Bus trip from Tirana through the Albanian Alps to Koman ferry dock', 10.0, '06:00', 'Tirana', 5.0, '/koman .jpg', 50, 'Departure from Tirana North-South Terminal at 06:00, arriving at Koman ferry dock', 'https://maps.app.goo.gl/CbEDq9ZmBcyqH5jS6');
@@ -30,4 +37,8 @@ INSERT INTO tour_highlights (tour_id, highlight) VALUES (3, 'Fierza ferry connec
 INSERT INTO tour_highlights (tour_id, highlight) VALUES (4, 'Valbonë departure');
 INSERT INTO tour_highlights (tour_id, highlight) VALUES (4, 'Ferry connection');
 INSERT INTO tour_highlights (tour_id, highlight) VALUES (4, 'Scenic transfer');
-INSERT INTO tour_highlights (tour_id, highlight) VALUES (4, 'Fierza ferry dock'); 
+INSERT INTO tour_highlights (tour_id, highlight) VALUES (4, 'Fierza ferry dock');
+
+-- Verify the tours were inserted
+SELECT * FROM tours;
+SELECT * FROM tour_highlights; 

@@ -32,7 +32,11 @@ export default function TravelAgency() {
 
   useEffect(() => {
     fetchTours()
-      .then((data) => setTours(data.slice(0, 2)))
+      .then((data) => {
+        // Show the latest 2 tours (the new ones we just added)
+        const latestTours = data.slice(-2)
+        setTours(latestTours)
+      })
       .catch((err) => console.error("Error loading tours:", err))
   }, [])
 
