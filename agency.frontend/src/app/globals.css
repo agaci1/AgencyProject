@@ -129,10 +129,7 @@
 /* Mobile-specific styles for hero section */
 @media (max-width: 768px) {
   .hero-background {
-    object-position: center 30% !important;
-  }
-  
-  .hero-logo {
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    object-position: center center !important;
+    object-fit: cover;
   }
 }

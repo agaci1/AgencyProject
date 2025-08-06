@@ -55,33 +55,12 @@ export default function TravelAgency() {
           <img
             src="/homee2.jpg"
             alt="Home Background"
-            className="w-full h-full object-cover md:object-cover brightness-75 border-[5px] border-transparent rounded-lg hero-background"
+            className="w-full h-full object-cover brightness-75 border-[5px] border-transparent rounded-lg hero-background"
             style={{
               borderImage: "linear-gradient(45deg, #4ade80, #60a5fa, #f472b6) 1",
               objectPosition: "center center",
             }}
           />
-        </div>
-
-        {/* Mobile overlay for better centering */}
-        <div className="absolute inset-0 z-10 bg-black bg-opacity-20 md:hidden"></div>
-
-        {/* Logo overlay for mobile */}
-        <div className="relative z-20 md:hidden">
-          <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full p-2 shadow-2xl mx-auto hero-logo"
-            style={{
-              background: "linear-gradient(to right, #4ade80, #60a5fa, #f472b6)",
-            }}
-          >
-            <img
-              src="/agjensiLogo.jpg"
-              alt="RILINDI SHPK Logo"
-              className="w-full h-full object-cover rounded-full"
-            />
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white text-center mt-4 drop-shadow-lg">
-            RILINDI SHPK
-          </h1>
         </div>
       </section>
 
@@ -192,22 +171,22 @@ Our Exclusive Bus Fleet
   air conditioning, and ultra-comfortable seats for an unforgettable travel experience.
 </p>
 
-<div className="overflow-x-auto whitespace-nowrap py-2 sm:py-4">
-  <div className="flex gap-2 sm:gap-3 md:gap-4 px-4" style={{ minWidth: "max-content" }}>
-    <div className="rounded-lg overflow-hidden shadow-md w-56 sm:w-64 md:w-72 lg:w-80 shrink-0">
-      <img src="/auto1.JPG" alt="Autobus 1" className="w-full h-48 sm:h-64 md:h-80 lg:h-[40rem] object-cover rounded-lg" />
+<div className="overflow-x-auto whitespace-nowrap py-4">
+  <div className="flex gap-4 px-4" style={{ minWidth: "max-content" }}>
+    <div className="rounded-lg overflow-hidden shadow-md w-100 shrink-0">
+      <img src="/auto1.JPG" alt="Bus 1" className="w-full h-[40rem] object-cover rounded-lg" />
     </div>
-    <div className="rounded-lg overflow-hidden shadow-md w-56 sm:w-64 md:w-72 lg:w-80 shrink-0">
-      <img src="/auto2.JPG" alt="Autobus 2" className="w-full h-48 sm:h-64 md:h-80 lg:h-[40rem] object-cover rounded-lg" />
+    <div className="rounded-lg overflow-hidden shadow-md w-100 shrink-0">
+      <img src="/auto2.JPG" alt="Bus 2" className="w-full h-[40rem] object-cover rounded-lg" />
     </div>
-    <div className="rounded-lg overflow-hidden shadow-md w-56 sm:w-64 md:w-72 lg:w-80 shrink-0">
-      <img src="/auto3.JPG" alt="Autobus 3" className="w-full h-48 sm:h-64 md:h-80 lg:h-[40rem] object-cover rounded-lg" />
+    <div className="rounded-lg overflow-hidden shadow-md w-100 shrink-0">
+      <img src="/auto3.JPG" alt="Bus 3" className="w-full h-[40rem] object-cover rounded-lg" />
     </div>
-    <div className="rounded-lg overflow-hidden shadow-md w-56 sm:w-64 md:w-72 lg:w-80 shrink-0">
-      <img src="/auto4.JPG" alt="Autobus 4" className="w-full h-48 sm:h-64 md:h-80 lg:h-[40rem] object-cover rounded-lg" />
+    <div className="rounded-lg overflow-hidden shadow-md w-100 shrink-0">
+      <img src="/auto4.JPG" alt="Bus 4" className="w-full h-[40rem] object-cover rounded-lg" />
     </div>
-    <div className="rounded-lg overflow-hidden shadow-md w-56 sm:w-64 md:w-72 lg:w-80 shrink-0">
-      <img src="/auto5.JPG" alt="Autobus 5" className="w-full h-48 sm:h-64 md:h-80 lg:h-[40rem] object-cover rounded-lg" />
+    <div className="rounded-lg overflow-hidden shadow-md w-100 shrink-0">
+      <img src="/auto5.JPG" alt="Bus 5" className="w-full h-[40rem] object-cover rounded-lg" />
     </div>
   </div>
 </div>
