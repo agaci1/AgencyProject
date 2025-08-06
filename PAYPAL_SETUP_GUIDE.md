@@ -29,7 +29,7 @@ PAYPAL_CLIENT_SECRET=YOUR_ACTUAL_CLIENT_SECRET_HERE
 
 # Email Configuration
 MAIL_USERNAME=rilindi-shpk@hotmail.com
-MAIL_PASSWORD=taxluwqrmvpcbytu
+MAIL_PASSWORD=your_mail_password_here
 
 # CORS Configuration
 CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001

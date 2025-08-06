@@ -65,3 +65,16 @@ application-*.properties
 *.crt
 secrets/
 credentials/
+
+# Email and SMTP credentials
+*mail*.properties
+*email*.properties
+*password*.properties
+*credential*.properties
+
+# Environment files with secrets
+.env.local
+.env.production
+.env.development
+.env.test
+.env.*.local

@@ -33,7 +33,7 @@ PAYPAL_BASE_URL=https://api-m.sandbox.paypal.com
 
 # Email Configuration
 MAIL_USERNAME=rilindi-shpk@hotmail.com
-MAIL_PASSWORD=taxluwqrmvpcbytu
+MAIL_PASSWORD=your_mail_password_here
 
 # CORS Configuration
 CORS_ALLOWED_ORIGINS=https://rilindishpk.com,https://www.rilindishpk.com
