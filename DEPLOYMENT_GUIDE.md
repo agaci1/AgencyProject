@@ -73,7 +73,7 @@ Update your frontend environment for production:
 ```bash
 # .env.production
 NEXT_PUBLIC_API_BASE=https://your-backend-url.com
-NEXT_PUBLIC_PAYPAL_CLIENT_ID=AZiaAPXJQxzMqKGYAS49_T2fu-ihY700KivI-8CqSkusYh48ee-9MXH-fszfpBhwkW9UjUjj8fraw99U
+NEXT_PUBLIC_PAYPAL_CLIENT_ID=your_paypal_client_id_here
 NEXT_PUBLIC_PAYPAL_CURRENCY=EUR
 ```
 

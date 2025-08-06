@@ -27,8 +27,8 @@ In your Railway project settings, add these environment variables:
 
 ```bash
 # PayPal Configuration
-PAYPAL_CLIENT_ID=AZiaAPXJQxzMqKGYAS49_T2fu-ihY700KivI-8CqSkusYh48ee-9MXH-fszfpBhwkW9UjUjj8fraw99U
-PAYPAL_CLIENT_SECRET=EPx-cw8fktbTXkysL9_vkKAXhKcDr0QJCI0Ir4VngSJbXwCVzmviLUaksRkcGHquABIthJf6B-T-3iku
+PAYPAL_CLIENT_ID=your_paypal_client_id_here
+PAYPAL_CLIENT_SECRET=your_paypal_client_secret_here
 PAYPAL_BASE_URL=https://api-m.sandbox.paypal.com
 
 # Email Configuration
@@ -59,7 +59,7 @@ In your frontend service settings, add:
 NEXT_PUBLIC_API_BASE=https://your-backend-railway-url.railway.app
 
 # PayPal Configuration
-NEXT_PUBLIC_PAYPAL_CLIENT_ID=AZiaAPXJQxzMqKGYAS49_T2fu-ihY700KivI-8CqSkusYh48ee-9MXH-fszfpBhwkW9UjUjj8fraw99U
+NEXT_PUBLIC_PAYPAL_CLIENT_ID=your_paypal_client_id_here
 NEXT_PUBLIC_PAYPAL_CURRENCY=EUR
 ```
 

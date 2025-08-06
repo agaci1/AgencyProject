@@ -1,41 +1,67 @@
-# ─── macOS system files ───────────────────────────────────────────
-.DS_Store
-
-# ─── IDE / editor ────────────────────────────────────────────────
-# IntelliJ IDEA
-.idea/
-*.iml
-
-# VS Code
-.vscode/
-
-# ─── Java build artifacts ────────────────────────────────────────
-# any "target" directory (e.g. backend/target/)
-target/
-*.class
-
-# ─── logs ────────────────────────────────────────────────────────
-*.log
-
-# ─── Node / frontend ─────────────────────────────────────────────
-# your dependencies
+# Dependencies
 node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Next.js build output
-agency.frontend/.next/
-# (if you ever use a separate "dist" or "build" folder, add it here too)
-# agency.frontend/dist/
-
-# ─── Environment variable files ──────────────────────────────────
-# keep your real creds out of Git
+# Environment variables
 .env
 .env.local
-.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# ─── Spring Boot credentials ─────────────────────────────────────
-# ignore the real application.properties; track only the template
-/agency.backend/backend/src/main/resources/application.properties
+# Build outputs
+.next/
+out/
+build/
+dist/
 
-# ─── OS trash / cache ────────────────────────────────────────────
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
 Thumbs.db
-ehthumbs.db
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# Java
+target/
+*.class
+*.jar
+*.war
+
+# Maven
+.mvn/
+mvnw
+mvnw.cmd
+
+# Spring Boot
+application-*.properties
+!application.properties
+
+# Temporary files
+*.tmp
+*.temp
+
+# Security
+*.pem
+*.key
+*.crt
+secrets/
+credentials/
