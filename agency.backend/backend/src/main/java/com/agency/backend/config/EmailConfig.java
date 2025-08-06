@@ -21,6 +21,11 @@ public class EmailConfig {
     @Bean
     @ConditionalOnProperty(name = {"mail.username", "mail.password"}, havingValue = ".+", matchIfMissing = false)
     public JavaMailSender javaMailSender() {
+        // Temporarily disable email service to fix backend startup
+        return null;
+        
+        // Original code (commented out for now)
+        /*
         if (username == null || username.isEmpty() || password == null || password.isEmpty()) {
             return null;
         }
@@ -38,5 +43,6 @@ public class EmailConfig {
         props.put("mail.debug", "false");
 
         return mailSender;
+        */
     }
 } 
