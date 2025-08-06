@@ -55,7 +55,7 @@ export default function TravelAgency() {
           <img
             src="/homee2.jpg"
             alt="Home Background"
-            className="w-full h-full object-cover brightness-75 border-[5px] border-transparent rounded-lg hero-background"
+            className="w-full h-full object-cover md:object-cover brightness-75 border-[5px] border-transparent rounded-lg hero-background"
             style={{
               borderImage: "linear-gradient(45deg, #4ade80, #60a5fa, #f472b6) 1",
               objectPosition: "center center",
