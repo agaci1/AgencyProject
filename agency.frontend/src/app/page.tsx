@@ -64,16 +64,26 @@ export default function TravelAgency() {
 
       {/* Hero Section - Video Background */}
       <section className="relative h-screen overflow-hidden">
+        {/* Try the MOV file first */}
         <video
-          src="/ScreenRecording_08-08-2025 17-31-38_1.mov"
+          src="/ScreenRecording_08-08-2025%2017-31-38_1.mov"
           autoPlay
           loop
           muted
           playsInline
+          controls={false}
           className="absolute inset-0 w-full h-full object-cover"
+          onError={(e) => {
+            console.error('MOV video failed, trying MP4:', e);
+            // If MOV fails, try MP4
+            const video = e.target as HTMLVideoElement;
+            video.src = "/RilindiShpk.MP4";
+          }}
         />
+        {/* Fallback background in case video fails */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-green-800 to-purple-900"></div>
         {/* Optional overlay for better text readability */}
-        <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+        <div className="absolute inset-0 bg-black bg-opacity-20"></div>
       </section>
 
 
