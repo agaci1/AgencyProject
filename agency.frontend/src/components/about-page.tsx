@@ -63,7 +63,7 @@ export function AboutPage({ onBackToHome, onViewTours }: AboutPageProps) {
 
             <div className="md:w-1/3 flex justify-center">
               <img
-                src="/agjensiLogo.jpg"
+                src="/logo1122.JPG"
                 alt="Logo RILINDI"
                 className="w-72 h-auto rounded-2xl shadow-xl"
               />

@@ -62,34 +62,18 @@ export default function TravelAgency() {
         }}
       />
 
-      {/* Hero Section - Simple Gallery Style */}
+      {/* Hero Section - Video Background */}
       <section className="relative h-screen overflow-hidden">
-        {/* Top Image - home12.jpeg */}
-        <div className="absolute top-0 left-0 w-full h-1/3">
-          <img
-            src="/home12.jpeg"
-            alt="Top Background"
-            className="w-full h-full object-cover"
-          />
-        </div>
-        
-        {/* Middle Image - homee2.jpg */}
-        <div className="absolute top-1/3 left-0 w-full h-1/3">
-          <img
-            src="/homee2.jpg"
-            alt="Middle Background"
-            className="w-full h-full object-cover"
-          />
-        </div>
-        
-        {/* Bottom Image - home13.jpeg */}
-        <div className="absolute bottom-0 left-0 w-full h-1/3">
-          <img
-            src="/home13.jpeg"
-            alt="Bottom Background"
-            className="w-full h-full object-cover"
-          />
-        </div>
+        <video
+          src="/RilindiShpk.MP4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        {/* Optional overlay for better text readability */}
+        <div className="absolute inset-0 bg-black bg-opacity-30"></div>
       </section>
 
 
@@ -106,7 +90,7 @@ export default function TravelAgency() {
                 }}
               >
                 <img
-                  src="/agjensiLogo.jpg"
+                  src="/logo1122.JPG"
                   alt="RILINDI SHPK Logo"
                   className="w-full h-full object-cover rounded-full"
                 />
