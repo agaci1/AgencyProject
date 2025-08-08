@@ -62,21 +62,15 @@ export default function TravelAgency() {
         }}
       />
 
-      {/* Hero Section - Video Background */}
+      {/* Hero Section - Background Image */}
       <section className="relative h-screen overflow-hidden">
-        <video
-          src="/home-video.mp4"
-          autoPlay
-          loop
-          muted
-          playsInline
-          controls={false}
+        <img
+          src="/homeback.jpg"
+          alt="Hero Background"
           className="absolute inset-0 w-full h-full object-cover"
         />
-        {/* Fallback background in case video fails */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-green-800 to-purple-900"></div>
-        {/* Optional overlay for better text readability */}
-        <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+        {/* Gradient overlay for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/50 via-green-800/30 to-purple-900/50"></div>
       </section>
 
 
