@@ -127,6 +127,29 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
     }
   }
 
+  // Clear storage when user closes the tab/window or navigates away
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      clearStorage()
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        clearStorage()
+      }
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('beforeunload', handleBeforeUnload)
+      document.addEventListener('visibilitychange', handleVisibilityChange)
+
+      return () => {
+        window.removeEventListener('beforeunload', handleBeforeUnload)
+        document.removeEventListener('visibilitychange', handleVisibilityChange)
+      }
+    }
+  }, [])
+
   const basePrice = tour.price * bookingData.guests
   const totalPrice = bookingData.tripType === "round-trip" ? basePrice * 2 : basePrice
   const finalTotal = totalPrice 
