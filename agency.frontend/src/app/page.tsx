@@ -65,7 +65,7 @@ export default function TravelAgency() {
       {/* Hero Section - Video Background */}
       <section className="relative h-screen overflow-hidden">
         <video
-          src="/RilindiShpk.MP4"
+          src="/ScreenRecording_08-08-2025 17-31-38_1.mov"
           autoPlay
           loop
           muted
