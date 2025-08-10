@@ -22,6 +22,8 @@ export default function TravelAgency() {
     return "home"
   })
   const [tours, setTours] = useState<Tour[]>([])
+  const [videoLoaded, setVideoLoaded] = useState(false)
+  const [videoError, setVideoError] = useState(false)
 
   // Save current page to localStorage whenever it changes
   useEffect(() => {
@@ -62,15 +64,42 @@ export default function TravelAgency() {
         }}
       />
 
-      {/* Hero Section - Background Image */}
+      {/* Hero Section - Video Background with Fallback */}
       <section className="relative h-screen overflow-hidden">
+        {/* Primary Video */}
+        <video
+          key="primary-video"
+          src="/RilindiShpk.MP4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          controls={false}
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ zIndex: videoLoaded ? 1 : 0 }}
+          onLoadStart={() => console.log('Video loading started')}
+          onCanPlay={() => {
+            console.log('Video can play')
+            setVideoLoaded(true)
+            setVideoError(false)
+          }}
+          onError={(e) => {
+            console.error('Video error:', e)
+            setVideoError(true)
+            setVideoLoaded(false)
+          }}
+        />
+        
+        {/* Fallback Background Image */}
         <img
           src="/homeback.jpg"
           alt="Hero Background"
           className="absolute inset-0 w-full h-full object-cover"
+          style={{ zIndex: videoLoaded ? 0 : 1 }}
         />
+        
         {/* Gradient overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/50 via-green-800/30 to-purple-900/50"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/30 via-green-800/20 to-purple-900/30" style={{ zIndex: 2 }}></div>
       </section>
 
 
