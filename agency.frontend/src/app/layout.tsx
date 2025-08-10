@@ -31,12 +31,13 @@ export const metadata: Metadata = {
   applicationName: "RILINDI SHPK",
   icons: {
     icon: [
+      { url: '/favicon.ico', sizes: 'any' },
       { url: '/logo1122.JPG', type: 'image/jpeg' },
       { url: '/logo1122.JPG', sizes: '16x16', type: 'image/jpeg' },
       { url: '/logo1122.JPG', sizes: '32x32', type: 'image/jpeg' },
       { url: '/logo1122.JPG', sizes: '48x48', type: 'image/jpeg' },
     ],
-    shortcut: '/logo1122.JPG',
+    shortcut: '/favicon.ico',
     apple: '/logo1122.JPG',
   },
   openGraph: {
@@ -89,6 +90,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/jpeg" href="/logo1122.JPG" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/logo1122.JPG" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${playfairDisplay.variable} antialiased`}
