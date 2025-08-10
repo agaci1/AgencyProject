@@ -30,7 +30,12 @@ export const metadata: Metadata = {
   },
   applicationName: "RILINDI SHPK",
   icons: {
-    icon: '/logo1122.JPG',
+    icon: [
+      { url: '/logo1122.JPG', type: 'image/jpeg' },
+      { url: '/logo1122.JPG', sizes: '16x16', type: 'image/jpeg' },
+      { url: '/logo1122.JPG', sizes: '32x32', type: 'image/jpeg' },
+      { url: '/logo1122.JPG', sizes: '48x48', type: 'image/jpeg' },
+    ],
     shortcut: '/logo1122.JPG',
     apple: '/logo1122.JPG',
   },
@@ -71,6 +76,8 @@ export const metadata: Metadata = {
     'apple-mobile-web-app-title': 'RILINDI SHPK',
     'apple-mobile-web-app-capable': 'yes',
     'apple-mobile-web-app-status-bar-style': 'default',
+    'msapplication-config': 'none',
+    'msapplication-TileImage': '/logo1122.JPG',
   },
 };
 
