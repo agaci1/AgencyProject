@@ -28,11 +28,9 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/',
   },
+  applicationName: "RILINDI SHPK",
   icons: {
-    icon: [
-      { url: '/favicon.ico', sizes: 'any' },
-      { url: '/logo1122.JPG', type: 'image/jpeg' },
-    ],
+    icon: '/logo1122.JPG',
     shortcut: '/logo1122.JPG',
     apple: '/logo1122.JPG',
   },
@@ -42,12 +40,14 @@ export const metadata: Metadata = {
     type: "website",
     url: "https://rilindishpk.com",
     siteName: "RILINDI SHPK",
+    locale: "en_US",
     images: [
       {
         url: '/logo1122.JPG',
         width: 1200,
         height: 630,
         alt: 'RILINDI SHPK - Best Travel Agency in Albania',
+        type: 'image/jpeg',
       },
     ],
   },
@@ -68,6 +68,9 @@ export const metadata: Metadata = {
   other: {
     'msapplication-TileColor': '#000000',
     'theme-color': '#000000',
+    'apple-mobile-web-app-title': 'RILINDI SHPK',
+    'apple-mobile-web-app-capable': 'yes',
+    'apple-mobile-web-app-status-bar-style': 'default',
   },
 };
 

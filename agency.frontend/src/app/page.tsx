@@ -72,7 +72,11 @@ export default function TravelAgency() {
           muted
           playsInline
           controls={false}
+          preload="auto"
           className="absolute inset-0 w-full h-full object-cover"
+          onError={(e) => console.error('Video error:', e)}
+          onLoadStart={() => console.log('Video loading started')}
+          onCanPlay={() => console.log('Video can play')}
         />
         
 
