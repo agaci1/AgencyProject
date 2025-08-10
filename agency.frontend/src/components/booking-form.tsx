@@ -31,7 +31,7 @@ interface BookingFormProps {
   onCancel: () => void
 }
 
-// Local storage keys for state persistence
+// Session storage keys for state persistence (cleared when tab/window closes)
 const STORAGE_KEYS = {
   BOOKING_STEP: 'booking_step',
   BOOKING_DATA: 'booking_data',
@@ -39,11 +39,11 @@ const STORAGE_KEYS = {
 }
 
 export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
-  // Load state from localStorage on component mount
+  // Load state from sessionStorage on component mount
   const [step, setStep] = useState<"details" | "payment">(() => {
     if (typeof window !== 'undefined') {
       try {
-        const savedStep = localStorage.getItem(STORAGE_KEYS.BOOKING_STEP)
+        const savedStep = sessionStorage.getItem(STORAGE_KEYS.BOOKING_STEP)
         return savedStep === 'payment' ? 'payment' : 'details'
       } catch (e) {
         console.error('Failed to load saved step:', e)
@@ -56,7 +56,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
   const [bookingData, setBookingData] = useState(() => {
     if (typeof window !== 'undefined') {
       try {
-        const savedData = localStorage.getItem(STORAGE_KEYS.BOOKING_DATA)
+        const savedData = sessionStorage.getItem(STORAGE_KEYS.BOOKING_DATA)
         if (savedData) {
           const parsed = JSON.parse(savedData)
           // Validate the saved data structure
@@ -89,7 +89,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
   // Check if we recovered data on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedData = localStorage.getItem(STORAGE_KEYS.BOOKING_DATA)
+      const savedData = sessionStorage.getItem(STORAGE_KEYS.BOOKING_DATA)
       if (savedData) {
         setShowRecoveryMessage(true)
         setTimeout(() => setShowRecoveryMessage(false), 3000)
@@ -97,14 +97,14 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
     }
   }, [])
 
-  // Save state to localStorage whenever it changes
+  // Save state to sessionStorage whenever it changes
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setIsSaving(true)
       try {
-        localStorage.setItem(STORAGE_KEYS.BOOKING_STEP, step)
-        localStorage.setItem(STORAGE_KEYS.BOOKING_DATA, JSON.stringify(bookingData))
-        localStorage.setItem(STORAGE_KEYS.SELECTED_TOUR, JSON.stringify(tour))
+        sessionStorage.setItem(STORAGE_KEYS.BOOKING_STEP, step)
+        sessionStorage.setItem(STORAGE_KEYS.BOOKING_DATA, JSON.stringify(bookingData))
+        sessionStorage.setItem(STORAGE_KEYS.SELECTED_TOUR, JSON.stringify(tour))
         // Show saving indicator briefly
         setTimeout(() => setIsSaving(false), 500)
       } catch (e) {
@@ -114,41 +114,21 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
     }
   }, [step, bookingData, tour])
 
-  // Clear localStorage when booking is completed or cancelled
+  // Clear sessionStorage when booking is completed or cancelled
   const clearStorage = () => {
     if (typeof window !== 'undefined') {
       try {
-        localStorage.removeItem(STORAGE_KEYS.BOOKING_STEP)
-        localStorage.removeItem(STORAGE_KEYS.BOOKING_DATA)
-        localStorage.removeItem(STORAGE_KEYS.SELECTED_TOUR)
+        sessionStorage.removeItem(STORAGE_KEYS.BOOKING_STEP)
+        sessionStorage.removeItem(STORAGE_KEYS.BOOKING_DATA)
+        sessionStorage.removeItem(STORAGE_KEYS.SELECTED_TOUR)
       } catch (e) {
         console.error('Failed to clear storage:', e)
       }
     }
   }
 
-  // Clear storage when user closes the tab/window or navigates away
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      clearStorage()
-    }
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
-        clearStorage()
-      }
-    }
-
-    if (typeof window !== 'undefined') {
-      window.addEventListener('beforeunload', handleBeforeUnload)
-      document.addEventListener('visibilitychange', handleVisibilityChange)
-
-      return () => {
-        window.removeEventListener('beforeunload', handleBeforeUnload)
-        document.removeEventListener('visibilitychange', handleVisibilityChange)
-      }
-    }
-  }, [])
+  // Note: Session cleanup is now handled by SessionManager component
+  // This ensures consistent behavior across the entire app
 
   const basePrice = tour.price * bookingData.guests
   const totalPrice = bookingData.tripType === "round-trip" ? basePrice * 2 : basePrice

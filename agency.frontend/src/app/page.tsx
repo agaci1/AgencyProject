@@ -14,21 +14,19 @@ import { Tour } from "@/types/tour"
 
 export default function TravelAgency() {
   const [currentPage, setCurrentPage] = useState<"home" | "tours" | "about">(() => {
-    // Try to get the saved page from localStorage, default to "home"
+    // Try to get the saved page from sessionStorage, default to "home"
     if (typeof window !== 'undefined') {
-      const savedPage = localStorage.getItem('currentPage') as "home" | "tours" | "about"
+      const savedPage = sessionStorage.getItem('currentPage') as "home" | "tours" | "about"
       return savedPage || "home"
     }
     return "home"
   })
   const [tours, setTours] = useState<Tour[]>([])
-  const [videoLoaded, setVideoLoaded] = useState(false)
-  const [videoError, setVideoError] = useState(false)
 
-  // Save current page to localStorage whenever it changes
+  // Save current page to sessionStorage whenever it changes
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('currentPage', currentPage)
+      sessionStorage.setItem('currentPage', currentPage)
     }
   }, [currentPage])
 
@@ -66,9 +64,8 @@ export default function TravelAgency() {
 
       {/* Hero Section - Video Background with Fallback */}
       <section className="relative h-screen overflow-hidden">
-        {/* Primary Video */}
+        {/* Video Background */}
         <video
-          key="primary-video"
           src="/RilindiShpk.MP4"
           autoPlay
           loop
@@ -76,27 +73,9 @@ export default function TravelAgency() {
           playsInline
           controls={false}
           className="absolute inset-0 w-full h-full object-cover"
-          style={{ zIndex: videoLoaded ? 1 : 0 }}
-          onLoadStart={() => console.log('Video loading started')}
-          onCanPlay={() => {
-            console.log('Video can play')
-            setVideoLoaded(true)
-            setVideoError(false)
-          }}
-          onError={(e) => {
-            console.error('Video error:', e)
-            setVideoError(true)
-            setVideoLoaded(false)
-          }}
         />
         
-        {/* Fallback Background Image */}
-        <img
-          src="/homeback.jpg"
-          alt="Hero Background"
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ zIndex: videoLoaded ? 0 : 1 }}
-        />
+
         
         {/* Gradient overlay for better text readability */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900/30 via-green-800/20 to-purple-900/30" style={{ zIndex: 2 }}></div>
