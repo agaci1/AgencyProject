@@ -279,8 +279,8 @@ export function AboutPage({ onBackToHome, onViewTours }: AboutPageProps) {
         {
           icon: <MessageCircle />,
           label: "WhatsApp",
-          link: "https://wa.me/355676905555",
-          text: "+355 676 905 555",
+          link: "https://wa.me/355672121800",
+          text: "+355 672 121 800",
         },
         {
           icon: <Mail />,

@@ -265,10 +265,6 @@ Our Exclusive Bus Fleet
             <a href="tel:+355672121800" className="text-green-900 hover:text-blue-900 font-medium text-base">+355 672 121 800</a>
           </div>
           <div className="flex items-center gap-3">
-            <Phone className="h-4 w-4 text-blue-600" />
-            <a href="tel:+355676905555" className="text-green-900 hover:text-blue-900 font-medium text-base">+355 676 905 555</a>
-          </div>
-          <div className="flex items-center gap-3">
             <Mail className="h-4 w-4 text-red-500" />
             <a href="mailto:rilindi-shpk@hotmail.com" className="text-green-900 hover:text-blue-900 font-medium text-base">
               rilindi-shpk@hotmail.com

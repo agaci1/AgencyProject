@@ -72,13 +72,13 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-gray-900">WhatsApp</h3>
-                  <p className="text-sm text-gray-600 font-playfair">+355 676 905 555</p>
+                  <p className="text-sm text-gray-600 font-playfair">+355 672 121 800</p>
                 </div>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => window.open("https://wa.me/355676905555", "_blank")}
+                  onClick={() => window.open("https://wa.me/355672121800", "_blank")}
                   className="hover:bg-green-600 hover:text-white flex-shrink-0"
                 >
                   Chat Now
@@ -176,7 +176,7 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
               <Button
                 type="button"
                 className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                onClick={() => window.open("https://wa.me/355676905555", "_blank")}
+                onClick={() => window.open("https://wa.me/355672121800", "_blank")}
               >
                 <MessageCircle className="h-4 w-4 mr-2" />
                 WhatsApp
