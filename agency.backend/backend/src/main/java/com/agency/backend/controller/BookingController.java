@@ -165,78 +165,18 @@ public class BookingController {
         boolean isRoundTrip = saved.getReturnDate() != null;
         double total = isRoundTrip ? baseTotal * 2 : baseTotal;
 
-        // 6a) email customer
-        String customerSubject = "Your Booking Receipt — " + saved.getTourName();
-        String customerText = String.format(
-                "Dear %s,%n%n" +
-                        "Thank you for booking \"%s\"!%n" +
-                        "Booking ID: %d%n%n" +
-                        "Trip Details:%n" +
-                        "  • Trip Type:       %s%n" +
-                        "  • Departure Date: %s%n" +
-                        "  • Return Date:    %s%n" +
-                        "  • Guests:         %d%n%n" +
-                        "Payment Breakdown:%n" +
-                        "  • Price/person:   €%.2f%n" +
-                        "  • Base Total:     €%.2f%n" +
-                        "%s" +
-                        "  • Total Charged:   €%.2f%n%n" +
-                        "We hope you enjoy your trip!%n%n" +
-                        "Safe travels,%n" +
-                        "Albanian Alps Adventures",
-                saved.getUserName(),
-                saved.getTourName(),
-                saved.getId(),
-                isRoundTrip ? "Round Trip" : "One Way",
-                saved.getDepartureDate(),
-                saved.getReturnDate() == null ? "—" : saved.getReturnDate(),
-                guests,
-                pricePerPerson,
-                baseTotal,
-                isRoundTrip ? "  • Round Trip (x2): €" + String.format("%.2f", baseTotal) + "\\n" : "",
-                total
-        );
-        
-        // 6a) email customer
+        // 6a) email customer with beautiful HTML template
         try {
-            emailService.sendSimpleMessage(saved.getUserEmail(), customerSubject, customerText);
+            emailService.sendCustomerBookingConfirmation(saved);
             logger.info("Customer confirmation email sent to: {}", saved.getUserEmail());
         } catch (Exception e) {
             logger.error("Failed to send customer confirmation email to: {}", saved.getUserEmail(), e);
             // Don't fail the booking if email fails
         }
 
-        // 6b) email agency
-        String ownerSubject = "New Booking Received — ID " + saved.getId();
-        String ownerText = String.format(
-                "New booking received:%n%n" +
-                        "  • Customer: %s <%s>%n" +
-                        "  • Tour:     %s%n" +
-                        "  • Trip Type: %s%n" +
-                        "  • Departure: %s%n" +
-                        "  • Return:    %s%n" +
-                        "  • Guests:   %d%n" +
-                        "Booking ID:  %d%n%n" +
-                        "Payment:%n" +
-                        "  • Base Total: €%.2f%n" +
-                        "%s" +
-                        "  • Total:    €%.2f%n",
-                saved.getUserName(),
-                saved.getUserEmail(),
-                saved.getTourName(),
-                isRoundTrip ? "Round Trip" : "One Way",
-                saved.getDepartureDate(),
-                saved.getReturnDate() == null ? "—" : saved.getReturnDate(),
-                guests,
-                saved.getId(),
-                baseTotal,
-                isRoundTrip ? "  • Round Trip (x2): €" + String.format("%.2f", baseTotal) + "\\n" : "",
-                total
-        );
-        
-        // 6b) email agency
+        // 6b) email agency with beautiful HTML template
         try {
-            emailService.sendSimpleMessage(agencyEmail, ownerSubject, ownerText);
+            emailService.sendAgencyBookingNotification(saved);
             logger.info("Agency notification email sent to: {}", agencyEmail);
         } catch (Exception e) {
             logger.error("Failed to send agency notification email to: {}", agencyEmail, e);
@@ -256,5 +196,22 @@ public class BookingController {
     public ResponseEntity<List<Booking>> getAllBookings() {
         List<Booking> list = bookingRepository.findAll();
         return ResponseEntity.ok(list);
+    }
+
+    @PostMapping("/test-email")
+    public ResponseEntity<String> testEmail(@RequestParam String email) {
+        try {
+            String subject = "🧪 Email System Test - RILINDI SHPK";
+            String text = "This is a test email to verify the email system is working correctly.\n\n" +
+                         "If you receive this email, the email system is properly configured.\n\n" +
+                         "Best regards,\nRILINDI SHPK Team";
+            
+            emailService.sendSimpleMessage(email, subject, text);
+            return ResponseEntity.ok("Test email sent successfully to: " + email);
+        } catch (Exception e) {
+            logger.error("Failed to send test email to: {}", email, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to send test email: " + e.getMessage());
+        }
     }
 }
