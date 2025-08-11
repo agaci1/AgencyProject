@@ -6,13 +6,12 @@ import com.agency.backend.service.PaymentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -26,7 +25,7 @@ public class PayPalPaymentService implements PaymentService {
     @Value("${paypal.client.secret:}")
     private String paypalClientSecret;
     
-    @Value("${paypal.base.url:https://api-m.sandbox.paypal.com}")
+    @Value("${paypal.base.url:https://api-m.paypal.com}")
     private String paypalBaseUrl;
     
     private final RestTemplate restTemplate = new RestTemplate();
@@ -58,10 +57,11 @@ public class PayPalPaymentService implements PaymentService {
     }
 
     private boolean validatePayPalTransaction(String transactionId) {
-        // If PayPal credentials are not configured, fall back to basic validation
+        // Ensure PayPal credentials are configured for production
         if (paypalClientId.isEmpty() || paypalClientSecret.isEmpty()) {
-            logger.warn("PayPal credentials not configured, using basic validation");
-            return basicPayPalValidation(transactionId);
+            logger.error("PayPal credentials not configured. Real payments require proper PayPal setup.");
+            logger.error("Please configure PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET environment variables.");
+            return false;
         }
 
         try {
@@ -129,12 +129,5 @@ public class PayPalPaymentService implements PaymentService {
             logger.error("Error verifying PayPal order", e);
         }
         return false;
-    }
-
-    private boolean basicPayPalValidation(String transactionId) {
-        // Basic validation for development/testing
-        return transactionId != null && 
-               !transactionId.trim().isEmpty() && 
-               transactionId.length() > 10;
     }
 } 

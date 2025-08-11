@@ -7,6 +7,7 @@ import com.agency.backend.repository.BookingRepository;
 import com.agency.backend.repository.TourRepository;
 import com.agency.backend.service.EmailService;
 import com.agency.backend.service.PaymentService;
+import com.agency.backend.service.PaymentServiceFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,20 +31,20 @@ public class BookingController {
     private final BookingRepository bookingRepository;
     private final TourRepository tourRepository;
     private final EmailService emailService;
-    private final PaymentService paymentService;
+    private final PaymentServiceFactory paymentServiceFactory;
 
     @Value("${app.agency.email}")
     private String agencyEmail;
 
     @Autowired
     public BookingController(BookingRepository bookingRepository,
-                             TourRepository tourRepository,
-                             EmailService emailService,
-                             PaymentService paymentService) {
+                            TourRepository tourRepository,
+                            EmailService emailService,
+                            PaymentServiceFactory paymentServiceFactory) {
         this.bookingRepository = bookingRepository;
         this.tourRepository = tourRepository;
         this.emailService = emailService;
-        this.paymentService = paymentService;
+        this.paymentServiceFactory = paymentServiceFactory;
     }
 
     @PostMapping
@@ -143,9 +144,9 @@ public class BookingController {
         
         booking.setPaymentMethod(req.getPaymentMethod());
 
-        // 3) process payment (dummy)
+        // 3) process payment (PayPal or Card validation)
         try {
-            boolean paid = paymentService.processPayment(req, booking);
+            boolean paid = paymentServiceFactory.processPayment(req, booking);
             booking.setStatus(paid ? "PAID" : "FAILED");
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
