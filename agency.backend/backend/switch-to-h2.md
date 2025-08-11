@@ -16,7 +16,7 @@ Open `src/main/resources/application.properties` and comment out the MySQL confi
 # Comment out MySQL configuration
 # spring.datasource.url=${DATABASE_URL:jdbc:mysql://maglev.proxy.rlwy.net:56319/railway?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8}
 # spring.datasource.username=${DATABASE_USERNAME:root}
-# spring.datasource.password=${DB_PASSWORD:OMXjWrwYrRLqhRypmiEwECaCrGNULAHe}
+# spring.datasource.password=${DB_PASSWORD:your_database_password_here}
 # spring.datasource.driver-class-name=${DATABASE_DRIVER:com.mysql.cj.jdbc.Driver}
 
 # Uncomment H2 configuration
