@@ -284,22 +284,23 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
           },
           onApprove: async (data: any, actions: any) => {
             setIsProcessing(true)
+            let paymentDetails: any = null
             try {
-              const details = await actions.order.capture()
-              console.log("Payment captured:", details)
+              paymentDetails = await actions.order.capture()
+              console.log("Payment captured:", paymentDetails)
 
               // Send booking request to your backend
               const bookingPayload = {
                 tourId: tour.id,
-                name: `${details.payer.name.given_name} ${details.payer.name.surname}`,
-                email: details.payer.email_address,
+                name: `${paymentDetails.payer.name.given_name} ${paymentDetails.payer.name.surname}`,
+                email: paymentDetails.payer.email_address,
                 departureDate: bookingData.departureDate,
                 returnDate: bookingData.tripType === "round-trip" ? bookingData.returnDate : null,
                 guests: bookingData.guests,
                 paymentMethod: "paypal",
                 paypal: {
-                  email: details.payer.email_address,
-                  transactionId: details.id,
+                  email: paymentDetails.payer.email_address,
+                  transactionId: paymentDetails.id,
                 }
               }
 
@@ -314,11 +315,11 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
               
               // Check if it's a backend validation error
               if (error.response && error.response.status === 400) {
-                setPaypalError("Payment validation failed. This usually means PayPal credentials are not configured on the server. Please contact support.")
+                setPaypalError("Payment validation failed. Your payment was successful but we couldn't validate it on our server. Please contact support with your PayPal transaction ID: " + (paymentDetails?.id || 'unknown'))
               } else if (error.response && error.response.status === 500) {
-                setPaypalError("Server error during booking creation. Your payment was successful but we couldn't create your booking. Please contact support with your PayPal transaction ID.")
+                setPaypalError("Server error during booking creation. Your payment was successful but we couldn't create your booking. Please contact support with your PayPal transaction ID: " + (paymentDetails?.id || 'unknown'))
               } else {
-                setPaypalError("Payment was successful but booking failed. Please contact support with your PayPal transaction ID.")
+                setPaypalError("Payment was successful but booking failed. Please contact support with your PayPal transaction ID: " + (paymentDetails?.id || 'unknown'))
               }
               
               setIsProcessing(false)
