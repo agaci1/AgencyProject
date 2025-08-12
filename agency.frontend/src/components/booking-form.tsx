@@ -157,7 +157,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
       }
 
       const script = document.createElement("script")
-      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture`
+      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&enable-funding=card`
       script.async = true
 
       console.log("Loading PayPal SDK with URL:", script.src)
@@ -229,6 +229,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
             label: "pay",
             height: 50,
           },
+
           createOrder: (data: any, actions: any) => {
             console.log("Creating PayPal order for:", finalTotal)
             console.log("Using currency: EUR (hardcoded)")

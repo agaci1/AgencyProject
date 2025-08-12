@@ -15,6 +15,7 @@ declare global {
           label?: string;
           height?: number;
         };
+        fundingSource?: string;
         createOrder: (data: unknown, actions: unknown) => Promise<string>
         onApprove: (data: { orderID: string }, actions: unknown) => Promise<void>
         onError: (err: Error) => void
