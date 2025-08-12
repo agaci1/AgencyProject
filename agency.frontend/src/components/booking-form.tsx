@@ -100,104 +100,58 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
   // Save state to sessionStorage whenever it changes
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setIsSaving(true)
       try {
         sessionStorage.setItem(STORAGE_KEYS.BOOKING_STEP, step)
         sessionStorage.setItem(STORAGE_KEYS.BOOKING_DATA, JSON.stringify(bookingData))
-        sessionStorage.setItem(STORAGE_KEYS.SELECTED_TOUR, JSON.stringify(tour))
-        // Show saving indicator briefly
-        setTimeout(() => setIsSaving(false), 500)
       } catch (e) {
-        console.error('Failed to save booking data:', e)
-        setIsSaving(false)
+        console.error('Failed to save state:', e)
       }
     }
-  }, [step, bookingData, tour])
+  }, [step, bookingData])
 
-  // Clear sessionStorage when booking is completed or cancelled
   const clearStorage = () => {
     if (typeof window !== 'undefined') {
       try {
         sessionStorage.removeItem(STORAGE_KEYS.BOOKING_STEP)
         sessionStorage.removeItem(STORAGE_KEYS.BOOKING_DATA)
-        sessionStorage.removeItem(STORAGE_KEYS.SELECTED_TOUR)
       } catch (e) {
         console.error('Failed to clear storage:', e)
       }
     }
   }
 
-  // Note: Session cleanup is now handled by SessionManager component
-  // This ensures consistent behavior across the entire app
+  // Calculate final total
+  const baseTotal = tour.price * bookingData.guests
+  const finalTotal = bookingData.tripType === "round-trip" ? baseTotal * 2 : baseTotal
 
-  const basePrice = tour.price * bookingData.guests
-  const totalPrice = bookingData.tripType === "round-trip" ? basePrice * 2 : basePrice
-  const finalTotal = totalPrice 
-
-  const [notification, setNotification] = useState<string | null>(null)
-  const [isProcessing, setIsProcessing] = useState(false)
+  // PayPal integration
   const [paypalLoaded, setPaypalLoaded] = useState(false)
   const [paypalError, setPaypalError] = useState<string | null>(null)
-  const [paymentMethod, setPaymentMethod] = useState<"paypal" | "card">("paypal")
-  const [cardData, setCardData] = useState({
-    number: "",
-    expiry: "",
-    cvv: "",
-    name: "",
-    email: "",
-    address: "",
-    city: "",
-    zip: "",
-    country: ""
-  })
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [notification, setNotification] = useState<string | null>(null)
 
-  // Load PayPal SDK with better error handling
+  // Load PayPal SDK
   useEffect(() => {
-    if (step !== "payment") return
+    if (step !== "payment" || paypalLoaded) return
 
     let timeoutId: NodeJS.Timeout
 
     const loadPayPalScript = () => {
-      // Check if PayPal script is already loaded
-      if (window.paypal && typeof window.paypal.Buttons === "function") {
-        console.log("PayPal already loaded and ready")
-        setPaypalLoaded(true)
-        setPaypalError(null)
-        return
-      }
-
-      // Check if script is already being loaded
-      const existingScript = document.querySelector('script[src*="paypal.com/sdk"]')
-      if (existingScript) {
-        console.log("PayPal script already loading, waiting...")
-        const checkPayPal = () => {
-          if (window.paypal && typeof window.paypal.Buttons === "function") {
-            setPaypalLoaded(true)
-            setPaypalError(null)
-          } else {
-            setTimeout(checkPayPal, 100)
-          }
-        }
-        checkPayPal()
-        return
-      }
-
-      console.log("Loading PayPal SDK...")
-      const script = document.createElement("script")
-      
-      // Use production PayPal client ID
       const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
       const currency = process.env.NEXT_PUBLIC_PAYPAL_CURRENCY || "EUR"
-      
+
       if (!clientId) {
-        console.error("PayPal Client ID not configured")
-        setPaypalError("Payment system not configured. Please contact support.")
+        setPaypalError("PayPal configuration is missing. Please contact support.")
         return
       }
-      
-      console.log("PayPal Client ID:", clientId)
-      console.log("PayPal Currency:", currency)
-      
+
+      // Remove any existing PayPal script
+      const existingScript = document.querySelector('script[src*="paypal.com/sdk"]')
+      if (existingScript) {
+        existingScript.remove()
+      }
+
+      const script = document.createElement("script")
       script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture`
       script.async = true
 
@@ -354,51 +308,6 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
     onCancel()
   }
 
-  const handleCardPayment = async () => {
-    setIsProcessing(true)
-    try {
-      // Validate card data
-      if (!cardData.number || !cardData.expiry || !cardData.cvv || !cardData.name || 
-          !cardData.email || !cardData.address || !cardData.city || !cardData.zip || !cardData.country) {
-        setNotification("Please fill in all card details.")
-        setIsProcessing(false)
-        return
-      }
-
-      const bookingPayload = {
-        tourId: tour.id,
-        name: cardData.name,
-        email: cardData.email,
-        departureDate: bookingData.departureDate,
-        returnDate: bookingData.tripType === "round-trip" ? bookingData.returnDate : null,
-        guests: bookingData.guests,
-        paymentMethod: "card",
-        payment: {
-          number: cardData.number,
-          expiry: cardData.expiry,
-          cvv: cardData.cvv,
-          name: cardData.name,
-          email: cardData.email,
-          address: cardData.address,
-          city: cardData.city,
-          zip: cardData.zip,
-          country: cardData.country
-        }
-      }
-
-      const res = await api.post("/bookings", bookingPayload)
-      console.log("Booking created:", res.data)
-
-      setNotification("Payment successful! A confirmation email has been sent.")
-      clearStorage()
-      setTimeout(() => onComplete(), 2000)
-    } catch (error: any) {
-      console.error("Card payment error:", error)
-      setNotification("Payment failed. Please check your card details and try again.")
-      setIsProcessing(false)
-    }
-  }
-
   // PAYMENT STEP
   if (step === "payment") {
     return (
@@ -424,255 +333,70 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
             </CardHeader>
 
             <CardContent className="space-y-6">
-              {/* Payment Method Selection */}
-              <div className="space-y-4">
-                <div className="text-center">
-                  <h3 className="text-lg font-semibold mb-2">Pay €{finalTotal}</h3>
-                  <p className="text-sm text-gray-600 mb-4 font-playfair">Choose your preferred payment method</p>
-                </div>
+              {/* Payment Amount */}
+              <div className="text-center">
+                <h3 className="text-lg font-semibold mb-2">Pay €{finalTotal}</h3>
+                <p className="text-sm text-gray-600 mb-4 font-playfair">Complete your payment securely</p>
+              </div>
 
-                {/* Payment Method Toggle */}
-                <div className="flex gap-2 p-1 bg-gray-100 rounded-lg">
-                  <Button
-                    type="button"
-                    variant={paymentMethod === "paypal" ? "default" : "ghost"}
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => setPaymentMethod("paypal")}
-                    disabled={isProcessing}
-                  >
-                    <CreditCard className="h-4 w-4 mr-2" />
-                    PayPal
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={paymentMethod === "card" ? "default" : "ghost"}
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => setPaymentMethod("card")}
-                    disabled={isProcessing}
-                  >
-                    <CreditCard className="h-4 w-4 mr-2" />
-                    Credit Card
-                  </Button>
+              {/* Payment Explanation */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-blue-900 mb-2">Secure Payment with PayPal</h4>
+                    <ul className="text-sm text-blue-800 space-y-1">
+                      <li>• Pay with your PayPal account</li>
+                      <li>• Or use guest checkout with any card</li>
+                      <li>• No PayPal account required</li>
+                      <li>• Secured by PayPal's buyer protection</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
 
-              <Separator />
-
-              {/* PayPal Payment Section */}
-              {paymentMethod === "paypal" && (
-                <div className="space-y-4">
-                  {/* Payment Explanation */}
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <div className="flex items-start gap-3">
-                      <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <h4 className="font-semibold text-blue-900 mb-2">PayPal Payment</h4>
-                        <ul className="text-sm text-blue-800 space-y-1">
-                          <li>• Pay with your PayPal account</li>
-                          <li>• Or use guest checkout with any card</li>
-                          <li>• No PayPal account required</li>
-                          <li>• Secured by PayPal's buyer protection</li>
-                        </ul>
-                      </div>
-                    </div>
+              {/* PayPal Button Container */}
+              {paypalError ? (
+                <div className="text-center py-8">
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                    <p className="text-red-800 font-medium">Payment System Error</p>
+                    <p className="text-red-600 text-sm mt-1">{paypalError}</p>
                   </div>
-
-                  {/* PayPal Button Container */}
-                  {paypalError ? (
-                    <div className="text-center py-8">
-                      <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-                        <p className="text-red-800 font-medium">Payment System Error</p>
-                        <p className="text-red-600 text-sm mt-1">{paypalError}</p>
-                      </div>
-                      <Button
-                        onClick={() => {
-                          setPaypalError(null)
-                          setPaypalLoaded(false)
-                          // Force reload PayPal
-                          const script = document.querySelector('script[src*="paypal.com/sdk"]')
-                          if (script) script.remove()
-                          window.paypal = undefined
-                          setTimeout(() => {
-                            setStep("details")
-                            setTimeout(() => setStep("payment"), 100)
-                          }, 100)
-                        }}
-                        variant="outline"
-                      >
-                        Retry Payment System
-                      </Button>
-                    </div>
-                  ) : paypalLoaded ? (
-                    <div className="space-y-3">
-                      <div id="paypal-button-container" className="min-h-[50px]" />
-                      {isProcessing && (
-                        <div className="text-center text-sm text-gray-600 font-playfair">Processing your payment...</div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      <div className="text-center py-4">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                        <p className="text-sm text-gray-600 mb-2 font-playfair">Loading PayPal...</p>
-                      </div>
-                    </div>
+                  <Button
+                    onClick={() => {
+                      setPaypalError(null)
+                      setPaypalLoaded(false)
+                      // Force reload PayPal
+                      const script = document.querySelector('script[src*="paypal.com/sdk"]')
+                      if (script) script.remove()
+                      window.paypal = undefined
+                      setTimeout(() => {
+                        setStep("details")
+                        setTimeout(() => setStep("payment"), 100)
+                      }, 100)
+                    }}
+                    variant="outline"
+                  >
+                    Retry Payment System
+                  </Button>
+                </div>
+              ) : paypalLoaded ? (
+                <div className="space-y-3">
+                  <div id="paypal-button-container" className="min-h-[50px]" />
+                  {isProcessing && (
+                    <div className="text-center text-sm text-gray-600 font-playfair">Processing your payment...</div>
                   )}
                 </div>
-              )}
-
-              {/* Card Payment Section */}
-              {paymentMethod === "card" && (
-                <div className="space-y-4">
-                  {/* Payment Explanation */}
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <div className="flex items-start gap-3">
-                      <Info className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <h4 className="font-semibold text-green-900 mb-2">Direct Card Payment</h4>
-                        <ul className="text-sm text-green-800 space-y-1">
-                          <li>• Pay directly with your credit/debit card</li>
-                          <li>• No PayPal account required</li>
-                          <li>• Secure payment processing</li>
-                          <li>• Instant booking confirmation</li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Card Payment Form */}
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="cardNumber">Card Number</Label>
-                        <Input
-                          id="cardNumber"
-                          type="text"
-                          placeholder="1234 5678 9012 3456"
-                          value={cardData.number}
-                          onChange={(e) => setCardData({...cardData, number: e.target.value})}
-                          disabled={isProcessing}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="cardName">Cardholder Name</Label>
-                        <Input
-                          id="cardName"
-                          type="text"
-                          placeholder="John Doe"
-                          value={cardData.name}
-                          onChange={(e) => setCardData({...cardData, name: e.target.value})}
-                          disabled={isProcessing}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-4">
-                      <div>
-                        <Label htmlFor="expiry">Expiry (MM/YY)</Label>
-                        <Input
-                          id="expiry"
-                          type="text"
-                          placeholder="12/25"
-                          value={cardData.expiry}
-                          onChange={(e) => setCardData({...cardData, expiry: e.target.value})}
-                          disabled={isProcessing}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="cvv">CVV</Label>
-                        <Input
-                          id="cvv"
-                          type="text"
-                          placeholder="123"
-                          value={cardData.cvv}
-                          onChange={(e) => setCardData({...cardData, cvv: e.target.value})}
-                          disabled={isProcessing}
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="email">Email Address</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="john.doe@example.com"
-                        value={cardData.email}
-                        onChange={(e) => setCardData({...cardData, email: e.target.value})}
-                        disabled={isProcessing}
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="address">Billing Address</Label>
-                      <Input
-                        id="address"
-                        type="text"
-                        placeholder="123 Main St"
-                        value={cardData.address}
-                        onChange={(e) => setCardData({...cardData, address: e.target.value})}
-                        disabled={isProcessing}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-4">
-                      <div>
-                        <Label htmlFor="city">City</Label>
-                        <Input
-                          id="city"
-                          type="text"
-                          placeholder="New York"
-                          value={cardData.city}
-                          onChange={(e) => setCardData({...cardData, city: e.target.value})}
-                          disabled={isProcessing}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="zip">ZIP Code</Label>
-                        <Input
-                          id="zip"
-                          type="text"
-                          placeholder="10001"
-                          value={cardData.zip}
-                          onChange={(e) => setCardData({...cardData, zip: e.target.value})}
-                          disabled={isProcessing}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="country">Country</Label>
-                        <Input
-                          id="country"
-                          type="text"
-                          placeholder="USA"
-                          value={cardData.country}
-                          onChange={(e) => setCardData({...cardData, country: e.target.value})}
-                          disabled={isProcessing}
-                        />
-                      </div>
-                    </div>
-
-                    <Button
-                      onClick={handleCardPayment}
-                      className="w-full bg-green-600 hover:bg-green-700"
-                      disabled={isProcessing}
-                    >
-                      {isProcessing ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Processing Payment...
-                        </>
-                      ) : (
-                        <>
-                          <CreditCard className="h-4 w-4 mr-2" />
-                          Pay €{finalTotal} with Card
-                        </>
-                      )}
-                    </Button>
+              ) : (
+                <div className="space-y-3">
+                  <div className="text-center py-4">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-sm text-gray-600 mb-2 font-playfair">Loading PayPal...</p>
                   </div>
                 </div>
               )}
+
+                    
 
               {/* Security Notice */}
               <div className="flex items-center gap-2 text-sm bg-gray-50 p-3 rounded">
