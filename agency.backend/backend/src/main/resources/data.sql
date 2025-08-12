@@ -8,7 +8,11 @@ ALTER TABLE tours AUTO_INCREMENT = 1;
 -- Disable foreign key checks temporarily
 SET FOREIGN_KEY_CHECKS = 0;
 
--- Insert the 4 specific tours from Railway production database
+-- Truncate tables to ensure clean slate
+TRUNCATE TABLE tour_highlights;
+TRUNCATE TABLE tours;
+
+-- Insert ONLY 4 normal tours + 1 test tour (5 total)
 INSERT INTO tours (title, description, price, departure_time, location, rating, image, max_guests, route_description, start_location_link) VALUES 
 ('Tirana [Terminal] → Koman', 'Bus trip from Tirana through the Albanian Alps to Koman ferry dock', 10.0, '06:00', 'Tirana', 5.0, '/koman .jpg', 50, 'Departure from Tirana North-South Terminal at 06:00, arriving at Koman ferry dock', 'https://maps.app.goo.gl/CbEDq9ZmBcyqH5jS6');
 
