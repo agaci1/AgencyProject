@@ -157,7 +157,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
       }
 
       const script = document.createElement("script")
-      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&enable-funding=card&disable-funding=paylater,venmo`
+      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&enable-funding=card,venmo&disable-funding=paylater`
       script.async = true
 
       console.log("Loading PayPal SDK with URL:", script.src)
@@ -396,71 +396,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                 <div className="space-y-3">
                   <div id="paypal-button-container" className="min-h-[50px]" />
                   
-                  {/* Alternative Credit Card Button */}
-                  <div className="text-center">
-                    <p className="text-sm text-gray-600 mb-2">Or pay with credit card:</p>
-                    <Button
-                      onClick={() => {
-                        // Create a PayPal order for credit card payment
-                        if (window.paypal && window.paypal.Buttons) {
-                          window.paypal.Buttons({
-                            fundingSource: window.paypal.FUNDING.CARD,
-                            createOrder: (data: any, actions: any) => {
-                              const orderData = {
-                                purchase_units: [{
-                                  amount: {
-                                    value: finalTotal.toString(),
-                                    currency_code: "EUR",
-                                  },
-                                  description: `${tour.title} - ${bookingData.guests} guest(s)`,
-                                }],
-                              }
-                              return actions.order.create(orderData)
-                            },
-                            onApprove: async (data: any, actions: any) => {
-                              setIsProcessing(true)
-                              try {
-                                const paymentDetails = await actions.order.capture()
-                                // Handle successful payment
-                                const bookingPayload = {
-                                  tourId: tour.id,
-                                  name: `${paymentDetails.payer.name.given_name} ${paymentDetails.payer.name.surname}`,
-                                  email: paymentDetails.payer.email_address,
-                                  departureDate: bookingData.departureDate,
-                                  returnDate: bookingData.tripType === "round-trip" ? bookingData.returnDate : null,
-                                  guests: bookingData.guests,
-                                  paymentMethod: "paypal",
-                                  paypal: {
-                                    email: paymentDetails.payer.email_address,
-                                    transactionId: paymentDetails.id,
-                                  }
-                                }
-                                const res = await api.post("/bookings", bookingPayload)
-                                setNotification("Payment successful! A confirmation email has been sent.")
-                                clearStorage()
-                                setTimeout(() => onComplete(), 2000)
-                              } catch (error: any) {
-                                console.error("Payment error:", error)
-                                setPaypalError("Payment failed. Please try again.")
-                                setIsProcessing(false)
-                              }
-                            },
-                            onError: (err: Error) => {
-                              console.error("PayPal error:", err)
-                              setPaypalError("Payment failed. Please try again.")
-                              setIsProcessing(false)
-                            }
-                          }).render("#paypal-button-container")
-                        }
-                      }}
-                      variant="outline"
-                      className="w-full"
-                      disabled={isProcessing}
-                    >
-                      <CreditCard className="h-4 w-4 mr-2" />
-                      Pay with Credit Card (€{finalTotal})
-                    </Button>
-                  </div>
+
                   
                   {isProcessing && (
                     <div className="text-center text-sm text-gray-600 font-playfair">Processing your payment...</div>
