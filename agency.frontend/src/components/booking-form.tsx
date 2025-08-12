@@ -132,6 +132,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
 
   // Load PayPal SDK
   useEffect(() => {
+    console.log("PayPal useEffect triggered - step:", step, "paypalLoaded:", paypalLoaded)
     if (step !== "payment" || paypalLoaded) return
 
     let timeoutId: NodeJS.Timeout
@@ -193,6 +194,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
       }, 15000) // 15 second timeout
     }
 
+    console.log("Starting PayPal script loading...")
     loadPayPalScript()
 
     // Cleanup function
@@ -422,7 +424,8 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                 </div>
               ) : paypalLoaded ? (
                 <div className="space-y-3">
-                  <div id="paypal-button-container" className="min-h-[50px]" />
+                  <div className="text-green-600 text-sm mb-2">✅ PayPal loaded successfully!</div>
+                  <div id="paypal-button-container" className="min-h-[50px] border-2 border-dashed border-gray-300 bg-gray-50 p-4" />
                   
 
                   
@@ -435,6 +438,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                   <div className="text-center py-4">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
                     <p className="text-sm text-gray-600 mb-2 font-playfair">Loading PayPal...</p>
+                    <p className="text-xs text-gray-500">Debug: Step={step}, PayPalLoaded={paypalLoaded.toString()}</p>
                   </div>
                 </div>
               )}
