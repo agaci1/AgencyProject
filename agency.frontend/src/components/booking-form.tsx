@@ -159,8 +159,8 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
       }
 
       const script = document.createElement("script")
-      // Configure PayPal SDK to enable both PayPal and card payments
-      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&enable-funding=card,venmo&disable-funding=paylater&buyer-country=AL&components=buttons`
+      // Simplified PayPal SDK URL for better compatibility
+      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&components=buttons`
       script.async = true
 
       console.log("Loading PayPal SDK with URL:", script.src)
@@ -430,6 +430,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
               ) : paypalLoaded ? (
                 <div className="space-y-3">
                   <div className="text-green-600 text-sm mb-2">✅ PayPal loaded successfully!</div>
+                  <div className="text-blue-600 text-sm mb-2">🔍 Debug: PayPal Buttons should appear below</div>
                   <div id="paypal-button-container" className="min-h-[50px] border-2 border-dashed border-gray-300 bg-gray-50 p-4" />
                   
 

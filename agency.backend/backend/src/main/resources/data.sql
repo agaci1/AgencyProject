@@ -5,6 +5,9 @@ DELETE FROM tours;
 -- Reset auto-increment
 ALTER TABLE tours AUTO_INCREMENT = 1;
 
+-- Disable foreign key checks temporarily
+SET FOREIGN_KEY_CHECKS = 0;
+
 -- Insert the 4 specific tours from Railway production database
 INSERT INTO tours (title, description, price, departure_time, location, rating, image, max_guests, route_description, start_location_link) VALUES 
 ('Tirana [Terminal] → Koman', 'Bus trip from Tirana through the Albanian Alps to Koman ferry dock', 10.0, '06:00', 'Tirana', 5.0, '/koman .jpg', 50, 'Departure from Tirana North-South Terminal at 06:00, arriving at Koman ferry dock', 'https://maps.app.goo.gl/CbEDq9ZmBcyqH5jS6');
@@ -46,4 +49,7 @@ INSERT INTO tour_highlights (tour_id, highlight) VALUES (4, 'Fierza ferry dock')
 -- Insert highlights for test tour
 INSERT INTO tour_highlights (tour_id, highlight) VALUES (5, 'Test Tour');
 INSERT INTO tour_highlights (tour_id, highlight) VALUES (5, 'Low Cost');
-INSERT INTO tour_highlights (tour_id, highlight) VALUES (5, 'Payment Testing'); 
+INSERT INTO tour_highlights (tour_id, highlight) VALUES (5, 'Payment Testing');
+
+-- Re-enable foreign key checks
+SET FOREIGN_KEY_CHECKS = 1; 
