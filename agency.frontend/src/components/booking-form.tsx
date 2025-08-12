@@ -157,7 +157,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
       }
 
       const script = document.createElement("script")
-      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&enable-funding=card&disable-funding=paylater,venmo&buyer-country=AL`
+      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&enable-funding=card,venmo&disable-funding=paylater&buyer-country=AL&components=buttons,funding-eligibility`
       script.async = true
 
       console.log("Loading PayPal SDK with URL:", script.src)
@@ -242,8 +242,15 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                     currency_code: "EUR",
                   },
                   description: `${tour.title} - ${bookingData.guests} guest(s)`,
+                  custom_id: `tour_${tour.id}_${Date.now()}`,
                 },
               ],
+              application_context: {
+                shipping_preference: 'NO_SHIPPING',
+                user_action: 'PAY_NOW',
+                return_url: window.location.origin + '/tours',
+                cancel_url: window.location.origin + '/tours',
+              },
             }
             console.log("Order data:", orderData)
             return actions.order.create(orderData)

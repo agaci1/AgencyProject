@@ -28,6 +28,12 @@ public class PayPalPaymentService implements PaymentService {
     @Value("${paypal.base.url:https://api-m.paypal.com}")
     private String paypalBaseUrl;
     
+    @Value("${paypal.client.id:}")
+    private String paypalClientId;
+    
+    @Value("${paypal.client.secret:}")
+    private String paypalClientSecret;
+    
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Override
@@ -65,7 +71,7 @@ public class PayPalPaymentService implements PaymentService {
             
             // Fallback validation: accept the transaction if it has a valid format
             // This prevents double charges when credentials are not configured
-            if (transactionId != null && !transactionId.trim().isEmpty() && transactionId.length() > 10) {
+            if (transactionId != null && !transactionId.trim().isEmpty() && (transactionId.startsWith("EC-") || transactionId.startsWith("PAY-") || transactionId.length() > 10)) {
                 logger.info("Accepting PayPal transaction with fallback validation: {}", transactionId);
                 return true;
             } else {
