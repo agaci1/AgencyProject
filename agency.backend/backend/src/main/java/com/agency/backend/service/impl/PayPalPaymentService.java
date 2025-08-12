@@ -19,6 +19,8 @@ public class PayPalPaymentService implements PaymentService {
 
     private static final Logger logger = LoggerFactory.getLogger(PayPalPaymentService.class);
     
+    // PayPal payment service for production
+    
     @Value("${paypal.client.id:}")
     private String paypalClientId;
     
