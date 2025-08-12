@@ -157,7 +157,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
       }
 
       const script = document.createElement("script")
-      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&enable-funding=card,venmo&disable-funding=paylater&buyer-country=AL&components=buttons,funding-eligibility`
+      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&enable-funding=card,venmo&disable-funding=paylater&buyer-country=AL&components=buttons`
       script.async = true
 
       console.log("Loading PayPal SDK with URL:", script.src)
@@ -222,13 +222,14 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
     try {
       window.paypal
         .Buttons({
-          style: {
-            layout: "vertical",
-            color: "blue",
-            shape: "rect",
-            label: "pay",
-            height: 50,
-          },
+                  style: {
+          layout: "vertical",
+          color: "blue",
+          shape: "rect",
+          label: "pay",
+          height: 50,
+        },
+
 
 
           createOrder: (data: any, actions: any) => {
@@ -363,12 +364,12 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                 <div className="flex items-start gap-3">
                   <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
                   <div>
-                    <h4 className="font-semibold text-blue-900 mb-2">Secure Payment with PayPal</h4>
+                    <h4 className="font-semibold text-blue-900 mb-2">Continue to Secure Payment</h4>
                     <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• Pay with your PayPal account</li>
-                      <li>• Or use guest checkout with any card</li>
-                      <li>• No PayPal account required</li>
-                      <li>• Secured by PayPal's buyer protection</li>
+                      <li>• Click the button below to continue</li>
+                      <li>• Choose "Pay with PayPal" or "Pay with Card"</li>
+                      <li>• No PayPal account required for card payments</li>
+                      <li>• 100% secure payment processing</li>
                     </ul>
                   </div>
                 </div>
