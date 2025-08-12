@@ -113,3 +113,4 @@ Once configured, you'll get:
 - **Railway Variables:** https://railway.app/dashboard
 
 **The email system is ready - just needs the password configured!** 🚀
+

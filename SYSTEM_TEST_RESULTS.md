@@ -101,3 +101,4 @@ Railway Variables → Add: MAIL_PASSWORD=your_hotmail_app_password
 **The only missing piece is email notifications, which is optional and doesn't affect the core booking functionality.**
 
 **Your system is production-ready!** 🚀
+
