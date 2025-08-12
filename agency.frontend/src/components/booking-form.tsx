@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { MapPin, Clock, Users, CreditCard, Lock, Info } from "lucide-react"
+import { loadStripe } from '@stripe/stripe-js'
 import api from "@/lib/api"
 
 interface Tour {
@@ -124,15 +125,15 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
   const baseTotal = tour.price * bookingData.guests
   const finalTotal = bookingData.tripType === "round-trip" ? baseTotal * 2 : baseTotal
 
-  // PayPal integration
-  const [paypalLoaded, setPaypalLoaded] = useState(false)
-  const [paypalError, setPaypalError] = useState<string | null>(null)
+  // Stripe integration
+  const [stripeLoaded, setStripeLoaded] = useState(false)
+  const [stripeError, setStripeError] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [notification, setNotification] = useState<string | null>(null)
 
-  // Load PayPal SDK
+  // Load Stripe
   useEffect(() => {
-    if (step !== "payment" || paypalLoaded) return
+    if (step !== "payment" || stripeLoaded) return
 
     let timeoutId: NodeJS.Timeout
 
