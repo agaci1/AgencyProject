@@ -140,6 +140,11 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
       const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
       const currency = process.env.NEXT_PUBLIC_PAYPAL_CURRENCY || "EUR"
 
+      console.log("PayPal Configuration Debug:")
+      console.log("- Client ID:", clientId ? "SET" : "NOT SET")
+      console.log("- Currency:", currency)
+      console.log("- Final Total:", finalTotal)
+
       if (!clientId) {
         setPaypalError("PayPal configuration is missing. Please contact support.")
         return
@@ -154,6 +159,8 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
       const script = document.createElement("script")
       script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture`
       script.async = true
+
+      console.log("Loading PayPal SDK with URL:", script.src)
 
       script.onload = () => {
         console.log("PayPal SDK loaded successfully")
@@ -224,7 +231,8 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
           },
           createOrder: (data: any, actions: any) => {
             console.log("Creating PayPal order for:", finalTotal)
-            return actions.order.create({
+            console.log("Using currency: EUR (hardcoded)")
+            const orderData = {
               purchase_units: [
                 {
                   amount: {
@@ -234,7 +242,9 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                   description: `${tour.title} - ${bookingData.guests} guest(s)`,
                 },
               ],
-            })
+            }
+            console.log("Order data:", orderData)
+            return actions.order.create(orderData)
           },
           onApprove: async (data: any, actions: any) => {
             setIsProcessing(true)
