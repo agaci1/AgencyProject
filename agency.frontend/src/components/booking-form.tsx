@@ -159,8 +159,8 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
       }
 
       const script = document.createElement("script")
-      // Simplified PayPal SDK URL - remove all restrictions
-      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&components=buttons`
+      // Configure PayPal SDK to enable both PayPal and card payments
+      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&enable-funding=card,venmo&disable-funding=paylater&buyer-country=AL&components=buttons`
       script.async = true
 
       console.log("Loading PayPal SDK with URL:", script.src)
@@ -393,7 +393,8 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                     <h4 className="font-semibold text-blue-900 mb-2">Continue to Secure Payment</h4>
                     <ul className="text-sm text-blue-800 space-y-1">
                       <li>• Click the button below to continue</li>
-                      <li>• Choose "Pay with PayPal" or "Pay with Card"</li>
+                      <li>• Choose "Pay with PayPal" or "Pay with Card" in PayPal</li>
+                      <li>• Both options open PayPal's secure payment window</li>
                       <li>• No PayPal account required for card payments</li>
                       <li>• 100% secure payment processing</li>
                     </ul>
