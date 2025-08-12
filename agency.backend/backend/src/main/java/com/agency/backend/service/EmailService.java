@@ -24,6 +24,9 @@ public class EmailService {
     
     @Value("${spring.mail.password:}")
     private String mailPassword;
+    
+    @Value("${app.agency.email}")
+    private String agencyEmail;
 
     public EmailService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
@@ -103,10 +106,10 @@ public class EmailService {
         try {
             String subject = "📋 New Booking Received — ID " + booking.getId();
             String htmlContent = generateAgencyEmailHtml(booking);
-            sendHtmlMessage(fromEmail, subject, htmlContent);
-            logger.info("Agency booking notification sent to: {}", fromEmail);
+            sendHtmlMessage(agencyEmail, subject, htmlContent);
+            logger.info("Agency booking notification sent to: {}", agencyEmail);
         } catch (Exception e) {
-            logger.error("Failed to send agency booking notification to: {}", fromEmail, e);
+            logger.error("Failed to send agency booking notification to: {}", agencyEmail, e);
         }
     }
 
