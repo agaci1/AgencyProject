@@ -138,9 +138,9 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
     let timeoutId: NodeJS.Timeout
 
     const loadPayPalScript = () => {
-      // Try environment variable first, then fallback to hardcoded
-      const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX"
-      const currency = process.env.NEXT_PUBLIC_PAYPAL_CURRENCY || "EUR"
+      // Use the correct PayPal client ID from Railway
+      const clientId = "Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX"
+      const currency = "EUR"
 
       console.log("PayPal Configuration Debug:")
       console.log("- Client ID:", clientId ? "SET" : "NOT SET")
@@ -159,7 +159,8 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
       }
 
       const script = document.createElement("script")
-      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&enable-funding=card,venmo&disable-funding=paylater&buyer-country=AL&components=buttons`
+      // Simplified PayPal SDK URL - remove all restrictions
+      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&components=buttons`
       script.async = true
 
       console.log("Loading PayPal SDK with URL:", script.src)
