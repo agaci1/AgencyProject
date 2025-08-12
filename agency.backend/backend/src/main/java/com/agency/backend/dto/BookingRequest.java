@@ -26,13 +26,12 @@ public class BookingRequest {
     private int guests;
 
     @NotBlank
-    @Pattern(regexp = "card|paypal|stripe|twoc2p")
+    @Pattern(regexp = "card|paypal|stripe")
     private String paymentMethod;
 
     private CardInfo payment;   // for "card" method
     private PaypalInfo paypal;  // for "paypal" method
     private StripeInfo stripe;  // for "stripe" method
-    private TwoC2PInfo twoC2P;  // for "twoc2p" method
 
     @Data
     public static class CardInfo {
@@ -74,15 +73,6 @@ public class BookingRequest {
     public static class StripeInfo {
         @NotBlank
         private String paymentIntentId;
-
-        @Email
-        private String customerEmail;
-    }
-
-    @Data
-    public static class TwoC2PInfo {
-        @NotBlank
-        private String transactionId;
 
         @Email
         private String customerEmail;
