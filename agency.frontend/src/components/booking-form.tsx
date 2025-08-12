@@ -10,7 +10,6 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { MapPin, Clock, Users, CreditCard, Lock, Info } from "lucide-react"
-import { loadStripe } from '@stripe/stripe-js'
 import api from "@/lib/api"
 
 interface Tour {
@@ -125,15 +124,15 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
   const baseTotal = tour.price * bookingData.guests
   const finalTotal = bookingData.tripType === "round-trip" ? baseTotal * 2 : baseTotal
 
-  // Stripe integration
-  const [stripeLoaded, setStripeLoaded] = useState(false)
-  const [stripeError, setStripeError] = useState<string | null>(null)
+  // PayPal integration
+  const [paypalLoaded, setPaypalLoaded] = useState(false)
+  const [paypalError, setPaypalError] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [notification, setNotification] = useState<string | null>(null)
 
-  // Load Stripe
+  // Load PayPal SDK
   useEffect(() => {
-    if (step !== "payment" || stripeLoaded) return
+    if (step !== "payment" || paypalLoaded) return
 
     let timeoutId: NodeJS.Timeout
 
@@ -158,7 +157,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
       }
 
       const script = document.createElement("script")
-      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&enable-funding=card,venmo&disable-funding=paylater`
+      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&enable-funding=card&disable-funding=paylater,venmo&buyer-country=AL`
       script.async = true
 
       console.log("Loading PayPal SDK with URL:", script.src)
