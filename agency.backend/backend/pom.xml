@@ -80,12 +80,7 @@
             <artifactId>jakarta.validation-api</artifactId>
         </dependency>
 
-        <!-- Stripe Payment Processing -->
-        <dependency>
-            <groupId>com.stripe</groupId>
-            <artifactId>stripe-java</artifactId>
-            <version>22.0.0</version>
-        </dependency>
+
 
         <!-- Testing -->
         <dependency>
