@@ -137,13 +137,19 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
     let timeoutId: NodeJS.Timeout
 
     const loadPayPalScript = () => {
-      const clientId = "Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX"
-      const currency = "EUR"
+      // Try environment variable first, then fallback to hardcoded
+      const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX"
+      const currency = process.env.NEXT_PUBLIC_PAYPAL_CURRENCY || "EUR"
 
       console.log("PayPal Configuration Debug:")
-      console.log("- Client ID: SET")
+      console.log("- Client ID:", clientId ? "SET" : "NOT SET")
       console.log("- Currency:", currency)
       console.log("- Final Total:", finalTotal)
+
+      if (!clientId) {
+        setPaypalError("PayPal configuration is missing. Please contact support.")
+        return
+      }
 
       // Remove any existing PayPal script
       const existingScript = document.querySelector('script[src*="paypal.com/sdk"]')
@@ -152,7 +158,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
       }
 
       const script = document.createElement("script")
-      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&enable-funding=card&disable-funding=paylater,venmo&buyer-country=AL&components=buttons`
+      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&enable-funding=card,venmo&disable-funding=paylater&buyer-country=AL&components=buttons`
       script.async = true
 
       console.log("Loading PayPal SDK with URL:", script.src)

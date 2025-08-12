@@ -55,12 +55,18 @@ public class BookingRequest {
     public PaypalInfo getPaypal() { return paypal; }
     public void setPaypal(PaypalInfo paypal) { this.paypal = paypal; }
 
-    @Data
     public static class PaypalInfo {
         @Email
         private String email;
 
         @NotBlank
         private String transactionId;
+
+        // Manual getters and setters
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+
+        public String getTransactionId() { return transactionId; }
+        public void setTransactionId(String transactionId) { this.transactionId = transactionId; }
     }
 }

@@ -15,7 +15,7 @@ declare global {
           label?: string;
           height?: number;
         };
-        fundingSource?: string;
+        // fundingSource?: string; // Removed to fix PayPal button rendering
         createOrder: (data: unknown, actions: unknown) => Promise<string>
         onApprove: (data: { orderID: string }, actions: unknown) => Promise<void>
         onError: (err: Error) => void
