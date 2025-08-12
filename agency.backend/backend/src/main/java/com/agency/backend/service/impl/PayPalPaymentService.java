@@ -22,6 +22,9 @@ public class PayPalPaymentService implements PaymentService {
     @Value("${paypal.client.id:}")
     private String paypalClientId;
     
+    @Value("${paypal.client.secret:}")
+    private String paypalClientSecret;
+    
     @Value("${paypal.base.url:https://api-m.paypal.com}")
     private String paypalBaseUrl;
     
