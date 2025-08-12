@@ -26,11 +26,12 @@ public class BookingRequest {
     private int guests;
 
     @NotBlank
-    @Pattern(regexp = "card|paypal")
+    @Pattern(regexp = "card|paypal|stripe")
     private String paymentMethod;
 
     private CardInfo payment;   // for "card" method
     private PaypalInfo paypal;  // for "paypal" method
+    private StripeInfo stripe;  // for "stripe" method
 
     @Data
     public static class CardInfo {
@@ -66,5 +67,14 @@ public class BookingRequest {
 
         @NotBlank
         private String transactionId;
+    }
+
+    @Data
+    public static class StripeInfo {
+        @NotBlank
+        private String paymentIntentId;
+
+        @Email
+        private String customerEmail;
     }
 }
