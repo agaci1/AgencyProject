@@ -152,7 +152,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
       }
 
       const script = document.createElement("script")
-      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&enable-funding=card,venmo&disable-funding=paylater&buyer-country=AL&components=buttons`
+      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&enable-funding=card&disable-funding=paylater,venmo&buyer-country=AL&components=buttons`
       script.async = true
 
       console.log("Loading PayPal SDK with URL:", script.src)
@@ -162,12 +162,14 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
         // Wait a bit for PayPal to initialize
         setTimeout(() => {
           if (window.paypal && typeof window.paypal.Buttons === "function") {
+            console.log("PayPal Buttons function available")
             setPaypalLoaded(true)
             setPaypalError(null)
           } else {
+            console.error("PayPal Buttons function not available")
             setPaypalError("PayPal SDK loaded but Buttons not available")
           }
-        }, 500)
+        }, 1000)
       }
 
       script.onerror = () => {
@@ -200,17 +202,34 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
   }, [step, paypalLoaded])
 
   const initializePayPal = () => {
-    if (typeof window === "undefined" || !window.paypal || typeof window.paypal.Buttons !== "function") {
-      setPaypalError("PayPal SDK not available")
+    console.log("Initializing PayPal...")
+    console.log("Window object:", typeof window)
+    console.log("PayPal object:", window.paypal)
+    console.log("PayPal Buttons function:", typeof window.paypal?.Buttons)
+    
+    if (typeof window === "undefined") {
+      setPaypalError("Window object not available")
+      return
+    }
+    
+    if (!window.paypal) {
+      setPaypalError("PayPal SDK not loaded")
+      return
+    }
+    
+    if (typeof window.paypal.Buttons !== "function") {
+      setPaypalError("PayPal Buttons function not available")
       return
     }
 
     const container = document.getElementById("paypal-button-container")
     if (!container) {
       console.error("PayPal container not found")
+      setPaypalError("PayPal container not found")
       return
     }
 
+    console.log("PayPal container found, clearing content...")
     // Clear any existing content
     container.innerHTML = ""
 
