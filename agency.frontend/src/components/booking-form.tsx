@@ -137,18 +137,13 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
     let timeoutId: NodeJS.Timeout
 
     const loadPayPalScript = () => {
-      const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
-      const currency = process.env.NEXT_PUBLIC_PAYPAL_CURRENCY || "EUR"
+      const clientId = "Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX"
+      const currency = "EUR"
 
       console.log("PayPal Configuration Debug:")
-      console.log("- Client ID:", clientId ? "SET" : "NOT SET")
+      console.log("- Client ID: SET")
       console.log("- Currency:", currency)
       console.log("- Final Total:", finalTotal)
-
-      if (!clientId) {
-        setPaypalError("PayPal configuration is missing. Please contact support.")
-        return
-      }
 
       // Remove any existing PayPal script
       const existingScript = document.querySelector('script[src*="paypal.com/sdk"]')
