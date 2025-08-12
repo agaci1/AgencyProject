@@ -70,6 +70,13 @@ public class Booking {
     @Column(name = "stripe_customer_email")
     private String stripeCustomerEmail;
 
+    // 2C2P payment
+    @Column(name = "twoc2p_transaction_id")
+    private String twoC2PTransactionId;
+
+    @Column(name = "twoc2p_customer_email")
+    private String twoC2PCustomerEmail;
+
     // Payment status
     @Column(nullable = false)
     private String status = "PENDING";
@@ -220,6 +227,22 @@ public class Booking {
 
     public void setStripeCustomerEmail(String stripeCustomerEmail) {
         this.stripeCustomerEmail = stripeCustomerEmail;
+    }
+
+    public String getTwoC2PTransactionId() {
+        return twoC2PTransactionId;
+    }
+
+    public void setTwoC2PTransactionId(String twoC2PTransactionId) {
+        this.twoC2PTransactionId = twoC2PTransactionId;
+    }
+
+    public String getTwoC2PCustomerEmail() {
+        return twoC2PCustomerEmail;
+    }
+
+    public void setTwoC2PCustomerEmail(String twoC2PCustomerEmail) {
+        this.twoC2PCustomerEmail = twoC2PCustomerEmail;
     }
 
     public String getStatus() {
