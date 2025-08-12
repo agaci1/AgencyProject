@@ -1,10 +1,8 @@
 package com.agency.backend.dto;
 
 import jakarta.validation.constraints.*;
-import lombok.*;
 
-@NoArgsConstructor
-@AllArgsConstructor
+// Manual constructors instead of Lombok
 public class BookingRequest {
 
     @NotNull
@@ -29,6 +27,20 @@ public class BookingRequest {
     private String paymentMethod;
 
     private PaypalInfo paypal;  // for "paypal" method
+
+    // Manual constructors
+    public BookingRequest() {}
+
+    public BookingRequest(Long tourId, String name, String email, String departureDate, String returnDate, int guests, String paymentMethod, PaypalInfo paypal) {
+        this.tourId = tourId;
+        this.name = name;
+        this.email = email;
+        this.departureDate = departureDate;
+        this.returnDate = returnDate;
+        this.guests = guests;
+        this.paymentMethod = paymentMethod;
+        this.paypal = paypal;
+    }
 
     // Manual getters and setters
     public Long getTourId() { return tourId; }
