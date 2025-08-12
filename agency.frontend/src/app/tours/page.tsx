@@ -15,12 +15,24 @@ interface Tour {
 
 export default function Page() {
   const [tours, setTours] = useState<Tour[]>([])
+  const [error, setError] = useState<string>("")
 
   useEffect(() => {
+    console.log("Tours page loaded")
+    console.log("API base URL:", api.defaults.baseURL)
+    console.log("PayPal Client ID:", process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID)
+    console.log("PayPal Currency:", process.env.NEXT_PUBLIC_PAYPAL_CURRENCY)
+    
     api
       .get("/tours")
-      .then(res => setTours(res.data))
-      .catch(err => console.error("Failed to fetch tours:", err))
+      .then(res => {
+        console.log("Tours API response:", res.data)
+        setTours(res.data)
+      })
+      .catch(err => {
+        console.error("Failed to fetch tours:", err)
+        setError(err.message || "Failed to fetch tours")
+      })
   }, [])
 
   return (
@@ -29,6 +41,13 @@ export default function Page() {
         <h1 className="text-4xl font-bold text-center mb-12 text-blue-900">
           Available Tours
         </h1>
+        
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+            <strong>Error:</strong> {error}
+          </div>
+        )}
+        
         <div className="grid gap-8 md:grid-cols-2">
           {tours.map(tour => (
             <Card
@@ -51,6 +70,12 @@ export default function Page() {
             </Card>
           ))}
         </div>
+        
+        {tours.length === 0 && !error && (
+          <div className="text-center text-gray-500">
+            Loading tours...
+          </div>
+        )}
       </div>
     </div>
   )
