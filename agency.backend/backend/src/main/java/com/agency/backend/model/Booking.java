@@ -63,12 +63,7 @@ public class Booking {
     @Column(name = "paypal_transaction_id")
     private String paypalTxn;
 
-    // Stripe payment
-    @Column(name = "stripe_payment_intent_id")
-    private String stripePaymentIntentId;
 
-    @Column(name = "stripe_customer_email")
-    private String stripeCustomerEmail;
 
     // Payment status
     @Column(nullable = false)
@@ -206,21 +201,7 @@ public class Booking {
         this.paypalTxn = paypalTxn;
     }
 
-    public String getStripePaymentIntentId() {
-        return stripePaymentIntentId;
-    }
 
-    public void setStripePaymentIntentId(String stripePaymentIntentId) {
-        this.stripePaymentIntentId = stripePaymentIntentId;
-    }
-
-    public String getStripeCustomerEmail() {
-        return stripeCustomerEmail;
-    }
-
-    public void setStripeCustomerEmail(String stripeCustomerEmail) {
-        this.stripeCustomerEmail = stripeCustomerEmail;
-    }
 
     public String getStatus() {
         return status;
