@@ -1,3 +1,10 @@
+-- Clear existing data to avoid conflicts
+DELETE FROM tour_highlights;
+DELETE FROM tours;
+
+-- Reset auto-increment
+ALTER TABLE tours AUTO_INCREMENT = 1;
+
 -- Insert the 4 specific tours from Railway production database
 INSERT INTO tours (title, description, price, departure_time, location, rating, image, max_guests, route_description, start_location_link) VALUES 
 ('Tirana [Terminal] → Koman', 'Bus trip from Tirana through the Albanian Alps to Koman ferry dock', 10.0, '06:00', 'Tirana', 5.0, '/koman .jpg', 50, 'Departure from Tirana North-South Terminal at 06:00, arriving at Koman ferry dock', 'https://maps.app.goo.gl/CbEDq9ZmBcyqH5jS6');
