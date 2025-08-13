@@ -1,9 +1,9 @@
 [build]
 builder = "nixpacks"
-buildCommand = "cd backend && ./mvnw clean package -DskipTests"
+buildCommand = "cd agency.backend && ./mvnw clean package -DskipTests"
 
 [deploy]
-startCommand = "cd backend && java -jar target/*.jar"
+startCommand = "cd agency.backend && java -jar target/*.jar"
 healthcheckPath = "/ping"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
