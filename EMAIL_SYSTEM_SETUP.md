@@ -114,3 +114,4 @@ Once configured, you'll get:
 
 **The email system is ready - just needs the password configured!** 🚀
 
+

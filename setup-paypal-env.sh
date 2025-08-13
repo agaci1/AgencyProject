@@ -33,3 +33,4 @@ else
     echo "❌ Error: Environment variables not set properly"
     exit 1
 fi
+

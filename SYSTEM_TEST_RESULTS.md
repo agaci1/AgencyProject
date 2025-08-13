@@ -102,3 +102,4 @@ Railway Variables → Add: MAIL_PASSWORD=your_hotmail_app_password
 
 **Your system is production-ready!** 🚀
 
+
