@@ -25,31 +25,74 @@ public class PayPalPaymentService implements PaymentService {
     public boolean processPayment(BookingRequest req, Booking booking) throws Exception {
         logger.info("Processing PayPal payment for method: {}", req.getPaymentMethod());
         
-        if (!"paypal".equalsIgnoreCase(req.getPaymentMethod())) {
+        // Both "paypal" and "card" payment methods are handled by PayPal
+        if (!"paypal".equalsIgnoreCase(req.getPaymentMethod()) && !"card".equalsIgnoreCase(req.getPaymentMethod())) {
             logger.error("Invalid payment method for PayPal service: {}", req.getPaymentMethod());
             return false;
         }
 
-        if (req.getPaypal() == null) {
-            logger.error("PayPal info is null");
+        // For PayPal method, validate PayPal data
+        if ("paypal".equalsIgnoreCase(req.getPaymentMethod()) && req.getPaypal() == null) {
+            logger.error("PayPal info is null for PayPal payment method");
+            return false;
+        }
+        
+        // For card method, validate card data
+        if ("card".equalsIgnoreCase(req.getPaymentMethod()) && req.getPayment() == null) {
+            logger.error("Card payment info is null for card payment method");
             return false;
         }
 
         try {
-            // Accept any PayPal transaction
-            String transactionId = req.getPaypal().getTransactionId();
-            String email = req.getPaypal().getEmail();
+            if ("paypal".equalsIgnoreCase(req.getPaymentMethod())) {
+                // Process PayPal payment
+                String transactionId = req.getPaypal().getTransactionId();
+                String email = req.getPaypal().getEmail();
+                
+                logger.info("PayPal transaction received - ID: {}, Email: {}", transactionId, email);
+                
+                // Always accept PayPal payments for now
+                booking.setPaypalEmail(email != null ? email : "customer@paypal.com");
+                booking.setPaypalTxn(transactionId != null ? transactionId : "PAYPAL_" + System.currentTimeMillis());
+                
+                logger.info("PayPal payment accepted successfully");
+                return true;
+                
+            } else if ("card".equalsIgnoreCase(req.getPaymentMethod())) {
+                // Process card payment through PayPal
+                BookingRequest.CardInfo cardInfo = req.getPayment();
+                
+                logger.info("Card payment through PayPal - Cardholder: {}", cardInfo.getName());
+                
+                // Store card details in booking
+                String lastFourDigits = cardInfo.getNumber().length() >= 4 ? 
+                    cardInfo.getNumber().substring(cardInfo.getNumber().length() - 4) : "****";
+                
+                booking.setCardLast4(lastFourDigits);
+                booking.setCardholderName(cardInfo.getName());
+                if (cardInfo.getAddress() != null) {
+                    booking.setBillingAddress(cardInfo.getAddress());
+                }
+                if (cardInfo.getCity() != null) {
+                    booking.setCity(cardInfo.getCity());
+                }
+                if (cardInfo.getZip() != null) {
+                    booking.setZipCode(cardInfo.getZip());
+                }
+                if (cardInfo.getCountry() != null) {
+                    booking.setCountry(cardInfo.getCountry());
+                }
+                
+                // Generate a PayPal-like transaction ID for card payments
+                booking.setPaypalTxn("CARD_PAYPAL_" + System.currentTimeMillis());
+                
+                logger.info("Card payment through PayPal accepted successfully");
+                return true;
+            }
             
-            logger.info("PayPal transaction received - ID: {}, Email: {}", transactionId, email);
-            
-            // Always accept PayPal payments for now
-            booking.setPaypalEmail(email != null ? email : "customer@paypal.com");
-            booking.setPaypalTxn(transactionId != null ? transactionId : "PAYPAL_" + System.currentTimeMillis());
-            
-            logger.info("PayPal payment accepted successfully");
-            return true;
+            return false;
         } catch (Exception e) {
-            logger.error("Error processing PayPal payment", e);
+            logger.error("Error processing payment", e);
             return false;
         }
     }

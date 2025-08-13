@@ -136,10 +136,11 @@ public class BookingController {
                     .body("Payment method is required.");
         }
         
-        if (!req.getPaymentMethod().equalsIgnoreCase("paypal")) {
+        String paymentMethod = req.getPaymentMethod().toLowerCase();
+        if (!paymentMethod.equals("paypal") && !paymentMethod.equals("card")) {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
-                    .body("Invalid payment method. Only 'paypal' is supported.");
+                    .body("Invalid payment method. Only 'paypal' and 'card' are supported.");
         }
         
         booking.setPaymentMethod(req.getPaymentMethod());

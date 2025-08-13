@@ -21,7 +21,8 @@ public class PaymentServiceFactory {
         
         logger.info("Processing payment with method: {}", paymentMethod);
 
-        if ("paypal".equalsIgnoreCase(paymentMethod)) {
+        // Both "paypal" and "card" payment methods are handled by PayPal
+        if ("paypal".equalsIgnoreCase(paymentMethod) || "card".equalsIgnoreCase(paymentMethod)) {
             return payPalPaymentService.processPayment(req, booking);
         } else {
             logger.error("Unsupported payment method: {}", paymentMethod);
