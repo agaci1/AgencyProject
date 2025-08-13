@@ -4,6 +4,6 @@ buildCommand = "cd agency.backend && ./mvnw clean package -DskipTests"
 
 [deploy]
 startCommand = "cd agency.backend && java -jar target/*.jar --spring.profiles.active=prod"
-healthcheckPath = "/ping"
+healthcheckPath = "/api/ping"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
