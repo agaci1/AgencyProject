@@ -7,7 +7,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @Primary
@@ -20,6 +26,11 @@ public class PayPalPaymentService implements PaymentService {
     
     @Value("${paypal.client.secret:}")
     private String paypalClientSecret;
+    
+    @Value("${paypal.base.url:https://api-m.paypal.com}")
+    private String paypalBaseUrl;
+    
+    private final RestTemplate restTemplate = new RestTemplate();
 
     @Override
     public boolean processPayment(BookingRequest req, Booking booking) throws Exception {
@@ -35,21 +46,145 @@ public class PayPalPaymentService implements PaymentService {
             return false;
         }
 
+        String transactionId = req.getPaypal().getTransactionId();
+        String email = req.getPaypal().getEmail();
+        
+        if (transactionId == null || transactionId.trim().isEmpty()) {
+            logger.error("PayPal transaction ID is missing");
+            return false;
+        }
+        
+        logger.info("PayPal transaction received - ID: {}, Email: {}", transactionId, email);
+        
         try {
-            // Accept any PayPal transaction
-            String transactionId = req.getPaypal().getTransactionId();
-            String email = req.getPaypal().getEmail();
+            // Get PayPal access token
+            String accessToken = getPayPalAccessToken();
+            if (accessToken == null) {
+                logger.error("Failed to get PayPal access token");
+                return false;
+            }
             
-            logger.info("PayPal transaction received - ID: {}, Email: {}", transactionId, email);
+            // Verify the order with PayPal
+            boolean isOrderValid = verifyPayPalOrder(transactionId, accessToken);
+            if (!isOrderValid) {
+                logger.error("PayPal order verification failed for transaction ID: {}", transactionId);
+                return false;
+            }
             
-            // Always accept PayPal payments for now
+            // Capture the payment
+            boolean isPaymentCaptured = capturePayPalPayment(transactionId, accessToken);
+            if (!isPaymentCaptured) {
+                logger.error("PayPal payment capture failed for transaction ID: {}", transactionId);
+                return false;
+            }
+            
+            // Set booking details
             booking.setPaypalEmail(email != null ? email : "customer@paypal.com");
-            booking.setPaypalTxn(transactionId != null ? transactionId : "PAYPAL_" + System.currentTimeMillis());
+            booking.setPaypalTxn(transactionId);
             
-            logger.info("PayPal payment accepted successfully");
+            logger.info("PayPal payment processed successfully - ID: {}, Email: {}", transactionId, email);
             return true;
+            
         } catch (Exception e) {
-            logger.error("Error processing PayPal payment", e);
+            logger.error("Error processing PayPal payment for transaction ID: {}", transactionId, e);
+            return false;
+        }
+    }
+    
+    private String getPayPalAccessToken() {
+        try {
+            String credentials = paypalClientId + ":" + paypalClientSecret;
+            String encodedCredentials = Base64.getEncoder().encodeToString(credentials.getBytes());
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            headers.set("Authorization", "Basic " + encodedCredentials);
+            
+            String body = "grant_type=client_credentials";
+            
+            HttpEntity<String> request = new HttpEntity<>(body, headers);
+            
+            ResponseEntity<Map> response = restTemplate.postForEntity(
+                paypalBaseUrl + "/v1/oauth2/token",
+                request,
+                Map.class
+            );
+            
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                String accessToken = (String) response.getBody().get("access_token");
+                logger.info("PayPal access token obtained successfully");
+                return accessToken;
+            } else {
+                logger.error("Failed to get PayPal access token. Status: {}", response.getStatusCode());
+                return null;
+            }
+            
+        } catch (Exception e) {
+            logger.error("Error getting PayPal access token", e);
+            return null;
+        }
+    }
+    
+    private boolean verifyPayPalOrder(String orderId, String accessToken) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + accessToken);
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            
+            HttpEntity<String> request = new HttpEntity<>(headers);
+            
+            ResponseEntity<Map> response = restTemplate.exchange(
+                paypalBaseUrl + "/v2/checkout/orders/" + orderId,
+                HttpMethod.GET,
+                request,
+                Map.class
+            );
+            
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                String status = (String) response.getBody().get("status");
+                logger.info("PayPal order status: {}", status);
+                
+                // Order should be APPROVED to proceed with capture
+                return "APPROVED".equals(status);
+            } else {
+                logger.error("Failed to verify PayPal order. Status: {}", response.getStatusCode());
+                return false;
+            }
+            
+        } catch (Exception e) {
+            logger.error("Error verifying PayPal order: {}", orderId, e);
+            return false;
+        }
+    }
+    
+    private boolean capturePayPalPayment(String orderId, String accessToken) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + accessToken);
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            
+            // Empty body for capture request
+            HttpEntity<String> request = new HttpEntity<>(headers);
+            
+            ResponseEntity<Map> response = restTemplate.postForEntity(
+                paypalBaseUrl + "/v2/checkout/orders/" + orderId + "/capture",
+                request,
+                Map.class
+            );
+            
+            if (response.getStatusCode() == HttpStatus.CREATED && response.getBody() != null) {
+                String status = (String) response.getBody().get("status");
+                logger.info("PayPal payment capture status: {}", status);
+                
+                // Payment should be COMPLETED
+                return "COMPLETED".equals(status);
+            } else {
+                logger.error("Failed to capture PayPal payment. Status: {}", response.getStatusCode());
+                return false;
+            }
+            
+        } catch (Exception e) {
+            logger.error("Error capturing PayPal payment: {}", orderId, e);
             return false;
         }
     }
