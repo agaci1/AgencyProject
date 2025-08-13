@@ -27,7 +27,8 @@ This is a full-stack website application for a travel agency based in **Tropoja,
 - MySQL
 
 ### Frontend:
-- HTML / CSS / JavaScript
+- Next.js / React / TypeScript
+- Tailwind CSS
 - Visual Studio Code
 
 ### Tools:
@@ -41,11 +42,11 @@ This is a full-stack website application for a travel agency based in **Tropoja,
 
 AgencyProject/
 
-├── agency.backend/ # Spring Boot backend with REST APIs
+├── backend/ # Spring Boot backend with REST APIs
 
-├── agency.frontend/ # HTML/CSS/JS frontend
+├── frontend/ # Next.js frontend application
 
-├── agency.database/ # SQL schema, ER diagrams
+├── INSERT_TOURS_TO_RAILWAY.sql # Database schema and sample data
 
 └── README.md # Project overview
 
@@ -58,16 +59,17 @@ AgencyProject/
 
 
 2. **Backend**  
-- Open `agency.backend` in IntelliJ  
+- Open `backend` in IntelliJ  
 - Configure `application.properties` with your MySQL credentials  
 - Run the Spring Boot application
 
 3. **Frontend**  
-- Open `agency.frontend` in VS Code  
-- Use **Live Server** or open `index.html` manually
+- Open `frontend` in VS Code  
+- Run `npm install` to install dependencies
+- Run `npm run dev` to start the development server
 
 4. **Database**  
-- Import the SQL schema from `agency.database/schema.sql` using MySQL Workbench
+- Import the SQL schema from `INSERT_TOURS_TO_RAILWAY.sql` using MySQL Workbench
 
 ---
 
