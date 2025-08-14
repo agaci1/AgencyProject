@@ -36,10 +36,11 @@ public class EmailService {
         try {
             // Check if email credentials are configured
             if (mailPassword == null || mailPassword.isEmpty()) {
-                logger.warn("Email password not configured. Skipping email to: {}", to);
-                logger.warn("Subject: {}", subject);
-                logger.warn("Content: {}", text);
-                return;
+                logger.error("❌ EMAIL SYSTEM NOT CONFIGURED - Missing MAIL_PASSWORD environment variable");
+                logger.error("Email to: {}", to);
+                logger.error("Subject: {}", subject);
+                logger.error("Content: {}", text);
+                throw new RuntimeException("Email system not configured. Please set MAIL_PASSWORD environment variable.");
             }
             
             SimpleMailMessage msg = new SimpleMailMessage();
@@ -61,10 +62,11 @@ public class EmailService {
         try {
             // Check if email credentials are configured
             if (mailPassword == null || mailPassword.isEmpty()) {
-                logger.warn("Email password not configured. Skipping HTML email to: {}", to);
-                logger.warn("Subject: {}", subject);
-                logger.warn("HTML content length: {} characters", htmlContent.length());
-                return;
+                logger.error("❌ EMAIL SYSTEM NOT CONFIGURED - Missing MAIL_PASSWORD environment variable");
+                logger.error("HTML Email to: {}", to);
+                logger.error("Subject: {}", subject);
+                logger.error("HTML content length: {} characters", htmlContent.length());
+                throw new RuntimeException("Email system not configured. Please set MAIL_PASSWORD environment variable.");
             }
             
             MimeMessage message = mailSender.createMimeMessage();

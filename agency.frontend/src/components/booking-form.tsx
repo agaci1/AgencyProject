@@ -297,45 +297,10 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                 setNotification("Payment successful! Your booking has been confirmed.")
                 clearStorage() // Clear saved state
                 setTimeout(() => onComplete(), 2000)
-                              } else {
-                  // Check if this is a PayPal capture error (payment might still be successful)
-                  if (error.message && error.message.includes("unauthorized order")) {
-                    // Try to create booking anyway since PayPal might have processed it
-                    try {
-                     // Get customer info from the form or use defaults
-                     const nameInput = document.querySelector('input[name="name"]') as HTMLInputElement;
-                     const emailInput = document.querySelector('input[name="email"]') as HTMLInputElement;
-                     const customerName = nameInput?.value || "Customer";
-                     const customerEmail = emailInput?.value || "customer@example.com";
-                     
-                     const bookingPayload = {
-                       tourId: tour.id,
-                       name: customerName,
-                       email: customerEmail,
-                       departureDate: bookingData.departureDate,
-                       returnDate: bookingData.tripType === "round-trip" ? bookingData.returnDate : null,
-                       guests: bookingData.guests,
-                       paymentMethod: "paypal",
-                       paypal: {
-                         email: customerEmail,
-                         transactionId: "PAYPAL_FALLBACK_" + Date.now(),
-                       }
-                     }
-                    
-                    const res = await api.post("/bookings", bookingPayload)
-                    setNotification("🎉 Payment successful! Your booking has been confirmed. Check your email for details.")
-                    clearStorage()
-                    setTimeout(() => onComplete(), 5000) // Give more time to see the message
-                  } catch (backendError) {
-                    setNotification("⚠️ Payment processed but booking creation failed. Please contact support.")
-                    clearStorage()
-                    setTimeout(() => onComplete(), 2000)
-                  }
-                } else {
-                  // Only show error if payment itself failed
-                  const errorMessage = error.response?.data || error.message || "Payment failed. Please try again."
-                  setPaypalError(errorMessage)
-                }
+              } else {
+                // If PayPal capture failed, the payment was not successful
+                console.error("PayPal capture failed - payment was not processed:", error.message);
+                setPaypalError("Payment failed. Please try again or contact support if the issue persists.")
               }
               
               setIsProcessing(false)

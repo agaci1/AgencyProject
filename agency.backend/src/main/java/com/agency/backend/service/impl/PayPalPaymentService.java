@@ -115,11 +115,10 @@ public class PayPalPaymentService implements PaymentService {
                     booking.setCountry(cardInfo.getCountry());
                 }
                 
-                // Generate a PayPal-like transaction ID for card payments
-                booking.setPaypalTxn("CARD_PAYPAL_" + System.currentTimeMillis());
-                
-                logger.info("Card payment through PayPal accepted successfully");
-                return true;
+                // For card payments, we need to validate with PayPal first
+                // This should be done through PayPal's hosted card fields
+                logger.error("Card payment validation not implemented. Payment rejected.");
+                return false;
             }
             
             return false;
@@ -135,10 +134,10 @@ public class PayPalPaymentService implements PaymentService {
      */
     private boolean validatePayPalPayment(String orderId) {
         try {
-            // Skip validation for fake transaction IDs (fallback cases)
+            // REJECT fake transaction IDs - they indicate payment validation failed
             if (orderId.startsWith("PAYPAL_FALLBACK_") || orderId.startsWith("CARD_PAYPAL_")) {
-                logger.warn("Skipping validation for fake transaction ID: {}", orderId);
-                return true; // Accept fallback transactions for now
+                logger.error("REJECTING fake transaction ID: {}. This indicates payment validation failed.", orderId);
+                return false; // Reject fake transactions - they mean payment failed
             }
             
             // Get PayPal access token
