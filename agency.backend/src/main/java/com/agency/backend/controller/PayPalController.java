@@ -30,16 +30,18 @@ public class PayPalController {
         try {
             logger.info("Creating PayPal order with request: {}", request);
             
-            // Extract amount and currency from request
+            // Extract parameters from request
             BigDecimal amount = new BigDecimal(request.get("amount").toString());
             String currency = (String) request.get("currency");
+            String description = (String) request.get("description");
+            String customId = (String) request.get("custom_id");
             
             if (currency == null) {
                 currency = "EUR"; // Default to EUR
             }
             
-            // Create PayPal order
-            String orderId = payPalPaymentService.createPayPalOrder(amount, currency);
+            // Create PayPal order with additional details
+            String orderId = payPalPaymentService.createPayPalOrder(amount, currency, description, customId);
             
             if (orderId != null) {
                 Map<String, Object> response = new HashMap<>();
@@ -99,7 +101,7 @@ public class PayPalController {
             logger.info("Testing PayPal configuration");
             
             // Try to create a test order for 1 EUR
-            String testOrderId = payPalPaymentService.createPayPalOrder(new BigDecimal("1.00"), "EUR");
+            String testOrderId = payPalPaymentService.createPayPalOrder(new BigDecimal("1.00"), "EUR", "Test Order", "test_" + System.currentTimeMillis());
             
             if (testOrderId != null) {
                 logger.info("PayPal test successful - created order: {}", testOrderId);

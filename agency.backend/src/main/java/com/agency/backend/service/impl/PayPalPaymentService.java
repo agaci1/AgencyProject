@@ -135,7 +135,7 @@ public class PayPalPaymentService implements PaymentService {
      * Create a PayPal order and return the order ID
      * This follows the official PayPal pattern for order creation
      */
-    public String createPayPalOrder(BigDecimal amount, String currency) {
+    public String createPayPalOrder(BigDecimal amount, String currency, String description, String customId) {
         try {
             String accessToken = getPayPalAccessToken();
             if (accessToken == null) {
@@ -152,6 +152,14 @@ public class PayPalPaymentService implements PaymentService {
             amountData.put("currency_code", currency);
             amountData.put("value", amount.toString());
             purchaseUnit.put("amount", amountData);
+            
+            // Add description and custom_id if provided
+            if (description != null && !description.trim().isEmpty()) {
+                purchaseUnit.put("description", description);
+            }
+            if (customId != null && !customId.trim().isEmpty()) {
+                purchaseUnit.put("custom_id", customId);
+            }
             
             List<Map<String, Object>> purchaseUnits = new ArrayList<>();
             purchaseUnits.add(purchaseUnit);
