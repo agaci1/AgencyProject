@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PayPal Sandbox Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { border-color: #4CAF50; background-color: #f1f8e9; }
+        .error { border-color: #f44336; background-color: #ffebee; }
+        .info { border-color: #2196F3; background-color: #e3f2fd; }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 PayPal Sandbox Test</h1>
+        <p>Testing PayPal integration with sandbox credentials (no funding source issues)</p>
+        
+        <div class="test-section info">
+            <h3>📋 Test Information</h3>
+            <p><strong>Environment:</strong> PayPal Sandbox</p>
+            <p><strong>Amount:</strong> €0.01</p>
+            <p><strong>Purpose:</strong> Verify integration works without funding source issues</p>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 PayPal Sandbox Test</h3>
+            <div id="paypal-button-container"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Test Results</h3>
+            <div id="results" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        // PayPal Sandbox Client ID (this is a public test ID)
+        const clientId = 'sb-47eq9b6392831@business.example.com';
+        const currency = 'EUR';
+        let logs = [];
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+            logs.push(logEntry);
+            console.log(logEntry);
+            
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = logs.join('\n');
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        // Load PayPal SDK with sandbox
+        function loadPayPalSDK() {
+            log('Loading PayPal SDK (Sandbox)...');
+            
+            const script = document.createElement('script');
+            script.src = `https://www.sandbox.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&components=buttons`;
+            script.onload = function() {
+                log('✅ PayPal SDK loaded successfully (Sandbox)');
+                renderPayPalButtons();
+            };
+            script.onerror = function() {
+                log('❌ Failed to load PayPal SDK', 'error');
+            };
+            document.head.appendChild(script);
+        }
+
+        function renderPayPalButtons() {
+            if (typeof paypal === 'undefined') {
+                log('❌ PayPal SDK not available', 'error');
+                return;
+            }
+
+            log('Rendering PayPal buttons (Sandbox)...');
+            
+            paypal.Buttons({
+                createOrder: function(data, actions) {
+                    log('Creating order (Sandbox)...');
+                    const orderData = {
+                        purchase_units: [{
+                            amount: {
+                                value: '0.01',
+                                currency_code: currency
+                            },
+                            description: 'Test payment (Sandbox)',
+                            custom_id: 'test-sandbox-' + Date.now()
+                        }],
+                        application_context: {
+                            shipping_preference: 'NO_SHIPPING',
+                            user_action: 'PAY_NOW',
+                        }
+                    };
+                    
+                    log('Order data:', JSON.stringify(orderData, null, 2));
+                    return actions.order.create(orderData);
+                },
+                onApprove: function(data, actions) {
+                    log('✅ Order approved (Sandbox): ' + data.orderID);
+                    log('Attempting to capture payment...');
+                    
+                    return actions.order.capture().then(function(details) {
+                        log('✅ Payment captured successfully (Sandbox)!');
+                        log('Payment details: ' + JSON.stringify(details, null, 2));
+                        return details;
+                    }).catch(function(error) {
+                        log('❌ Payment capture failed: ' + error.message, 'error');
+                        throw error;
+                    });
+                },
+                onError: function(err) {
+                    log('❌ PayPal error: ' + err.message, 'error');
+                }
+            }).render('#paypal-button-container');
+            
+            log('✅ PayPal buttons rendered (Sandbox)');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 Starting PayPal Sandbox Test');
+            log(`Client ID: ${clientId}`);
+            log(`Domain: ${window.location.hostname}`);
+            
+            loadPayPalSDK();
+        });
+    </script>
+</body>
+</html>
