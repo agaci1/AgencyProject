@@ -254,6 +254,8 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
               application_context: {
                 shipping_preference: 'NO_SHIPPING',
                 user_action: 'PAY_NOW',
+                return_url: window.location.origin + '/tours',
+                cancel_url: window.location.origin + '/tours',
               },
             }
             console.log('Order data:', orderData)
@@ -261,10 +263,19 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
           },
           onApprove: async (data: any, actions: any) => {
             console.log('PayPal order approved:', data)
+            console.log('Order ID:', data.orderID)
             setIsProcessing(true)
             let paymentDetails: any = null
             try {
               console.log('Capturing PayPal order...')
+              // First check if the order is still valid
+              const order = await actions.order.get()
+              console.log('Order status:', order.status)
+              
+              if (order.status !== 'APPROVED') {
+                throw new Error(`Order not approved. Status: ${order.status}`)
+              }
+              
               paymentDetails = await actions.order.capture()
               console.log('Payment captured successfully:', paymentDetails)
 
@@ -306,7 +317,15 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
               } else {
                 // If PayPal capture failed, the payment was not successful
                 console.error("PayPal capture failed - payment was not processed:", error.message);
-                setPaypalError("Payment failed. Please try again or contact support if the issue persists.")
+                
+                // Handle specific PayPal errors
+                if (error.message.includes('unauthorized order')) {
+                  setPaypalError("Payment session expired. Please try again.")
+                } else if (error.message.includes('order not found')) {
+                  setPaypalError("Payment order not found. Please try again.")
+                } else {
+                  setPaypalError("Payment failed. Please try again or contact support if the issue persists.")
+                }
               }
               
               setIsProcessing(false)
