@@ -254,8 +254,8 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
               application_context: {
                 shipping_preference: 'NO_SHIPPING',
                 user_action: 'PAY_NOW',
-                experience_profile_id: 'XP-AK29-YT4Z-NJTB-8G9U', // Web Experience Profile ID
               },
+              experience_profile_id: 'XP-AK29-YT4Z-NJTB-8G9U', // Web Experience Profile ID
             }
             console.log('Order data:', orderData)
             return actions.order.create(orderData)
