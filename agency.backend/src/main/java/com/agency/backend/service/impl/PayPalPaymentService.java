@@ -82,11 +82,12 @@ public class PayPalPaymentService implements PaymentService {
                     return false;
                 }
                 
+                logger.info("PayPal payment validated and accepted successfully for transaction: {}", transactionId);
+                
                 // Store validated payment details
                 booking.setPaypalEmail(email);
                 booking.setPaypalTxn(transactionId);
                 
-                logger.info("PayPal payment validated and accepted successfully");
                 return true;
                 
             } else if ("card".equalsIgnoreCase(req.getPaymentMethod())) {

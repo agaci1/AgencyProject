@@ -279,9 +279,9 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
 
               const res = await api.post("/bookings", bookingPayload)
 
-              setNotification("Payment successful! A confirmation email has been sent.")
+              setNotification("🎉 Payment successful! A confirmation email has been sent.")
               clearStorage() // Clear saved state
-              setTimeout(() => onComplete(), 2000)
+              setTimeout(() => onComplete(), 5000) // Give more time to see the message
             } catch (error: any) {
               console.error("Payment processing error:", error)
               console.error("Error details:", {
@@ -325,7 +325,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                     const res = await api.post("/bookings", bookingPayload)
                     setNotification("🎉 Payment successful! Your booking has been confirmed. Check your email for details.")
                     clearStorage()
-                    setTimeout(() => onComplete(), 2000)
+                    setTimeout(() => onComplete(), 5000) // Give more time to see the message
                   } catch (backendError) {
                     setNotification("⚠️ Payment processed but booking creation failed. Please contact support.")
                     clearStorage()
