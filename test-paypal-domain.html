@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PayPal Domain Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; }
+        .error { color: red; background: #ffe6e6; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .success { color: green; background: #e6ffe6; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .info { color: blue; background: #e6f3ff; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        #paypal-button-container { min-height: 100px; border: 2px dashed #ccc; padding: 20px; margin: 20px 0; text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>PayPal Domain Authorization Test</h1>
+    
+    <div class="info">
+        <h3>Current Domain: <span id="current-domain"></span></h3>
+        <p>If PayPal buttons open "about:blank", this domain needs to be authorized in PayPal Developer Dashboard.</p>
+    </div>
+    
+    <div id="paypal-button-container">
+        <p>PayPal buttons will appear here...</p>
+    </div>
+    
+    <div id="status"></div>
+    
+    <script>
+        // Show current domain
+        document.getElementById('current-domain').textContent = window.location.hostname;
+        
+        // PayPal configuration
+        const clientId = 'Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX';
+        
+        // Load PayPal SDK
+        const script = document.createElement('script');
+        script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=EUR&intent=capture&components=buttons`;
+        script.async = true;
+        
+        script.onload = function() {
+            if (window.paypal) {
+                window.paypal.Buttons({
+                    createOrder: function(data, actions) {
+                        return actions.order.create({
+                            purchase_units: [{
+                                amount: {
+                                    value: '1.00',
+                                    currency_code: 'EUR'
+                                },
+                                description: 'Domain Test Payment'
+                            }]
+                        });
+                    },
+                    onApprove: function(data, actions) {
+                        return actions.order.capture().then(function(details) {
+                            document.getElementById('status').innerHTML = 
+                                '<div class="success">✅ SUCCESS! Domain is authorized. Payment captured: ' + data.orderID + '</div>';
+                        });
+                    },
+                    onError: function(err) {
+                        document.getElementById('status').innerHTML = 
+                            '<div class="error">❌ ERROR: ' + err.message + '</div>';
+                    },
+                    onCancel: function(data) {
+                        document.getElementById('status').innerHTML = 
+                            '<div class="info">⚠️ Payment cancelled by user</div>';
+                    }
+                }).render('#paypal-button-container');
+                
+                document.getElementById('status').innerHTML = 
+                    '<div class="success">✅ PayPal SDK loaded successfully</div>';
+            } else {
+                document.getElementById('status').innerHTML = 
+                    '<div class="error">❌ PayPal SDK failed to load</div>';
+            }
+        };
+        
+        script.onerror = function() {
+            document.getElementById('status').innerHTML = 
+                '<div class="error">❌ Failed to load PayPal SDK</div>';
+        };
+        
+        document.head.appendChild(script);
+    </script>
+</body>
+</html>

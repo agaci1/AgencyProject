@@ -153,8 +153,8 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
       }
 
       const script = document.createElement("script")
-      // Simplified PayPal SDK URL for better compatibility
-      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&components=buttons`
+      // Use the official PayPal SDK URL with proper parameters
+      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&components=buttons&enable-funding=card`
       script.async = true
 
       script.onload = () => {
@@ -239,6 +239,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
 
 
           createOrder: (data: any, actions: any) => {
+            console.log('Creating PayPal order for amount:', finalTotal)
             const orderData = {
               purchase_units: [
                 {
@@ -253,17 +254,19 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
               application_context: {
                 shipping_preference: 'NO_SHIPPING',
                 user_action: 'PAY_NOW',
-                return_url: 'https://rilindishpk.com/tours',
-                cancel_url: 'https://rilindishpk.com/tours',
               },
             }
+            console.log('Order data:', orderData)
             return actions.order.create(orderData)
           },
           onApprove: async (data: any, actions: any) => {
+            console.log('PayPal order approved:', data)
             setIsProcessing(true)
             let paymentDetails: any = null
             try {
+              console.log('Capturing PayPal order...')
               paymentDetails = await actions.order.capture()
+              console.log('Payment captured successfully:', paymentDetails)
 
               // Send booking request to your backend
               const bookingPayload = {
