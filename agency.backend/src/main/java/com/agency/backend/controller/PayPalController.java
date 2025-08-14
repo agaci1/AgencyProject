@@ -70,7 +70,7 @@ public class PayPalController {
         try {
             logger.info("🔄 Capture order request received: {}", request);
             
-            String orderId = (String) request.get("order_id");
+            String orderId = (String) request.get("orderId");
             logger.info("📋 Order ID from request: {}", orderId);
             
             if (orderId == null || orderId.trim().isEmpty()) {
