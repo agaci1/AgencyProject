@@ -153,8 +153,8 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
       }
 
       const script = document.createElement("script")
-      // Use the official PayPal SDK URL with proper parameters
-      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&components=buttons&enable-funding=card`
+      // Use the official PayPal SDK URL with web experience profile
+      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&components=buttons&enable-funding=card&experience-profile-id=XP-AK29-YT4Z-NJTB-8G9U`
       script.async = true
 
       script.onload = () => {
@@ -254,6 +254,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
               application_context: {
                 shipping_preference: 'NO_SHIPPING',
                 user_action: 'PAY_NOW',
+                experience_profile_id: 'XP-AK29-YT4Z-NJTB-8G9U', // Web Experience Profile ID
               },
             }
             console.log('Order data:', orderData)
