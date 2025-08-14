@@ -16,6 +16,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
+import java.math.BigDecimal;
 
 @Service
 @Primary
@@ -128,6 +131,93 @@ public class PayPalPaymentService implements PaymentService {
         }
     }
 
+    /**
+     * Create a PayPal order and return the order ID
+     * This follows the official PayPal pattern for order creation
+     */
+    public String createPayPalOrder(BigDecimal amount, String currency) {
+        try {
+            String accessToken = getPayPalAccessToken();
+            if (accessToken == null) {
+                logger.error("Failed to get PayPal access token for order creation");
+                return null;
+            }
+            
+            // Create order payload following PayPal's format
+            Map<String, Object> orderData = new HashMap<>();
+            orderData.put("intent", "CAPTURE");
+            
+            Map<String, Object> purchaseUnit = new HashMap<>();
+            Map<String, Object> amountData = new HashMap<>();
+            amountData.put("currency_code", currency);
+            amountData.put("value", amount.toString());
+            purchaseUnit.put("amount", amountData);
+            
+            List<Map<String, Object>> purchaseUnits = new ArrayList<>();
+            purchaseUnits.add(purchaseUnit);
+            orderData.put("purchase_units", purchaseUnits);
+            
+            // Call PayPal API to create order
+            String createOrderUrl = paypalBaseUrl + "/v2/checkout/orders";
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(accessToken);
+            
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(orderData, headers);
+            ResponseEntity<Map> response = restTemplate.exchange(createOrderUrl, HttpMethod.POST, entity, Map.class);
+            
+            if (response.getStatusCode() == HttpStatus.CREATED) {
+                Map<String, Object> orderResponse = response.getBody();
+                String orderId = (String) orderResponse.get("id");
+                logger.info("✅ PayPal order created successfully: {}", orderId);
+                return orderId;
+            } else {
+                logger.error("❌ Failed to create PayPal order: {}", response.getStatusCode());
+                return null;
+            }
+            
+        } catch (Exception e) {
+            logger.error("❌ Error creating PayPal order: {}", e.getMessage(), e);
+            return null;
+        }
+    }
+    
+    /**
+     * Capture a PayPal order and return the capture details
+     * This follows the official PayPal pattern for order capture
+     */
+    public Map<String, Object> capturePayPalOrder(String orderId) {
+        try {
+            String accessToken = getPayPalAccessToken();
+            if (accessToken == null) {
+                logger.error("Failed to get PayPal access token for order capture");
+                return null;
+            }
+            
+            // Capture the order
+            String captureUrl = paypalBaseUrl + "/v2/checkout/orders/" + orderId + "/capture";
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(accessToken);
+            
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+            ResponseEntity<Map> response = restTemplate.exchange(captureUrl, HttpMethod.POST, entity, Map.class);
+            
+            if (response.getStatusCode() == HttpStatus.CREATED) {
+                Map<String, Object> captureResponse = response.getBody();
+                logger.info("✅ PayPal order captured successfully: {}", orderId);
+                return captureResponse;
+            } else {
+                logger.error("❌ Failed to capture PayPal order: {} - Status: {}", orderId, response.getStatusCode());
+                return null;
+            }
+            
+        } catch (Exception e) {
+            logger.error("❌ Error capturing PayPal order: {}", e.getMessage(), e);
+            return null;
+        }
+    }
+    
     /**
      * Validate PayPal payment with PayPal's API
      * Note: transactionId is actually the PayPal Order ID

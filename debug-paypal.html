@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PayPal Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .error { color: red; background: #ffe6e6; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .success { color: green; background: #e6ffe6; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .info { color: blue; background: #e6f3ff; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        button { padding: 10px 20px; margin: 10px; }
+    </style>
+</head>
+<body>
+    <h1>PayPal Configuration Debug</h1>
+    
+    <div id="status"></div>
+    
+    <div>
+        <h3>Test PayPal Button:</h3>
+        <div id="paypal-button-container"></div>
+    </div>
+    
+    <div>
+        <h3>Environment Check:</h3>
+        <div id="env-check"></div>
+    </div>
+
+    <script>
+        // Debug function to check environment
+        function checkEnvironment() {
+            const envDiv = document.getElementById('env-check');
+            
+            // Check if we're on the right domain
+            const currentDomain = window.location.hostname;
+            envDiv.innerHTML += `<div class="info">Current domain: ${currentDomain}</div>`;
+            
+            // Check if we're on HTTPS
+            const isHttps = window.location.protocol === 'https:';
+            envDiv.innerHTML += `<div class="${isHttps ? 'success' : 'error'}">HTTPS: ${isHttps ? '✅ Yes' : '❌ No'}</div>`;
+            
+            // Check for common issues
+            if (currentDomain === 'localhost' || currentDomain === '127.0.0.1') {
+                envDiv.innerHTML += `<div class="error">⚠️ Local development - PayPal may not work properly</div>`;
+            }
+        }
+
+        // Load PayPal SDK
+        function loadPayPal() {
+            const statusDiv = document.getElementById('status');
+            
+            // Try to get client ID from environment or use a test one
+            const clientId = 'test'; // This should be replaced with your actual client ID
+            
+            statusDiv.innerHTML = `<div class="info">Loading PayPal SDK with client ID: ${clientId}</div>`;
+            
+            if (!clientId || clientId === 'test') {
+                statusDiv.innerHTML += `<div class="error">❌ PayPal Client ID not configured or set to 'test'</div>`;
+                statusDiv.innerHTML += `<div class="info">Please set NEXT_PUBLIC_PAYPAL_CLIENT_ID in Railway variables</div>`;
+                return;
+            }
+            
+            // Create script element
+            const script = document.createElement('script');
+            script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=EUR&intent=capture&components=buttons`;
+            script.async = true;
+            
+            script.onload = () => {
+                statusDiv.innerHTML += `<div class="success">✅ PayPal SDK loaded successfully</div>`;
+                
+                // Check if PayPal object is available
+                if (window.paypal && typeof window.paypal.Buttons === 'function') {
+                    statusDiv.innerHTML += `<div class="success">✅ PayPal Buttons function available</div>`;
+                    initializePayPalButton();
+                } else {
+                    statusDiv.innerHTML += `<div class="error">❌ PayPal Buttons function not available</div>`;
+                }
+            };
+            
+            script.onerror = () => {
+                statusDiv.innerHTML += `<div class="error">❌ Failed to load PayPal SDK</div>`;
+            };
+            
+            document.head.appendChild(script);
+        }
+
+        function initializePayPalButton() {
+            if (!window.paypal) {
+                document.getElementById('status').innerHTML += `<div class="error">❌ PayPal SDK not loaded</div>`;
+                return;
+            }
+
+            window.paypal.Buttons({
+                createOrder: function(data, actions) {
+                    return actions.order.create({
+                        purchase_units: [{
+                            amount: {
+                                value: '10.00'
+                            }
+                        }]
+                    });
+                },
+                onApprove: function(data, actions) {
+                    return actions.order.capture().then(function(details) {
+                        document.getElementById('status').innerHTML += `<div class="success">✅ Payment successful! Order ID: ${details.id}</div>`;
+                    });
+                },
+                onError: function(err) {
+                    document.getElementById('status').innerHTML += `<div class="error">❌ PayPal Error: ${err.message}</div>`;
+                }
+            }).render('#paypal-button-container');
+        }
+
+        // Run checks when page loads
+        window.onload = function() {
+            checkEnvironment();
+            loadPayPal();
+        };
+    </script>
+</body>
+</html>

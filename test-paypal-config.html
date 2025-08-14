@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PayPal Config Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .error { color: red; background: #ffe6e6; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .success { color: green; background: #e6ffe6; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .info { color: blue; background: #e6f3ff; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .warning { color: orange; background: #fff3cd; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 PayPal Configuration Test</h1>
+    
+    <div id="results"></div>
+    
+    <div>
+        <h3>PayPal Button Test:</h3>
+        <div id="paypal-button-container"></div>
+    </div>
+
+    <script>
+        const resultsDiv = document.getElementById('results');
+        
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = message;
+            resultsDiv.appendChild(div);
+        }
+        
+        // Test 1: Check environment variables
+        log('🔍 <strong>Step 1: Checking Environment Variables</strong>');
+        
+        // This should be available from Railway environment
+        const clientId = 'Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX';
+        
+        if (clientId && clientId !== 'test') {
+            log(`✅ Client ID is set: ${clientId.substring(0, 20)}...`, 'success');
+        } else {
+            log('❌ Client ID is not set or is "test"', 'error');
+            return;
+        }
+        
+        // Test 2: Check domain
+        log('🔍 <strong>Step 2: Checking Domain</strong>');
+        const currentDomain = window.location.hostname;
+        log(`Current domain: ${currentDomain}`, 'info');
+        
+        if (currentDomain === 'rilindishpk.com' || currentDomain === 'www.rilindishpk.com') {
+            log('✅ Domain matches expected domain', 'success');
+        } else {
+            log(`⚠️ Domain mismatch. Expected: rilindishpk.com, Got: ${currentDomain}`, 'warning');
+        }
+        
+        // Test 3: Check HTTPS
+        log('🔍 <strong>Step 3: Checking HTTPS</strong>');
+        const isHttps = window.location.protocol === 'https:';
+        if (isHttps) {
+            log('✅ HTTPS is enabled', 'success');
+        } else {
+            log('❌ HTTPS is required for PayPal', 'error');
+        }
+        
+        // Test 4: Load PayPal SDK
+        log('🔍 <strong>Step 4: Loading PayPal SDK</strong>');
+        
+        const script = document.createElement('script');
+        script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=EUR&intent=capture&components=buttons`;
+        script.async = true;
+        
+        script.onload = () => {
+            log('✅ PayPal SDK loaded successfully', 'success');
+            
+            // Test 5: Check PayPal object
+            if (window.paypal && typeof window.paypal.Buttons === 'function') {
+                log('✅ PayPal Buttons function available', 'success');
+                initializePayPalButton();
+            } else {
+                log('❌ PayPal Buttons function not available', 'error');
+            }
+        };
+        
+        script.onerror = (error) => {
+            log('❌ Failed to load PayPal SDK', 'error');
+            log(`Error details: ${error}`, 'error');
+        };
+        
+        document.head.appendChild(script);
+        
+        function initializePayPalButton() {
+            log('🔍 <strong>Step 5: Initializing PayPal Button</strong>');
+            
+            try {
+                window.paypal.Buttons({
+                    createOrder: function(data, actions) {
+                        log('🔄 Creating PayPal order...', 'info');
+                        return actions.order.create({
+                            purchase_units: [{
+                                amount: {
+                                    value: '1.00'
+                                },
+                                description: 'Test payment'
+                            }]
+                        });
+                    },
+                    onApprove: function(data, actions) {
+                        log('🔄 Approving order...', 'info');
+                        return actions.order.capture().then(function(details) {
+                            log(`✅ Payment successful! Order ID: ${details.id}`, 'success');
+                        });
+                    },
+                    onError: function(err) {
+                        log(`❌ PayPal Error: ${err.message}`, 'error');
+                        log(`Error details: ${JSON.stringify(err, null, 2)}`, 'error');
+                    },
+                    onCancel: function() {
+                        log('⚠️ Payment cancelled by user', 'warning');
+                    }
+                }).render('#paypal-button-container');
+                
+                log('✅ PayPal button rendered successfully', 'success');
+            } catch (error) {
+                log(`❌ Error initializing PayPal button: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test 6: Check for common issues
+        setTimeout(() => {
+            log('🔍 <strong>Step 6: Final Checks</strong>');
+            
+            if (!window.paypal) {
+                log('❌ PayPal SDK still not loaded after 5 seconds', 'error');
+                log('This might indicate a domain authorization issue in PayPal Developer Dashboard', 'error');
+                log('Please check that rilindishpk.com is added to allowed domains in PayPal app settings', 'info');
+            }
+        }, 5000);
+    </script>
+</body>
+</html>

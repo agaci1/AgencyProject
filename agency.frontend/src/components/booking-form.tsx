@@ -235,32 +235,54 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
 
 
 
-          createOrder: (data: any, actions: any) => {
-            const orderData = {
-              purchase_units: [
-                {
-                  amount: {
-                    value: finalTotal.toString(),
-                    currency_code: "EUR",
-                  },
-                  description: `${tour.title} - ${bookingData.guests} guest(s)`,
-                  custom_id: `tour_${tour.id}_${Date.now()}`,
+          createOrder: async (data: any, actions: any) => {
+            try {
+              // Create order through our backend (following official PayPal pattern)
+              const response = await fetch('/api/paypal/create-order', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
                 },
-              ],
-              application_context: {
-                shipping_preference: 'NO_SHIPPING',
-                user_action: 'PAY_NOW',
-                return_url: 'https://rilindishpk.com/tours',
-                cancel_url: 'https://rilindishpk.com/tours',
-              },
+                body: JSON.stringify({
+                  amount: finalTotal,
+                  currency: 'EUR'
+                })
+              });
+              
+              if (!response.ok) {
+                throw new Error(`Failed to create order: ${response.status}`);
+              }
+              
+              const orderData = await response.json();
+              console.log('Order created:', orderData);
+              
+              return orderData.id;
+            } catch (error) {
+              console.error('Error creating order:', error);
+              throw error;
             }
-            return actions.order.create(orderData)
           },
           onApprove: async (data: any, actions: any) => {
             setIsProcessing(true)
             let paymentDetails: any = null
             try {
-              paymentDetails = await actions.order.capture()
+              // Capture order through our backend (following official PayPal pattern)
+              const captureResponse = await fetch('/api/paypal/capture-order', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  order_id: data.orderID
+                })
+              });
+              
+              if (!captureResponse.ok) {
+                throw new Error(`Failed to capture order: ${captureResponse.status}`);
+              }
+              
+              paymentDetails = await captureResponse.json();
+              console.log('Payment captured:', paymentDetails);
 
               // Send booking request to your backend
               const bookingPayload = {
@@ -273,7 +295,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                 paymentMethod: "paypal",
                 paypal: {
                   email: paymentDetails.payer.email_address,
-                  transactionId: paymentDetails.id,
+                  transactionId: data.orderID, // Use the order ID as transaction ID
                 }
               }
 
