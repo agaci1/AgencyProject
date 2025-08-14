@@ -273,8 +273,8 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
               application_context: {
                 shipping_preference: 'NO_SHIPPING',
                 user_action: 'PAY_NOW',
-                return_url: window.location.origin + '/tours',
-                cancel_url: window.location.origin + '/tours',
+                return_url: 'https://rilindishpk.com/tours',
+                cancel_url: 'https://rilindishpk.com/tours',
               },
             }
             console.log("Order data:", orderData)
