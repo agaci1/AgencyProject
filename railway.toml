@@ -1,8 +1,8 @@
-[build]
+ [build]
 buildCommand = "cd agency.backend && ./mvnw clean package -DskipTests"
 
 [deploy]
-startCommand = "cd agency.backend && java -jar target/*.jar --spring.profiles.active=prod"
-healthcheckPath = "/api/ping"
+startCommand = "cd agency.backend && java -jar target/*.jar --spring.profiles.active=railway"
+healthcheckPath = "/health/database"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
