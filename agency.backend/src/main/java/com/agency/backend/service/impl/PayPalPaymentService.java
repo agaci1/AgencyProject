@@ -7,7 +7,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @Primary
@@ -23,6 +31,9 @@ public class PayPalPaymentService implements PaymentService {
     
     @Value("${paypal.base.url:https://api-m.paypal.com}")
     private String paypalBaseUrl;
+
+    private final RestTemplate restTemplate = new RestTemplate();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public boolean processPayment(BookingRequest req, Booking booking) throws Exception {
@@ -48,7 +59,7 @@ public class PayPalPaymentService implements PaymentService {
 
         try {
             if ("paypal".equalsIgnoreCase(req.getPaymentMethod())) {
-                // Process PayPal payment
+                // Process PayPal payment with REAL API validation
                 String transactionId = req.getPaypal().getTransactionId();
                 String email = req.getPaypal().getEmail();
                 
@@ -65,7 +76,13 @@ public class PayPalPaymentService implements PaymentService {
                     return false;
                 }
                 
-                // For now, accept valid PayPal transactions (you can add PayPal API validation later)
+                // REAL PayPal API validation
+                if (!validatePayPalPayment(transactionId)) {
+                    logger.error("PayPal payment validation failed for transaction: {}", transactionId);
+                    return false;
+                }
+                
+                // Store validated payment details
                 booking.setPaypalEmail(email);
                 booking.setPaypalTxn(transactionId);
                 
@@ -108,6 +125,113 @@ public class PayPalPaymentService implements PaymentService {
         } catch (Exception e) {
             logger.error("Error processing payment", e);
             return false;
+        }
+    }
+
+    /**
+     * Validate PayPal payment with PayPal's API
+     */
+    private boolean validatePayPalPayment(String transactionId) {
+        try {
+            // Get PayPal access token
+            String accessToken = getPayPalAccessToken();
+            if (accessToken == null) {
+                logger.error("Failed to get PayPal access token");
+                return false;
+            }
+
+            // Get order details from PayPal
+            String orderUrl = paypalBaseUrl + "/v2/checkout/orders/" + transactionId;
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth(accessToken);
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+            
+            ResponseEntity<String> response = restTemplate.exchange(
+                orderUrl, 
+                HttpMethod.GET, 
+                entity, 
+                String.class
+            );
+            
+            if (response.getStatusCode() != HttpStatus.OK) {
+                logger.error("PayPal API returned status: {}", response.getStatusCode());
+                return false;
+            }
+            
+            // Parse response
+            JsonNode orderData = objectMapper.readTree(response.getBody());
+            
+            // Check if order is completed
+            String status = orderData.path("status").asText();
+            if (!"COMPLETED".equals(status)) {
+                logger.error("PayPal order status is not COMPLETED: {}", status);
+                return false;
+            }
+            
+            // Check payment status
+            JsonNode purchaseUnits = orderData.path("purchase_units");
+            if (purchaseUnits.isArray() && purchaseUnits.size() > 0) {
+                JsonNode payments = purchaseUnits.get(0).path("payments");
+                JsonNode captures = payments.path("captures");
+                
+                if (captures.isArray() && captures.size() > 0) {
+                    String captureStatus = captures.get(0).path("status").asText();
+                    if (!"COMPLETED".equals(captureStatus)) {
+                        logger.error("PayPal capture status is not COMPLETED: {}", captureStatus);
+                        return false;
+                    }
+                }
+            }
+            
+            logger.info("PayPal payment validation successful for transaction: {}", transactionId);
+            return true;
+            
+        } catch (Exception e) {
+            logger.error("Error validating PayPal payment: {}", e.getMessage(), e);
+            return false;
+        }
+    }
+
+    /**
+     * Get PayPal access token for API calls
+     */
+    private String getPayPalAccessToken() {
+        try {
+            String tokenUrl = paypalBaseUrl + "/v1/oauth2/token";
+            
+            // Create basic auth header
+            String credentials = paypalClientId + ":" + paypalClientSecret;
+            String encodedCredentials = Base64.getEncoder().encodeToString(credentials.getBytes());
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Basic " + encodedCredentials);
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            
+            String body = "grant_type=client_credentials";
+            
+            HttpEntity<String> entity = new HttpEntity<>(body, headers);
+            
+            ResponseEntity<String> response = restTemplate.exchange(
+                tokenUrl, 
+                HttpMethod.POST, 
+                entity, 
+                String.class
+            );
+            
+            if (response.getStatusCode() == HttpStatus.OK) {
+                JsonNode tokenData = objectMapper.readTree(response.getBody());
+                return tokenData.path("access_token").asText();
+            } else {
+                logger.error("Failed to get PayPal access token. Status: {}", response.getStatusCode());
+                return null;
+            }
+            
+        } catch (Exception e) {
+            logger.error("Error getting PayPal access token: {}", e.getMessage(), e);
+            return null;
         }
     }
 } 
