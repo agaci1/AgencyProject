@@ -138,17 +138,18 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
     let timeoutId: NodeJS.Timeout
 
     const loadPayPalScript = () => {
-      // Use the correct PayPal client ID from Railway
-      const clientId = "Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX"
-      const currency = "EUR"
+      // Use environment variable for PayPal client ID
+      const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
+      const currency = process.env.NEXT_PUBLIC_PAYPAL_CURRENCY || "EUR"
 
       console.log("PayPal Configuration Debug:")
       console.log("- Client ID:", clientId ? "SET" : "NOT SET")
       console.log("- Currency:", currency)
       console.log("- Final Total:", finalTotal)
 
-      if (!clientId) {
-        setPaypalError("PayPal configuration is missing. Please contact support.")
+      if (!clientId || clientId === 'test') {
+        console.error("PayPal Client ID not configured")
+        setPaypalError("Payment system not configured. Please contact support.")
         return
       }
 
@@ -283,8 +284,9 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
             setIsProcessing(true)
             let paymentDetails: any = null
             try {
+              console.log("PayPal order approved, capturing payment...")
               paymentDetails = await actions.order.capture()
-              console.log("Payment captured:", paymentDetails)
+              console.log("Payment captured successfully:", paymentDetails)
 
               // Send booking request to your backend
               const bookingPayload = {
@@ -301,14 +303,21 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                 }
               }
 
+              console.log("Sending booking to backend:", bookingPayload)
               const res = await api.post("/bookings", bookingPayload)
-              console.log("Booking created:", res.data)
+              console.log("Booking created successfully:", res.data)
 
               setNotification("Payment successful! A confirmation email has been sent.")
               clearStorage() // Clear saved state
               setTimeout(() => onComplete(), 2000)
             } catch (error: any) {
-              console.error("Payment error:", error)
+              console.error("Payment processing error:", error)
+              console.error("Error details:", {
+                message: error.message,
+                response: error.response?.data,
+                status: error.response?.status,
+                paymentDetails: paymentDetails
+              })
               
               // If payment was captured successfully, treat it as success even if backend has issues
               if (paymentDetails && paymentDetails.id) {
@@ -319,6 +328,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
               } else {
                 // Only show error if payment itself failed
                 const errorMessage = error.response?.data || error.message || "Payment failed. Please try again."
+                console.error("Setting PayPal error:", errorMessage)
                 setPaypalError(errorMessage)
               }
               

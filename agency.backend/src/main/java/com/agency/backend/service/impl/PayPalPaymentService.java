@@ -20,6 +20,9 @@ public class PayPalPaymentService implements PaymentService {
     
     @Value("${paypal.client.secret:}")
     private String paypalClientSecret;
+    
+    @Value("${paypal.base.url:https://api-m.paypal.com}")
+    private String paypalBaseUrl;
 
     @Override
     public boolean processPayment(BookingRequest req, Booking booking) throws Exception {
@@ -51,11 +54,22 @@ public class PayPalPaymentService implements PaymentService {
                 
                 logger.info("PayPal transaction received - ID: {}, Email: {}", transactionId, email);
                 
-                // Always accept PayPal payments for now
-                booking.setPaypalEmail(email != null ? email : "customer@paypal.com");
-                booking.setPaypalTxn(transactionId != null ? transactionId : "PAYPAL_" + System.currentTimeMillis());
+                // Validate PayPal transaction
+                if (transactionId == null || transactionId.trim().isEmpty()) {
+                    logger.error("PayPal transaction ID is missing");
+                    return false;
+                }
                 
-                logger.info("PayPal payment accepted successfully");
+                if (email == null || email.trim().isEmpty()) {
+                    logger.error("PayPal email is missing");
+                    return false;
+                }
+                
+                // For now, accept valid PayPal transactions (you can add PayPal API validation later)
+                booking.setPaypalEmail(email);
+                booking.setPaypalTxn(transactionId);
+                
+                logger.info("PayPal payment validated and accepted successfully");
                 return true;
                 
             } else if ("card".equalsIgnoreCase(req.getPaymentMethod())) {
