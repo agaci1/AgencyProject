@@ -353,12 +353,12 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                     
                     const res = await api.post("/bookings", bookingPayload)
                     console.log("Booking created successfully:", res.data)
-                    setNotification("Payment successful! Your booking has been confirmed.")
+                    setNotification("🎉 Payment successful! Your booking has been confirmed. Check your email for details.")
                     clearStorage()
                     setTimeout(() => onComplete(), 2000)
                   } catch (backendError) {
                     console.error("Backend booking creation failed:", backendError)
-                    setNotification("Payment processed but booking creation failed. Please contact support.")
+                    setNotification("⚠️ Payment processed but booking creation failed. Please contact support.")
                     clearStorage()
                     setTimeout(() => onComplete(), 2000)
                   }
@@ -406,7 +406,13 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
   if (step === "payment") {
     return (
       <div className="max-w-4xl mx-auto bg-white/70 backdrop-blur-xl shadow-lg rounded-xl p-6">
-        {notification && <div className="mb-4 p-4 bg-green-600 text-white rounded">{notification}</div>}
+        {notification && (
+          <div className="mb-4 p-4 bg-green-600 text-white rounded-lg text-center">
+            <div className="text-2xl mb-2">🎉</div>
+            <div className="font-bold text-lg">{notification}</div>
+            <div className="text-sm mt-2">Redirecting to tours page...</div>
+          </div>
+        )}
         {showRecoveryMessage && (
           <div className="mb-4 p-4 bg-yellow-500 text-white rounded">
             <p className="text-sm">
