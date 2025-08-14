@@ -27,6 +27,7 @@
         .success { border-color: #4CAF50; background-color: #f1f8e9; }
         .error { border-color: #f44336; background-color: #ffebee; }
         .info { border-color: #2196F3; background-color: #e3f2fd; }
+        .warning { border-color: #ff9800; background-color: #fff3e0; }
         .log {
             background-color: #f8f9fa;
             border: 1px solid #dee2e6;
@@ -37,6 +38,24 @@
             font-size: 12px;
             max-height: 200px;
             overflow-y: auto;
+        }
+        .card-info {
+            background-color: #e8f5e8;
+            border: 1px solid #4CAF50;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .card-info h4 {
+            margin: 0 0 10px 0;
+            color: #2e7d32;
+        }
+        .card-info ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .card-info li {
+            margin: 5px 0;
         }
     </style>
 </head>
@@ -50,6 +69,19 @@
             <p><strong>Environment:</strong> PayPal Sandbox</p>
             <p><strong>Amount:</strong> €0.01</p>
             <p><strong>Purpose:</strong> Verify integration works without funding source issues</p>
+        </div>
+
+        <div class="test-section warning">
+            <h3>💳 Test Card Information</h3>
+            <div class="card-info">
+                <h4>Use these test cards for sandbox testing:</h4>
+                <ul>
+                    <li><strong>Visa:</strong> 4032030000000000 | Exp: 12/25 | CVV: 123</li>
+                    <li><strong>Mastercard:</strong> 5424000000000015 | Exp: 12/25 | CVV: 123</li>
+                    <li><strong>American Express:</strong> 378282246310005 | Exp: 12/25 | CVV: 1234</li>
+                </ul>
+                <p><strong>Note:</strong> These are PayPal sandbox test cards. They will work for testing but won't charge real money.</p>
+            </div>
         </div>
 
         <div class="test-section">
@@ -85,7 +117,7 @@
             log('Loading PayPal SDK (Sandbox)...');
             
             const script = document.createElement('script');
-            script.src = `https://www.sandbox.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&components=buttons`;
+            script.src = `https://www.sandbox.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&components=buttons&enable-funding=card`;
             script.onload = function() {
                 log('✅ PayPal SDK loaded successfully (Sandbox)');
                 renderPayPalButtons();
