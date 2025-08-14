@@ -196,27 +196,51 @@ public class PayPalPaymentService implements PaymentService {
      */
     public Map<String, Object> capturePayPalOrder(String orderId) {
         try {
-            String accessToken = getPayPalAccessToken();
-            if (accessToken == null) {
-                logger.error("Failed to get PayPal access token for order capture");
+            logger.info("🔄 Attempting to capture PayPal order: {}", orderId);
+            
+            if (orderId == null || orderId.trim().isEmpty()) {
+                logger.error("❌ Order ID is null or empty");
                 return null;
             }
             
+            String accessToken = getPayPalAccessToken();
+            if (accessToken == null) {
+                logger.error("❌ Failed to get PayPal access token for order capture");
+                return null;
+            }
+            
+            logger.info("✅ Got PayPal access token, proceeding with capture");
+            
             // Capture the order
             String captureUrl = paypalBaseUrl + "/v2/checkout/orders/" + orderId + "/capture";
+            logger.info("🔄 Calling PayPal capture URL: {}", captureUrl);
+            
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.setBearerAuth(accessToken);
             
             HttpEntity<String> entity = new HttpEntity<>(headers);
-            ResponseEntity<Map> response = restTemplate.exchange(captureUrl, HttpMethod.POST, entity, Map.class);
             
-            if (response.getStatusCode() == HttpStatus.CREATED) {
-                Map<String, Object> captureResponse = response.getBody();
-                logger.info("✅ PayPal order captured successfully: {}", orderId);
-                return captureResponse;
-            } else {
-                logger.error("❌ Failed to capture PayPal order: {} - Status: {}", orderId, response.getStatusCode());
+            try {
+                ResponseEntity<Map> response = restTemplate.exchange(captureUrl, HttpMethod.POST, entity, Map.class);
+                
+                logger.info("📡 PayPal capture response status: {}", response.getStatusCode());
+                
+                if (response.getStatusCode() == HttpStatus.CREATED) {
+                    Map<String, Object> captureResponse = response.getBody();
+                    logger.info("✅ PayPal order captured successfully: {}", orderId);
+                    logger.info("📋 Capture response: {}", captureResponse);
+                    return captureResponse;
+                } else {
+                    logger.error("❌ Failed to capture PayPal order: {} - Status: {}", orderId, response.getStatusCode());
+                    if (response.getBody() != null) {
+                        logger.error("📋 Error response body: {}", response.getBody());
+                    }
+                    return null;
+                }
+                
+            } catch (Exception e) {
+                logger.error("❌ HTTP error during PayPal capture: {}", e.getMessage(), e);
                 return null;
             }
             

@@ -68,27 +68,33 @@ public class PayPalController {
     @PostMapping("/capture-order")
     public ResponseEntity<Map<String, Object>> captureOrder(@RequestBody Map<String, Object> request) {
         try {
+            logger.info("🔄 Capture order request received: {}", request);
+            
             String orderId = (String) request.get("order_id");
-            logger.info("Capturing PayPal order: {}", orderId);
+            logger.info("📋 Order ID from request: {}", orderId);
             
             if (orderId == null || orderId.trim().isEmpty()) {
+                logger.error("❌ Order ID is null or empty in request");
                 return ResponseEntity.badRequest().body(Map.of("error", "Order ID is required"));
             }
+            
+            logger.info("🔄 Calling PayPal service to capture order: {}", orderId);
             
             // Capture PayPal order
             Map<String, Object> captureResult = payPalPaymentService.capturePayPalOrder(orderId);
             
             if (captureResult != null) {
-                logger.info("PayPal order captured successfully: {}", orderId);
+                logger.info("✅ PayPal order captured successfully: {}", orderId);
+                logger.info("📋 Capture result: {}", captureResult);
                 return ResponseEntity.ok(captureResult);
             } else {
-                logger.error("Failed to capture PayPal order: {}", orderId);
-                return ResponseEntity.status(500).body(Map.of("error", "Failed to capture PayPal order"));
+                logger.error("❌ PayPal service returned null for order: {}", orderId);
+                return ResponseEntity.status(500).body(Map.of("error", "Failed to capture PayPal order - service returned null"));
             }
             
         } catch (Exception e) {
-            logger.error("Error capturing PayPal order: {}", e.getMessage(), e);
-            return ResponseEntity.status(500).body(Map.of("error", "Internal server error"));
+            logger.error("❌ Error capturing PayPal order: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).body(Map.of("error", "Internal server error: " + e.getMessage()));
         }
     }
 
