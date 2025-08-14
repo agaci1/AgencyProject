@@ -153,8 +153,8 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
       }
 
       const script = document.createElement("script")
-      // Use the official PayPal SDK URL with web experience profile
-      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&components=buttons&enable-funding=card&experience-profile-id=XP-AK29-YT4Z-NJTB-8G9U`
+      // Use the official PayPal SDK URL with proper parameters
+      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&components=buttons&enable-funding=card`
       script.async = true
 
       script.onload = () => {
