@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PayPal Client ID Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .error { color: red; background: #ffe6e6; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .success { color: green; background: #e6ffe6; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .info { color: blue; background: #e6f3ff; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .warning { color: orange; background: #fff3cd; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; }
+        #paypal-button-container { min-height: 100px; border: 2px dashed #ccc; padding: 20px; margin: 20px 0; text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>PayPal Client ID and Domain Test</h1>
+    
+    <div id="status"></div>
+    
+    <div class="info">
+        <h3>Configuration Check</h3>
+        <p><strong>Domain:</strong> <span id="domain"></span></p>
+        <p><strong>Expected Client ID:</strong> Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX</p>
+        <p><strong>Environment:</strong> <span id="environment"></span></p>
+    </div>
+    
+    <div>
+        <h3>PayPal Button Test:</h3>
+        <div id="paypal-button-container">
+            <p>PayPal buttons will appear here...</p>
+        </div>
+    </div>
+    
+    <div>
+        <h3>Console Log:</h3>
+        <pre id="console-log"></pre>
+    </div>
+    
+    <script>
+        // Override console.log to capture output
+        const originalLog = console.log;
+        const originalError = console.error;
+        const logElement = document.getElementById('console-log');
+        
+        function addLog(message, type = 'log') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}\n`;
+            logElement.textContent += logEntry;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addLog(args.join(' '), 'log');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addLog(args.join(' '), 'error');
+        };
+        
+        // Show current domain and environment
+        document.getElementById('domain').textContent = window.location.hostname;
+        document.getElementById('environment').textContent = window.location.hostname.includes('railway') ? 'Railway' : 'Local';
+        
+        // PayPal configuration
+        const clientId = 'Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX';
+        
+        console.log('Testing PayPal with client ID:', clientId);
+        console.log('Domain:', window.location.hostname);
+        
+        // Load PayPal SDK
+        const script = document.createElement('script');
+        script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=EUR&intent=capture&components=buttons&enable-funding=card`;
+        script.async = true;
+        
+        script.onload = function() {
+            console.log('PayPal SDK loaded successfully');
+            document.getElementById('status').innerHTML = '<div class="success">✅ PayPal SDK loaded successfully</div>';
+            
+            if (window.paypal) {
+                console.log('PayPal SDK available:', !!window.paypal);
+                console.log('PayPal Buttons function available:', typeof window.paypal.Buttons);
+                
+                window.paypal.Buttons({
+                    createOrder: function(data, actions) {
+                        console.log('Creating PayPal order...');
+                        return actions.order.create({
+                            purchase_units: [{
+                                amount: {
+                                    value: '1.00',
+                                    currency_code: 'EUR'
+                                },
+                                description: 'Test Payment'
+                            }]
+                        });
+                    },
+                    onApprove: function(data, actions) {
+                        console.log('Order approved:', data);
+                        return actions.order.capture().then(function(details) {
+                            console.log('Payment captured:', details);
+                            document.getElementById('status').innerHTML = 
+                                '<div class="success">✅ SUCCESS! Payment captured. Order ID: ' + data.orderID + '</div>';
+                        });
+                    },
+                    onError: function(err) {
+                        console.error('PayPal error:', err);
+                        document.getElementById('status').innerHTML = 
+                            '<div class="error">❌ PayPal error: ' + err.message + '</div>';
+                    },
+                    onCancel: function(data) {
+                        console.log('Payment cancelled:', data);
+                        document.getElementById('status').innerHTML = 
+                            '<div class="warning">⚠️ Payment was cancelled</div>';
+                    }
+                }).render('#paypal-button-container');
+                
+                console.log('PayPal buttons rendered successfully');
+                
+            } else {
+                console.error('PayPal SDK not available after script load');
+                document.getElementById('status').innerHTML = '<div class="error">❌ PayPal SDK not available</div>';
+            }
+        };
+        
+        script.onerror = function() {
+            console.error('Failed to load PayPal SDK script');
+            document.getElementById('status').innerHTML = '<div class="error">❌ Failed to load PayPal SDK</div>';
+        };
+        
+        document.head.appendChild(script);
+    </script>
+</body>
+</html>
