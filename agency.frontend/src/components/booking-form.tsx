@@ -326,21 +326,27 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                 clearStorage() // Clear saved state
                 setTimeout(() => onComplete(), 2000)
               } else {
-                // Check if this is a PayPal capture error (payment might still be successful)
-                if (error.message && error.message.includes("unauthorized order")) {
-                  console.log("PayPal capture error but payment might be successful - checking with backend")
-                  // Try to create booking anyway since PayPal might have processed it
-                  try {
-                                         const bookingPayload = {
+                                 // Check if this is a PayPal capture error (payment might still be successful)
+                 if (error.message && error.message.includes("unauthorized order")) {
+                   console.log("PayPal capture error but payment might be successful - checking with backend")
+                   // Try to create booking anyway since PayPal might have processed it
+                   try {
+                     // Get customer info from the form or use defaults
+                     const nameInput = document.querySelector('input[name="name"]') as HTMLInputElement;
+                     const emailInput = document.querySelector('input[name="email"]') as HTMLInputElement;
+                     const customerName = nameInput?.value || "Customer";
+                     const customerEmail = emailInput?.value || "customer@example.com";
+                     
+                     const bookingPayload = {
                        tourId: tour.id,
-                       name: "Customer", // Will be filled by PayPal data
-                       email: "customer@paypal.com", // Will be filled by PayPal data
+                       name: customerName,
+                       email: customerEmail,
                        departureDate: bookingData.departureDate,
                        returnDate: bookingData.tripType === "round-trip" ? bookingData.returnDate : null,
                        guests: bookingData.guests,
                        paymentMethod: "paypal",
                        paypal: {
-                         email: "customer@paypal.com",
+                         email: customerEmail,
                          transactionId: "PAYPAL_" + Date.now(),
                        }
                      }

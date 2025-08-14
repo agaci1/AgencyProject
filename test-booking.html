@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Booking API</title>
+</head>
+<body>
+    <h1>Test Booking Creation</h1>
+    <button onclick="testBooking()">Test Create Booking</button>
+    <div id="result"></div>
+
+    <script>
+        async function testBooking() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch('https://agencyproject-production-dbfc.up.railway.app/bookings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        tourId: 1,
+                        name: "Test Customer",
+                        email: "test@example.com",
+                        departureDate: "2025-08-20",
+                        guests: 1,
+                        paymentMethod: "paypal",
+                        paypal: {
+                            email: "test@paypal.com",
+                            transactionId: "TEST_" + Date.now()
+                        }
+                    })
+                });
+                
+                const data = await response.text();
+                resultDiv.innerHTML = `
+                    <h3>Response Status: ${response.status}</h3>
+                    <pre>${data}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<h3>Error:</h3><pre>${error.message}</pre>`;
+            }
+        }
+    </script>
+</body>
+</html>
