@@ -1,16 +1,12 @@
+-- Disable foreign key checks temporarily to allow data cleanup
+SET FOREIGN_KEY_CHECKS = 0;
+
 -- Clear existing data to avoid conflicts
 DELETE FROM tour_highlights;
 DELETE FROM tours;
 
 -- Reset auto-increment
 ALTER TABLE tours AUTO_INCREMENT = 1;
-
--- Disable foreign key checks temporarily
-SET FOREIGN_KEY_CHECKS = 0;
-
--- Truncate tables to ensure clean slate
-TRUNCATE TABLE tour_highlights;
-TRUNCATE TABLE tours;
 
 -- Insert ONLY 4 normal tours + 1 test tour (5 total)
 INSERT INTO tours (title, description, price, departure_time, location, rating, image, max_guests, route_description, start_location_link) VALUES 
