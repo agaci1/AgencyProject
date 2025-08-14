@@ -132,7 +132,6 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
 
   // Load PayPal SDK
   useEffect(() => {
-    console.log("PayPal useEffect triggered - step:", step, "paypalLoaded:", paypalLoaded)
     if (step !== "payment" || paypalLoaded) return
 
     let timeoutId: NodeJS.Timeout
@@ -142,13 +141,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
       const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
       const currency = process.env.NEXT_PUBLIC_PAYPAL_CURRENCY || "EUR"
 
-      console.log("PayPal Configuration Debug:")
-      console.log("- Client ID:", clientId ? "SET" : "NOT SET")
-      console.log("- Currency:", currency)
-      console.log("- Final Total:", finalTotal)
-
       if (!clientId || clientId === 'test') {
-        console.error("PayPal Client ID not configured")
         setPaypalError("Payment system not configured. Please contact support.")
         return
       }
@@ -164,25 +157,19 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
       script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&components=buttons`
       script.async = true
 
-      console.log("Loading PayPal SDK with URL:", script.src)
-
       script.onload = () => {
-        console.log("PayPal SDK loaded successfully")
         // Wait a bit for PayPal to initialize
         setTimeout(() => {
           if (window.paypal && typeof window.paypal.Buttons === "function") {
-            console.log("PayPal Buttons function available")
             setPaypalLoaded(true)
             setPaypalError(null)
           } else {
-            console.error("PayPal Buttons function not available")
             setPaypalError("PayPal SDK loaded but Buttons not available")
           }
         }, 1000)
       }
 
       script.onerror = () => {
-        console.error("Failed to load PayPal SDK")
         setPaypalError("Failed to load payment system. Please check your internet connection and try again.")
       }
 
@@ -196,7 +183,6 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
       }, 15000) // 15 second timeout
     }
 
-    console.log("Starting PayPal script loading...")
     loadPayPalScript()
 
     // Cleanup function
@@ -212,11 +198,6 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
   }, [step, paypalLoaded])
 
   const initializePayPal = () => {
-    console.log("Initializing PayPal...")
-    console.log("Window object:", typeof window)
-    console.log("PayPal object:", window.paypal)
-    console.log("PayPal Buttons function:", typeof window.paypal?.Buttons)
-    
     if (typeof window === "undefined") {
       setPaypalError("Window object not available")
       return
@@ -234,12 +215,10 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
 
     const container = document.getElementById("paypal-button-container")
     if (!container) {
-      console.error("PayPal container not found")
       setPaypalError("PayPal container not found")
       return
     }
 
-    console.log("PayPal container found, clearing content...")
     // Clear any existing content
     container.innerHTML = ""
 
@@ -257,8 +236,6 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
 
 
           createOrder: (data: any, actions: any) => {
-            console.log("Creating PayPal order for:", finalTotal)
-            console.log("Using currency: EUR (hardcoded)")
             const orderData = {
               purchase_units: [
                 {
@@ -277,16 +254,13 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                 cancel_url: 'https://rilindishpk.com/tours',
               },
             }
-            console.log("Order data:", orderData)
             return actions.order.create(orderData)
           },
           onApprove: async (data: any, actions: any) => {
             setIsProcessing(true)
             let paymentDetails: any = null
             try {
-              console.log("PayPal order approved, capturing payment...")
               paymentDetails = await actions.order.capture()
-              console.log("Payment captured successfully:", paymentDetails)
 
               // Send booking request to your backend
               const bookingPayload = {
@@ -303,9 +277,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                 }
               }
 
-              console.log("Sending booking to backend:", bookingPayload)
               const res = await api.post("/bookings", bookingPayload)
-              console.log("Booking created successfully:", res.data)
 
               setNotification("Payment successful! A confirmation email has been sent.")
               clearStorage() // Clear saved state
@@ -325,12 +297,11 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                 setNotification("Payment successful! Your booking has been confirmed.")
                 clearStorage() // Clear saved state
                 setTimeout(() => onComplete(), 2000)
-              } else {
-                                 // Check if this is a PayPal capture error (payment might still be successful)
-                 if (error.message && error.message.includes("unauthorized order")) {
-                   console.log("PayPal capture error but payment might be successful - checking with backend")
-                   // Try to create booking anyway since PayPal might have processed it
-                   try {
+                              } else {
+                  // Check if this is a PayPal capture error (payment might still be successful)
+                  if (error.message && error.message.includes("unauthorized order")) {
+                    // Try to create booking anyway since PayPal might have processed it
+                    try {
                      // Get customer info from the form or use defaults
                      const nameInput = document.querySelector('input[name="name"]') as HTMLInputElement;
                      const emailInput = document.querySelector('input[name="email"]') as HTMLInputElement;
@@ -352,12 +323,10 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                      }
                     
                     const res = await api.post("/bookings", bookingPayload)
-                    console.log("Booking created successfully:", res.data)
                     setNotification("🎉 Payment successful! Your booking has been confirmed. Check your email for details.")
                     clearStorage()
                     setTimeout(() => onComplete(), 2000)
                   } catch (backendError) {
-                    console.error("Backend booking creation failed:", backendError)
                     setNotification("⚠️ Payment processed but booking creation failed. Please contact support.")
                     clearStorage()
                     setTimeout(() => onComplete(), 2000)
@@ -365,7 +334,6 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                 } else {
                   // Only show error if payment itself failed
                   const errorMessage = error.response?.data || error.message || "Payment failed. Please try again."
-                  console.error("Setting PayPal error:", errorMessage)
                   setPaypalError(errorMessage)
                 }
               }
@@ -374,20 +342,16 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
             }
           },
           onError: (err: Error) => {
-            console.error("PayPal error:", err)
             setPaypalError("Payment failed. Please try again.")
             setIsProcessing(false)
           },
           onCancel: () => {
-            console.log("Payment cancelled by user")
             setIsProcessing(false)
           },
         })
         .render("#paypal-button-container")
 
-      console.log("PayPal buttons rendered successfully")
     } catch (error) {
-      console.error("PayPal initialization error:", error)
       setPaypalError("Failed to initialize payment system. Please refresh the page.")
     }
   }
@@ -483,9 +447,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                 </div>
               ) : paypalLoaded ? (
                 <div className="space-y-3">
-                  <div className="text-green-600 text-sm mb-2">✅ PayPal loaded successfully!</div>
-                  <div className="text-blue-600 text-sm mb-2">🔍 Debug: PayPal Buttons should appear below</div>
-                  <div id="paypal-button-container" className="min-h-[50px] border-2 border-dashed border-gray-300 bg-gray-50 p-4" />
+                  <div id="paypal-button-container" className="min-h-[50px]" />
                   
 
                   
@@ -497,8 +459,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                 <div className="space-y-3">
                   <div className="text-center py-4">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                    <p className="text-sm text-gray-600 mb-2 font-playfair">Loading PayPal...</p>
-                    <p className="text-xs text-gray-500">Debug: Step={step}, PayPalLoaded={paypalLoaded.toString()}</p>
+                    <p className="text-sm text-gray-600 mb-2 font-playfair">Loading payment system...</p>
                   </div>
                 </div>
               )}
