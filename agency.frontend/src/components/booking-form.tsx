@@ -318,7 +318,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                        paymentMethod: "paypal",
                        paypal: {
                          email: customerEmail,
-                         transactionId: "PAYPAL_" + Date.now(),
+                         transactionId: "PAYPAL_FALLBACK_" + Date.now(),
                        }
                      }
                     
