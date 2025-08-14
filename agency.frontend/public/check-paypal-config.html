@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PayPal Configuration Check</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { border-color: #4CAF50; background-color: #f1f8e9; }
+        .error { border-color: #f44336; background-color: #ffebee; }
+        .info { border-color: #2196F3; background-color: #e3f2fd; }
+        .warning { border-color: #ff9800; background-color: #fff3e0; }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .diagnostic-item {
+            margin: 10px 0;
+            padding: 10px;
+            border-left: 4px solid #ddd;
+        }
+        .diagnostic-item.success { border-left-color: #4CAF50; background-color: #f1f8e9; }
+        .diagnostic-item.error { border-left-color: #f44336; background-color: #ffebee; }
+        .diagnostic-item.warning { border-left-color: #ff9800; background-color: #fff3e0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 PayPal Configuration Diagnostic</h1>
+        <p>Checking why even test cards are being rejected</p>
+        
+        <div class="test-section info">
+            <h3>📋 Current Configuration</h3>
+            <div id="config-info"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 Diagnostic Results</h3>
+            <div id="diagnostic-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Detailed Logs</h3>
+            <div id="results" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        const clientId = 'Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX';
+        let logs = [];
+        let diagnosticResults = [];
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+            logs.push(logEntry);
+            console.log(logEntry);
+            
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = logs.join('\n');
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        function addDiagnostic(message, type = 'info') {
+            diagnosticResults.push({ message, type });
+            updateDiagnosticDisplay();
+        }
+
+        function updateDiagnosticDisplay() {
+            const container = document.getElementById('diagnostic-results');
+            container.innerHTML = diagnosticResults.map(item => 
+                `<div class="diagnostic-item ${item.type}">${item.message}</div>`
+            ).join('');
+        }
+
+        function checkConfiguration() {
+            log('Starting PayPal configuration diagnostic...');
+            
+            // Check 1: Client ID format
+            if (clientId && clientId.length > 50) {
+                addDiagnostic('✅ Client ID format looks correct', 'success');
+                log('Client ID format: Valid');
+            } else {
+                addDiagnostic('❌ Client ID format may be incorrect', 'error');
+                log('Client ID format: Invalid');
+            }
+
+            // Check 2: Domain
+            const currentDomain = window.location.hostname;
+            addDiagnostic(`🌐 Current domain: ${currentDomain}`, 'info');
+            log(`Current domain: ${currentDomain}`);
+
+            // Check 3: Protocol
+            if (window.location.protocol === 'https:') {
+                addDiagnostic('✅ Using HTTPS (required for PayPal)', 'success');
+                log('Protocol: HTTPS');
+            } else {
+                addDiagnostic('❌ Not using HTTPS - PayPal requires HTTPS', 'error');
+                log('Protocol: HTTP (not secure)');
+            }
+
+            // Check 4: PayPal SDK loading
+            testPayPalSDK();
+        }
+
+        function testPayPalSDK() {
+            log('Testing PayPal SDK loading...');
+            
+            const script = document.createElement('script');
+            script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=EUR&intent=capture&components=buttons`;
+            script.async = true;
+            
+            script.onload = function() {
+                log('✅ PayPal SDK loaded successfully');
+                addDiagnostic('✅ PayPal SDK loads successfully', 'success');
+                
+                setTimeout(() => {
+                    if (window.paypal && typeof window.paypal.Buttons === "function") {
+                        log('✅ PayPal Buttons function available');
+                        addDiagnostic('✅ PayPal Buttons function available', 'success');
+                        testOrderCreation();
+                    } else {
+                        log('❌ PayPal SDK loaded but Buttons not available', 'error');
+                        addDiagnostic('❌ PayPal Buttons function not available', 'error');
+                    }
+                }, 1000);
+            };
+            
+            script.onerror = function() {
+                log('❌ Failed to load PayPal SDK', 'error');
+                addDiagnostic('❌ Failed to load PayPal SDK', 'error');
+            };
+            
+            document.head.appendChild(script);
+        }
+
+        function testOrderCreation() {
+            log('Testing order creation...');
+            
+            try {
+                const testOrder = {
+                    purchase_units: [{
+                        amount: {
+                            value: '0.01',
+                            currency_code: 'EUR'
+                        },
+                        description: 'Configuration test',
+                        custom_id: 'config-test-' + Date.now()
+                    }],
+                    application_context: {
+                        shipping_preference: 'NO_SHIPPING',
+                        user_action: 'PAY_NOW',
+                    }
+                };
+                
+                log('Test order data:', JSON.stringify(testOrder, null, 2));
+                addDiagnostic('✅ Order data structure is valid', 'success');
+                
+                // Try to create order
+                if (window.paypal && window.paypal.Buttons) {
+                    const buttons = window.paypal.Buttons({
+                        createOrder: function(data, actions) {
+                            log('Attempting to create test order...');
+                            return actions.order.create(testOrder);
+                        },
+                        onApprove: function(data, actions) {
+                            log('✅ Test order created successfully: ' + data.orderID);
+                            addDiagnostic('✅ Order creation works', 'success');
+                            return actions.order.capture();
+                        },
+                        onError: function(err) {
+                            log('❌ Order creation failed: ' + err.message, 'error');
+                            addDiagnostic('❌ Order creation failed: ' + err.message, 'error');
+                        }
+                    });
+                    
+                    buttons.render('#paypal-button-container').then(function() {
+                        log('✅ Test buttons rendered');
+                        addDiagnostic('✅ PayPal integration is working', 'success');
+                    }).catch(function(error) {
+                        log('❌ Failed to render test buttons: ' + error.message, 'error');
+                        addDiagnostic('❌ PayPal integration has issues', 'error');
+                    });
+                }
+                
+            } catch (error) {
+                log('❌ Error in test order creation: ' + error.message, 'error');
+                addDiagnostic('❌ Error in order creation: ' + error.message, 'error');
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 Starting PayPal Configuration Diagnostic');
+            
+            // Display current config
+            document.getElementById('config-info').innerHTML = `
+                <p><strong>Client ID:</strong> ${clientId.substring(0, 20)}...</p>
+                <p><strong>Domain:</strong> ${window.location.hostname}</p>
+                <p><strong>Protocol:</strong> ${window.location.protocol}</p>
+                <p><strong>User Agent:</strong> ${navigator.userAgent.substring(0, 50)}...</p>
+            `;
+            
+            checkConfiguration();
+        });
+    </script>
+</body>
+</html>
