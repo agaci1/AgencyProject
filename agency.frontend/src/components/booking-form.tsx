@@ -242,7 +242,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
             console.log('Creating PayPal order for amount:', finalTotal)
             try {
               // Create order through our backend (proper flow)
-              const response = await fetch('/api/paypal/create-order', {
+              const response = await fetch('https://agencyproject-production-dbfc.up.railway.app/api/paypal/create-order', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -277,7 +277,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
               console.log('Capturing PayPal order via backend...')
               
               // Capture the order through our backend (proper flow)
-              const captureResponse = await fetch('/api/paypal/capture-order', {
+              const captureResponse = await fetch('https://agencyproject-production-dbfc.up.railway.app/api/paypal/capture-order', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
