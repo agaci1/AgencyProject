@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PayPal SDK Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .error { color: red; background: #ffe6e6; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .success { color: green; background: #e6ffe6; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .info { color: blue; background: #e6f3ff; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .warning { color: orange; background: #fff3cd; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; }
+        button { padding: 10px 20px; margin: 10px; }
+        #paypal-button-container { min-height: 50px; border: 1px solid #ccc; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>PayPal SDK Debug Test</h1>
+    
+    <div id="status"></div>
+    
+    <div class="info">
+        <h3>Test Information</h3>
+        <p>This page tests PayPal SDK loading and button creation to identify the issue.</p>
+        <p><strong>Client ID:</strong> <span id="client-id">Loading...</span></p>
+        <p><strong>Domain:</strong> <span id="domain"></span></p>
+    </div>
+    
+    <div>
+        <h3>Test PayPal Button:</h3>
+        <div id="paypal-button-container">
+            <p>PayPal buttons will appear here...</p>
+        </div>
+    </div>
+    
+    <div>
+        <h3>Console Log:</h3>
+        <pre id="console-log"></pre>
+    </div>
+    
+    <button onclick="testPayPal()">Test PayPal</button>
+    <button onclick="clearLog()">Clear Log</button>
+    
+    <script>
+        // Override console.log to capture output
+        const originalLog = console.log;
+        const originalError = console.error;
+        const logElement = document.getElementById('console-log');
+        
+        function addLog(message, type = 'log') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}\n`;
+            logElement.textContent += logEntry;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addLog(args.join(' '), 'log');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addLog(args.join(' '), 'error');
+        };
+        
+        function clearLog() {
+            logElement.textContent = '';
+        }
+        
+        // Get client ID from environment (this would be set by your app)
+        const clientId = 'Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX';
+        document.getElementById('client-id').textContent = clientId;
+        document.getElementById('domain').textContent = window.location.hostname;
+        
+        function testPayPal() {
+            clearLog();
+            console.log('Starting PayPal test...');
+            
+            // Check if PayPal is already loaded
+            if (window.paypal) {
+                console.log('PayPal SDK already loaded');
+                createPayPalButtons();
+            } else {
+                console.log('Loading PayPal SDK...');
+                loadPayPalSDK();
+            }
+        }
+        
+        function loadPayPalSDK() {
+            // Remove any existing script
+            const existingScript = document.querySelector('script[src*="paypal.com/sdk"]');
+            if (existingScript) {
+                existingScript.remove();
+                console.log('Removed existing PayPal script');
+            }
+            
+            const script = document.createElement('script');
+            script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=EUR&intent=capture&components=buttons`;
+            script.async = true;
+            
+            script.onload = function() {
+                console.log('PayPal SDK script loaded successfully');
+                setTimeout(() => {
+                    if (window.paypal) {
+                        console.log('PayPal SDK available:', !!window.paypal);
+                        console.log('PayPal Buttons function available:', typeof window.paypal.Buttons);
+                        createPayPalButtons();
+                    } else {
+                        console.error('PayPal SDK not available after script load');
+                        document.getElementById('status').innerHTML = '<div class="error">PayPal SDK failed to load</div>';
+                    }
+                }, 1000);
+            };
+            
+            script.onerror = function() {
+                console.error('Failed to load PayPal SDK script');
+                document.getElementById('status').innerHTML = '<div class="error">Failed to load PayPal SDK</div>';
+            };
+            
+            document.head.appendChild(script);
+        }
+        
+        function createPayPalButtons() {
+            try {
+                console.log('Creating PayPal buttons...');
+                
+                if (!window.paypal || typeof window.paypal.Buttons !== 'function') {
+                    throw new Error('PayPal SDK or Buttons function not available');
+                }
+                
+                const buttons = window.paypal.Buttons({
+                    style: {
+                        layout: 'vertical',
+                        color: 'blue',
+                        shape: 'rect',
+                        label: 'pay',
+                        height: 50,
+                    },
+                    
+                    createOrder: function(data, actions) {
+                        console.log('Creating order...');
+                        return actions.order.create({
+                            purchase_units: [{
+                                amount: {
+                                    value: '10.00',
+                                    currency_code: 'EUR'
+                                },
+                                description: 'Test payment'
+                            }]
+                        });
+                    },
+                    
+                    onApprove: function(data, actions) {
+                        console.log('Order approved:', data);
+                        return actions.order.capture().then(function(details) {
+                            console.log('Payment captured:', details);
+                            document.getElementById('status').innerHTML = '<div class="success">Payment successful! Order ID: ' + data.orderID + '</div>';
+                        });
+                    },
+                    
+                    onError: function(err) {
+                        console.error('PayPal error:', err);
+                        document.getElementById('status').innerHTML = '<div class="error">PayPal error: ' + err.message + '</div>';
+                    },
+                    
+                    onCancel: function(data) {
+                        console.log('Payment cancelled:', data);
+                        document.getElementById('status').innerHTML = '<div class="warning">Payment was cancelled</div>';
+                    }
+                });
+                
+                console.log('PayPal buttons created, rendering...');
+                buttons.render('#paypal-button-container');
+                console.log('PayPal buttons rendered successfully');
+                document.getElementById('status').innerHTML = '<div class="success">PayPal buttons loaded successfully!</div>';
+                
+            } catch (error) {
+                console.error('Error creating PayPal buttons:', error);
+                document.getElementById('status').innerHTML = '<div class="error">Error creating PayPal buttons: ' + error.message + '</div>';
+            }
+        }
+        
+        // Auto-test on page load
+        window.addEventListener('load', function() {
+            console.log('Page loaded, starting auto-test...');
+            setTimeout(testPayPal, 1000);
+        });
+    </script>
+</body>
+</html>

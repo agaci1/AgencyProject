@@ -223,9 +223,12 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
     container.innerHTML = ""
 
     try {
-      window.paypal
-        .Buttons({
-                  style: {
+      console.log('Initializing PayPal buttons...')
+      console.log('PayPal SDK available:', !!window.paypal)
+      console.log('PayPal Buttons function available:', typeof window.paypal.Buttons)
+      
+      const buttons = window.paypal.Buttons({
+        style: {
           layout: "vertical",
           color: "blue",
           shape: "rect",
@@ -235,54 +238,32 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
 
 
 
-          createOrder: async (data: any, actions: any) => {
-            try {
-              // Create order through our backend (following official PayPal pattern)
-              const response = await fetch('/api/paypal/create-order', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
+          createOrder: (data: any, actions: any) => {
+            const orderData = {
+              purchase_units: [
+                {
+                  amount: {
+                    value: finalTotal.toString(),
+                    currency_code: "EUR",
+                  },
+                  description: `${tour.title} - ${bookingData.guests} guest(s)`,
+                  custom_id: `tour_${tour.id}_${Date.now()}`,
                 },
-                body: JSON.stringify({
-                  amount: finalTotal,
-                  currency: 'EUR'
-                })
-              });
-              
-              if (!response.ok) {
-                throw new Error(`Failed to create order: ${response.status}`);
-              }
-              
-              const orderData = await response.json();
-              console.log('Order created:', orderData);
-              
-              return orderData.id;
-            } catch (error) {
-              console.error('Error creating order:', error);
-              throw error;
+              ],
+              application_context: {
+                shipping_preference: 'NO_SHIPPING',
+                user_action: 'PAY_NOW',
+                return_url: 'https://rilindishpk.com/tours',
+                cancel_url: 'https://rilindishpk.com/tours',
+              },
             }
+            return actions.order.create(orderData)
           },
           onApprove: async (data: any, actions: any) => {
             setIsProcessing(true)
             let paymentDetails: any = null
             try {
-              // Capture order through our backend (following official PayPal pattern)
-              const captureResponse = await fetch('/api/paypal/capture-order', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  order_id: data.orderID
-                })
-              });
-              
-              if (!captureResponse.ok) {
-                throw new Error(`Failed to capture order: ${captureResponse.status}`);
-              }
-              
-              paymentDetails = await captureResponse.json();
-              console.log('Payment captured:', paymentDetails);
+              paymentDetails = await actions.order.capture()
 
               // Send booking request to your backend
               const bookingPayload = {
@@ -295,7 +276,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                 paymentMethod: "paypal",
                 paypal: {
                   email: paymentDetails.payer.email_address,
-                  transactionId: data.orderID, // Use the order ID as transaction ID
+                  transactionId: paymentDetails.id,
                 }
               }
 
@@ -336,7 +317,10 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
             setIsProcessing(false)
           },
         })
-        .render("#paypal-button-container")
+        
+        console.log('PayPal buttons created, attempting to render...')
+        buttons.render("#paypal-button-container")
+        console.log('PayPal buttons rendered successfully')
 
     } catch (error) {
       setPaypalError("Failed to initialize payment system. Please refresh the page.")
