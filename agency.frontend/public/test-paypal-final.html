@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final PayPal Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Final PayPal Test</h1>
+        <p>Isolated test to identify the exact issue</p>
+        
+        <div id="paypal-button-container"></div>
+        
+        <div class="log" id="results"></div>
+    </div>
+
+    <script>
+        const clientId = 'Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX';
+        let logs = [];
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+            logs.push(logEntry);
+            console.log(logEntry);
+            
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = logs.join('\n');
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        // Load PayPal SDK
+        function loadPayPal() {
+            log('Loading PayPal SDK...');
+            
+            const script = document.createElement('script');
+            script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=EUR&intent=capture&components=buttons`;
+            script.onload = function() {
+                log('✅ PayPal SDK loaded', 'success');
+                renderPayPal();
+            };
+            script.onerror = function() {
+                log('❌ Failed to load PayPal SDK', 'error');
+            };
+            document.head.appendChild(script);
+        }
+
+        function renderPayPal() {
+            if (typeof paypal === 'undefined') {
+                log('❌ PayPal not available', 'error');
+                return;
+            }
+
+            log('Rendering PayPal buttons...');
+            
+            paypal.Buttons({
+                createOrder: function(data, actions) {
+                    log('Creating order...');
+                    return actions.order.create({
+                        purchase_units: [{
+                            amount: {
+                                value: '0.01',
+                                currency_code: 'EUR'
+                            },
+                            description: 'Final test payment'
+                        }]
+                    });
+                },
+                onApprove: function(data, actions) {
+                    log('✅ Order approved: ' + data.orderID, 'success');
+                    return actions.order.capture().then(function(details) {
+                        log('✅ Payment captured successfully!', 'success');
+                        log('Details: ' + JSON.stringify(details, null, 2));
+                    }).catch(function(error) {
+                        log('❌ Capture failed: ' + error.message, 'error');
+                    });
+                },
+                onError: function(err) {
+                    log('❌ PayPal error: ' + err.message, 'error');
+                }
+            }).render('#paypal-button-container');
+            
+            log('✅ PayPal buttons rendered', 'success');
+        }
+
+        // Start
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 Starting final PayPal test');
+            log('Client ID: ' + clientId.substring(0, 20) + '...');
+            log('Domain: ' + window.location.hostname);
+            loadPayPal();
+        });
+    </script>
+</body>
+</html>
