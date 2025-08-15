@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PayPal App Configuration Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { border-color: #4CAF50; background-color: #f1f8e9; }
+        .error { border-color: #f44336; background-color: #ffebee; }
+        .info { border-color: #2196F3; background-color: #e3f2fd; }
+        button {
+            background-color: #0070ba;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover { background-color: #005ea6; }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 PayPal App Configuration Test</h1>
+        <p>This test will help identify if the issue is with PayPal app configuration.</p>
+        
+        <div class="test-section info">
+            <h3>📋 Test Information</h3>
+            <p><strong>Domain:</strong> rilindishpk.com</p>
+            <p><strong>Environment:</strong> Live Production</p>
+            <p><strong>Test Purpose:</strong> Check for app-level domain restrictions</p>
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 Configuration Check</h3>
+            <div id="config-info"></div>
+            <button onclick="checkConfiguration()">Check Configuration</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 Alternative Test - Different Intent</h3>
+            <p>Testing with different PayPal intent to see if that helps:</p>
+            <div id="paypal-buttons-alt"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Test Results</h3>
+            <div id="results" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        const clientId = 'Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX';
+        const currency = 'EUR';
+        let logs = [];
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+            logs.push(logEntry);
+            console.log(logEntry);
+            
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = logs.join('\n');
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        function checkConfiguration() {
+            log('Checking PayPal configuration...');
+            
+            // Check if we're on the correct domain
+            const currentDomain = window.location.hostname;
+            log(`Current domain: ${currentDomain}`);
+            
+            if (currentDomain !== 'rilindishpk.com') {
+                log('⚠️ WARNING: Not on rilindishpk.com domain', 'warn');
+            }
+            
+            // Check client ID format
+            if (clientId && clientId.length > 50) {
+                log('✅ Client ID format looks correct');
+            } else {
+                log('❌ Client ID format may be incorrect', 'error');
+            }
+            
+            // Check for HTTPS
+            if (window.location.protocol === 'https:') {
+                log('✅ Using HTTPS (required for PayPal)');
+            } else {
+                log('❌ Not using HTTPS - PayPal requires HTTPS', 'error');
+            }
+        }
+
+        // Load PayPal SDK with different configuration
+        function loadPayPalSDK() {
+            log('Loading PayPal SDK with alternative configuration...');
+            
+            const script = document.createElement('script');
+            script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=authorize&components=buttons`;
+            script.onload = function() {
+                log('✅ PayPal SDK loaded with authorize intent');
+                renderAlternativeButtons();
+            };
+            script.onerror = function() {
+                log('❌ Failed to load PayPal SDK', 'error');
+            };
+            document.head.appendChild(script);
+        }
+
+        function renderAlternativeButtons() {
+            if (typeof paypal === 'undefined') {
+                log('❌ PayPal SDK not available', 'error');
+                return;
+            }
+
+            log('Rendering alternative PayPal buttons...');
+            
+            paypal.Buttons({
+                createOrder: function(data, actions) {
+                    log('Creating order with authorize intent...');
+                    return actions.order.create({
+                        intent: 'AUTHORIZE',
+                        purchase_units: [{
+                            amount: {
+                                value: '10.00',
+                                currency_code: currency
+                            },
+                            description: 'Test payment for domain authorization',
+                            custom_id: 'test-auth-' + Date.now()
+                        }]
+                    });
+                },
+                onApprove: function(data, actions) {
+                    log('Order approved, attempting authorization...');
+                    return actions.order.authorize().then(function(authorization) {
+                        log('✅ Authorization successful: ' + JSON.stringify(authorization));
+                        return authorization;
+                    }).catch(function(error) {
+                        log('❌ Authorization failed: ' + error.message, 'error');
+                        throw error;
+                    });
+                },
+                onError: function(err) {
+                    log('❌ PayPal error: ' + err.message, 'error');
+                }
+            }).render('#paypal-buttons-alt');
+            
+            log('✅ Alternative buttons rendered');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 Starting PayPal App Configuration Test');
+            log(`Client ID: ${clientId.substring(0, 20)}...`);
+            log(`Domain: ${window.location.hostname}`);
+            log(`Protocol: ${window.location.protocol}`);
+            
+            // Load alternative SDK
+            loadPayPalSDK();
+        });
+    </script>
+</body>
+</html>

@@ -141,8 +141,23 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
       const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
       const currency = process.env.NEXT_PUBLIC_PAYPAL_CURRENCY || "EUR"
 
-      if (!clientId || clientId === 'test') {
-        setPaypalError("Payment system not configured. Please contact support.")
+      console.log('PayPal Client ID check:', {
+        hasClientId: !!clientId,
+        clientIdLength: clientId?.length,
+        isTest: clientId === 'test',
+        currency: currency
+      })
+
+      if (!clientId || clientId === 'test' || clientId.trim() === '') {
+        console.error('PayPal Client ID is missing or invalid:', clientId)
+        setPaypalError("Payment system configuration error. Please contact support with error code: PAYPAL_CONFIG_MISSING")
+        return
+      }
+
+      // Validate client ID format (PayPal client IDs are typically long alphanumeric strings)
+      if (clientId.length < 50) {
+        console.error('PayPal Client ID appears to be invalid (too short):', clientId)
+        setPaypalError("Payment system configuration error. Please contact support with error code: PAYPAL_CONFIG_INVALID")
         return
       }
 
@@ -158,18 +173,22 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
       script.async = true
 
       script.onload = () => {
+        console.log('PayPal SDK script loaded successfully')
         // Wait a bit for PayPal to initialize
         setTimeout(() => {
           if (window.paypal && typeof window.paypal.Buttons === "function") {
+            console.log('PayPal SDK initialized successfully')
             setPaypalLoaded(true)
             setPaypalError(null)
           } else {
-            setPaypalError("PayPal SDK loaded but Buttons not available")
+            console.error('PayPal SDK loaded but Buttons not available')
+            setPaypalError("Payment system initialization failed. Please refresh the page.")
           }
         }, 1000)
       }
 
       script.onerror = () => {
+        console.error('Failed to load PayPal SDK script')
         setPaypalError("Failed to load payment system. Please check your internet connection and try again.")
       }
 
@@ -178,6 +197,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
       // Set timeout for loading
       timeoutId = setTimeout(() => {
         if (!paypalLoaded) {
+          console.error('PayPal SDK loading timeout')
           setPaypalError("Payment system is taking too long to load. Please refresh the page.")
         }
       }, 15000) // 15 second timeout
@@ -257,7 +277,30 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
               },
             }
             console.log('Order data:', orderData)
-            return actions.order.create(orderData)
+            
+            try {
+              return actions.order.create(orderData)
+            } catch (error: any) {
+              console.error('PayPal order creation failed:', error)
+              console.error('Error details:', {
+                message: error.message,
+                name: error.name,
+                stack: error.stack
+              })
+              
+              // Provide specific error messages based on error type
+              if (error.message.includes('unauthorized order')) {
+                setPaypalError("Payment configuration error. Please contact support with error: PAYPAL_UNAUTHORIZED_ORDER")
+              } else if (error.message.includes('invalid client id')) {
+                setPaypalError("Payment system configuration error. Please contact support with error: PAYPAL_INVALID_CLIENT_ID")
+              } else if (error.message.includes('network')) {
+                setPaypalError("Network error. Please check your internet connection and try again.")
+              } else {
+                setPaypalError(`Payment error: ${error.message}. Please try again.`)
+              }
+              
+              throw error // Re-throw to prevent PayPal from continuing
+            }
           },
           onApprove: async (data: any, actions: any) => {
             console.log('PayPal order approved:', data)
@@ -284,7 +327,9 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                 }
               }
 
+              console.log('Sending booking request to backend:', bookingPayload)
               const res = await api.post("/bookings", bookingPayload)
+              console.log('Backend booking response:', res.data)
 
               setNotification("🎉 Payment successful! A confirmation email has been sent.")
               clearStorage() // Clear saved state
@@ -313,6 +358,10 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                   setPaypalError("Payment session expired. Please try again.")
                 } else if (error.message.includes('order not found')) {
                   setPaypalError("Payment order not found. Please try again.")
+                } else if (error.message.includes('network')) {
+                  setPaypalError("Network error during payment. Please check your connection and try again.")
+                } else if (error.message.includes('timeout')) {
+                  setPaypalError("Payment timeout. Please try again.")
                 } else {
                   setPaypalError("Payment failed. Please try again or contact support if the issue persists.")
                 }

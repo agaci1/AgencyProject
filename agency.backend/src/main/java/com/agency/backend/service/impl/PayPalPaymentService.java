@@ -79,7 +79,7 @@ public class PayPalPaymentService implements PaymentService {
                     return false;
                 }
                 
-                // REAL PayPal API validation
+                // REAL PayPal API validation using Client ID/Secret
                 if (!validatePayPalPayment(transactionId)) {
                     logger.error("PayPal payment validation failed for transaction: {}", transactionId);
                     return false;
@@ -278,7 +278,7 @@ public class PayPalPaymentService implements PaymentService {
     }
     
     /**
-     * Validate PayPal payment with PayPal's API
+     * Validate PayPal payment with PayPal's API using Client ID/Secret
      * Note: transactionId is actually the PayPal Order ID
      */
     private boolean validatePayPalPayment(String orderId) {
@@ -289,7 +289,7 @@ public class PayPalPaymentService implements PaymentService {
                 return false; // Reject fake transactions - they mean payment failed
             }
             
-            // Get PayPal access token
+            // Get PayPal access token using Client ID/Secret
             String accessToken = getPayPalAccessToken();
             if (accessToken == null) {
                 logger.error("Failed to get PayPal access token");
@@ -359,13 +359,14 @@ public class PayPalPaymentService implements PaymentService {
     }
 
     /**
-     * Get PayPal access token for API calls
+     * Get PayPal access token using Client ID/Secret (not API signature)
+     * This follows the official PayPal OAuth2 pattern
      */
     private String getPayPalAccessToken() {
         try {
             String tokenUrl = paypalBaseUrl + "/v1/oauth2/token";
             
-            // Create basic auth header
+            // Create basic auth header with Client ID and Secret
             String credentials = paypalClientId + ":" + paypalClientSecret;
             String encodedCredentials = Base64.getEncoder().encodeToString(credentials.getBytes());
             
@@ -386,9 +387,12 @@ public class PayPalPaymentService implements PaymentService {
             
             if (response.getStatusCode() == HttpStatus.OK) {
                 JsonNode tokenData = objectMapper.readTree(response.getBody());
-                return tokenData.path("access_token").asText();
+                String accessToken = tokenData.path("access_token").asText();
+                logger.info("✅ Successfully obtained PayPal access token");
+                return accessToken;
             } else {
                 logger.error("Failed to get PayPal access token. Status: {}", response.getStatusCode());
+                logger.error("Response body: {}", response.getBody());
                 return null;
             }
             

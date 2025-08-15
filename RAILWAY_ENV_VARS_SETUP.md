@@ -1,88 +1,146 @@
 # Railway Environment Variables Setup Guide
 
-## Required Environment Variables
+## 🚨 **CRITICAL: Fix PayPal "Unauthorized Order" Error**
 
-Go to your Railway project → **Variables** tab and set these variables:
+The "unauthorized order" error occurs because the PayPal authentication method needs to be corrected. Based on PayPal's official patterns, we need to use **Client ID/Secret authentication**, not API signature.
 
-### Database Configuration
-```
-DATABASE_URL=jdbc:mysql://<host>:<port>/<database>?useSSL=false&serverTimezone=UTC
-DATABASE_USERNAME=<your_username>
-DB_PASSWORD=<your_password>
-```
+## 🔧 **Required Railway Environment Variables**
 
-### Application Configuration
-```
-PORT=8080
-SPRING_PROFILES_ACTIVE=railway
-```
+### **Frontend Variables (Railway Frontend Service)**
 
-### Optional (for full functionality)
-```
-CORS_ALLOWED_ORIGINS=https://rilindishpk.com,https://www.rilindishpk.com,http://localhost:3000
-MAIL_USERNAME=<your_email>
-MAIL_PASSWORD=<your_email_password>
-PAYPAL_CLIENT_ID=<your_paypal_client_id>
-PAYPAL_CLIENT_SECRET=<your_paypal_client_secret>
-```
-
-## How to Get Railway MySQL Details
-
-1. **Go to your Railway project dashboard**
-2. **Find your MySQL service** (should be listed under Services)
-3. **Click on the MySQL service**
-4. **Go to the "Connect" tab**
-5. **Copy the connection details:**
-
-### Example Railway MySQL Connection Details:
-- **Host**: `containers-us-west-123.railway.app`
-- **Port**: `1234`
-- **Database**: `railway`
-- **Username**: `root`
-- **Password**: `your_password`
-
-### Example DATABASE_URL:
-```
-jdbc:mysql://containers-us-west-123.railway.app:1234/railway?useSSL=false&serverTimezone=UTC
-```
-
-## Verification Steps
-
-1. **Set all variables in Railway Variables tab**
-2. **Redeploy your application**
-3. **Check the deployment logs for any "Caused by" errors**
-4. **Test the health endpoint**: `https://your-app.railway.app/health/database`
-
-## Common Issues
-
-### Issue: "Communications link failure"
-- **Cause**: Database host/port incorrect
-- **Solution**: Verify DATABASE_URL host and port
-
-### Issue: "Access denied for user"
-- **Cause**: Wrong username/password
-- **Solution**: Check DATABASE_USERNAME and DB_PASSWORD
-
-### Issue: "Unknown database"
-- **Cause**: Wrong database name
-- **Solution**: Verify database name in DATABASE_URL
-
-## Testing Database Connection
-
-You can test the database connection locally using the Railway CLI:
+You need to add these environment variables to your **Railway Frontend service**:
 
 ```bash
-# Install Railway CLI if you haven't
-npm install -g @railway/cli
-
-# Login to Railway
-railway login
-
-# Connect to your project
-railway link
-
-# Test database connection
-railway connect
+# PayPal Configuration (REQUIRED - This is missing!)
+NEXT_PUBLIC_PAYPAL_CLIENT_ID=Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX
+NEXT_PUBLIC_PAYPAL_CURRENCY=EUR
 ```
 
-This will help verify if the database is accessible before deploying the application.
+### **Backend Variables (Railway Backend Service)**
+
+**REMOVE these API signature variables** (they're not needed):
+```bash
+# ❌ REMOVE these - they're for API signature method
+PAYPAL_API_USERNAME=rilindishpk1_api1.gmail.com
+PAYPAL_API_PASSWORD=3GQE66V5Q4BEJ5UT
+PAYPAL_API_SIGNATURE=A31fFfXfoxG9kgdtT-o.xQAQ7OWgAKtiGap7.Pzf3OUT0114cvPCPM3-
+```
+
+**KEEP these Client ID/Secret variables** (this is the correct method):
+```bash
+# ✅ KEEP these - this is the correct authentication method
+PAYPAL_BASE_URL=https://api-m.paypal.com
+PAYPAL_CLIENT_ID=Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX
+PAYPAL_CLIENT_SECRET=your_actual_client_secret_here
+```
+
+**Other required variables:**
+```bash
+# Email Configuration
+MAIL_USERNAME=rilindishpk1@gmail.com
+MAIL_PASSWORD=your_email_app_password_here
+
+# Database Configuration
+DATABASE_URL=your_railway_mysql_url
+DATABASE_USERNAME=your_railway_mysql_username
+DB_PASSWORD=your_railway_mysql_password
+```
+
+## 📋 **Step-by-Step Setup Instructions**
+
+### **Step 1: Get Your Client Secret**
+
+1. **Go to PayPal Developer Dashboard**
+2. **Click on your app** (the third one with `Abnz_dlwA50AWSeKzCk-0...`)
+3. **Click the eye icon** next to "Secret key 1" to reveal it
+4. **Copy the secret key**
+
+### **Step 2: Update Railway Variables**
+
+1. **Go to Railway Dashboard**
+2. **Select your Backend service** (agency.backend)
+3. **Go to Variables tab**
+4. **Remove the API signature variables**:
+   - Delete `PAYPAL_API_USERNAME`
+   - Delete `PAYPAL_API_PASSWORD`
+   - Delete `PAYPAL_API_SIGNATURE`
+5. **Update the Client Secret**:
+   - Set `PAYPAL_CLIENT_SECRET` to your actual secret key
+
+### **Step 3: Add Frontend Variables**
+
+1. **Go to Railway Dashboard**
+2. **Select your Frontend service** (agency.frontend)
+3. **Go to Variables tab**
+4. **Add these variables**:
+   ```
+   NEXT_PUBLIC_PAYPAL_CLIENT_ID=Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX
+   NEXT_PUBLIC_PAYPAL_CURRENCY=EUR
+   ```
+
+### **Step 4: Redeploy Services**
+
+After updating the variables:
+
+1. **Redeploy Backend service**
+2. **Redeploy Frontend service**
+3. **Wait for deployment to complete**
+
+## 🧪 **Testing the Fix**
+
+### **Expected Behavior After Fix:**
+
+1. **PayPal Button Appears**: No more "payment system not configured" errors
+2. **Successful Order Creation**: PayPal accepts the order
+3. **Real Payment Processing**: Money actually transfers between accounts
+4. **Booking Confirmation**: Real transaction IDs in booking confirmations
+
+### **Console Logs to Watch For:**
+
+```
+✅ "PayPal Client ID check: {hasClientId: true, clientIdLength: 108, ...}"
+✅ "PayPal SDK script loaded successfully"
+✅ "PayPal SDK initialized successfully"
+✅ "Creating PayPal order for amount: X.XX"
+✅ "Order approved: {orderID: '...'}"
+✅ "Payment captured successfully: {...}"
+✅ "Successfully obtained PayPal access token"
+```
+
+## 🚨 **Why This Fixes It**
+
+The "unauthorized order" error was happening because:
+
+1. **Wrong authentication method**: You were using API signature, but your app is configured for Client ID/Secret
+2. **Missing frontend environment variables**: The frontend couldn't load PayPal SDK properly
+3. **Mismatched credentials**: Backend and frontend were using different authentication methods
+
+## ✅ **Success Indicators**
+
+After implementing the fix, you should see:
+
+- ✅ PayPal button appears on payment page
+- ✅ No "unauthorized order" errors
+- ✅ Successful payment processing
+- ✅ Real money transfers between PayPal accounts
+- ✅ Booking confirmations with real transaction IDs
+- ✅ Email confirmations with valid payment details
+
+## 📞 **Support Information**
+
+If you need help:
+
+1. **Check browser console** for specific error messages
+2. **Note the error code** (PAYPAL_CONFIG_MISSING, etc.)
+3. **Contact support** with the error code and console logs
+
+## 🎯 **Key Changes Made**
+
+1. **Removed API signature variables** (not needed)
+2. **Updated backend code** to use Client ID/Secret authentication
+3. **Added frontend environment variables** for PayPal SDK
+4. **Followed PayPal's official patterns** from their toolkit
+
+---
+
+**This fix addresses the core authentication issue causing the "unauthorized order" error!**
