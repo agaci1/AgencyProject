@@ -63,12 +63,16 @@ public class PayPalController {
                 return ResponseEntity.ok(response);
             } else {
                 logger.error("❌ Failed to create PayPal order");
-                return ResponseEntity.status(500).body(Map.of("error", "Failed to create order"));
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("error", "Failed to create order");
+                return ResponseEntity.status(500).body(errorResponse);
             }
             
         } catch (Exception e) {
             logger.error("❌ Error creating PayPal order: {}", e.getMessage(), e);
-            return ResponseEntity.status(500).body(Map.of("error", "Failed to create order: " + e.getMessage()));
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Failed to create order: " + e.getMessage());
+            return ResponseEntity.status(500).body(errorResponse);
         }
     }
 
@@ -89,12 +93,16 @@ public class PayPalController {
                 return ResponseEntity.ok(captureResult);
             } else {
                 logger.error("❌ Failed to capture PayPal order: {}", orderID);
-                return ResponseEntity.status(500).body(Map.of("error", "Failed to capture order"));
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("error", "Failed to capture order");
+                return ResponseEntity.status(500).body(errorResponse);
             }
             
         } catch (Exception e) {
             logger.error("❌ Error capturing PayPal order {}: {}", orderID, e.getMessage(), e);
-            return ResponseEntity.status(500).body(Map.of("error", "Failed to capture order: " + e.getMessage()));
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Failed to capture order: " + e.getMessage());
+            return ResponseEntity.status(500).body(errorResponse);
         }
     }
 
