@@ -59,17 +59,17 @@ public class PayPalController {
             if (orderId != null) {
                 Map<String, Object> response = new HashMap<>();
                 response.put("id", orderId);
-                logger.info("✅ PayPal order created successfully: {}", orderId);
+                logger.info("PayPal order created successfully: {}", orderId);
                 return ResponseEntity.ok(response);
             } else {
-                logger.error("❌ Failed to create PayPal order");
+                logger.error("Failed to create PayPal order");
                 Map<String, Object> errorResponse = new HashMap<>();
                 errorResponse.put("error", "Failed to create order");
                 return ResponseEntity.status(500).body(errorResponse);
             }
             
         } catch (Exception e) {
-            logger.error("❌ Error creating PayPal order: {}", e.getMessage(), e);
+            logger.error("Error creating PayPal order: {}", e.getMessage(), e);
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("error", "Failed to create order: " + e.getMessage());
             return ResponseEntity.status(500).body(errorResponse);
@@ -83,23 +83,23 @@ public class PayPalController {
     @PostMapping("/orders/{orderID}/capture")
     public ResponseEntity<?> captureOrder(@PathVariable String orderID) {
         try {
-            logger.info("🔄 Capturing PayPal order: {}", orderID);
+            logger.info("Capturing PayPal order: {}", orderID);
             
             // Capture order using PayPal service
             Map<String, Object> captureResult = payPalPaymentService.capturePayPalOrder(orderID);
             
             if (captureResult != null) {
-                logger.info("✅ PayPal order captured successfully: {}", orderID);
+                logger.info("PayPal order captured successfully: {}", orderID);
                 return ResponseEntity.ok(captureResult);
             } else {
-                logger.error("❌ Failed to capture PayPal order: {}", orderID);
+                logger.error("Failed to capture PayPal order: {}", orderID);
                 Map<String, Object> errorResponse = new HashMap<>();
                 errorResponse.put("error", "Failed to capture order");
                 return ResponseEntity.status(500).body(errorResponse);
             }
             
         } catch (Exception e) {
-            logger.error("❌ Error capturing PayPal order {}: {}", orderID, e.getMessage(), e);
+            logger.error("Error capturing PayPal order {}: {}", orderID, e.getMessage(), e);
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("error", "Failed to capture order: " + e.getMessage());
             return ResponseEntity.status(500).body(errorResponse);
