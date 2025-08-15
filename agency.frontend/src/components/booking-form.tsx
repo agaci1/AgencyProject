@@ -263,7 +263,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
             
             try {
               // Follow PayPal Standard pattern - create order on server
-              const response = await fetch("/api/orders", {
+              const response = await fetch("https://agencyproject-production-dbfc.up.railway.app/api/orders", {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
@@ -324,7 +324,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
               console.log('Capturing PayPal order...')
               
               // Follow PayPal Standard pattern - capture on server
-              const response = await fetch(`/api/orders/${data.orderID}/capture`, {
+              const response = await fetch(`https://agencyproject-production-dbfc.up.railway.app/api/orders/${data.orderID}/capture`, {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
