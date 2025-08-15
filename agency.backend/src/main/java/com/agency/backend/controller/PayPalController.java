@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -32,8 +33,20 @@ public class PayPalController {
             logger.info("Creating PayPal order with request: {}", request);
             
             // Extract cart information (following PayPal Standard pattern)
-            @SuppressWarnings("unchecked")
-            Map<String, Object> cart = (Map<String, Object>) request.get("cart");
+            Object cartObj = request.get("cart");
+            Map<String, Object> cart = new HashMap<>();
+            
+            if (cartObj instanceof List) {
+                // Convert List to Map for processing
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> cartList = (List<Map<String, Object>>) cartObj;
+                if (!cartList.isEmpty()) {
+                    cart.put("0", cartList.get(0));
+                }
+            } else if (cartObj instanceof Map) {
+                @SuppressWarnings("unchecked")
+                cart = (Map<String, Object>) cartObj;
+            }
             
             // Calculate total amount from cart
             BigDecimal amount = calculateTotalFromCart(cart);
