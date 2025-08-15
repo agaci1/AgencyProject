@@ -12,7 +12,7 @@ You need to add these environment variables to your **Railway Frontend service**
 
 ```bash
 # PayPal Configuration (REQUIRED - This is missing!)
-NEXT_PUBLIC_PAYPAL_CLIENT_ID=Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX
+NEXT_PUBLIC_PAYPAL_CLIENT_ID=YOUR_PAYPAL_CLIENT_ID_HERE
 NEXT_PUBLIC_PAYPAL_CURRENCY=EUR
 ```
 
@@ -21,16 +21,16 @@ NEXT_PUBLIC_PAYPAL_CURRENCY=EUR
 **REMOVE these API signature variables** (they're not needed):
 ```bash
 # ❌ REMOVE these - they're for API signature method
-PAYPAL_API_USERNAME=rilindishpk1_api1.gmail.com
-PAYPAL_API_PASSWORD=3GQE66V5Q4BEJ5UT
-PAYPAL_API_SIGNATURE=A31fFfXfoxG9kgdtT-o.xQAQ7OWgAKtiGap7.Pzf3OUT0114cvPCPM3-
+PAYPAL_API_USERNAME=YOUR_PAYPAL_API_USERNAME
+PAYPAL_API_PASSWORD=YOUR_PAYPAL_API_PASSWORD
+PAYPAL_API_SIGNATURE=YOUR_PAYPAL_API_SIGNATURE
 ```
 
 **KEEP these Client ID/Secret variables** (this is the correct method):
 ```bash
 # ✅ KEEP these - this is the correct authentication method
 PAYPAL_BASE_URL=https://api-m.paypal.com
-PAYPAL_CLIENT_ID=Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX
+PAYPAL_CLIENT_ID=YOUR_PAYPAL_CLIENT_ID_HERE
 PAYPAL_CLIENT_SECRET=your_actual_client_secret_here
 ```
 
@@ -74,7 +74,7 @@ DB_PASSWORD=your_railway_mysql_password
 3. **Go to Variables tab**
 4. **Add these variables**:
    ```
-   NEXT_PUBLIC_PAYPAL_CLIENT_ID=Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX
+   NEXT_PUBLIC_PAYPAL_CLIENT_ID=YOUR_PAYPAL_CLIENT_ID_HERE
    NEXT_PUBLIC_PAYPAL_CURRENCY=EUR
    ```
 

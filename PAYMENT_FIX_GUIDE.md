@@ -32,7 +32,7 @@ You **MUST** set these environment variables for the backend:
 
 ```bash
 # PayPal Production Credentials
-PAYPAL_CLIENT_ID=Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX
+PAYPAL_CLIENT_ID=YOUR_PAYPAL_CLIENT_ID_HERE
 PAYPAL_CLIENT_SECRET=EP17Nhh0FHFwhSwMX5m1Lf3WY46hfUxt8QRXxJcJC6QOYdIQEvNj-_7HxRbt08hnmKlfsIPk8zW2etha
 PAYPAL_BASE_URL=https://api-m.paypal.com
 ```
@@ -46,7 +46,7 @@ PAYPAL_BASE_URL=https://api-m.paypal.com
 **For Local Development:**
 ```bash
 cd agency.backend/backend
-export PAYPAL_CLIENT_ID="Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX"
+export PAYPAL_CLIENT_ID="YOUR_PAYPAL_CLIENT_ID_HERE"
 export PAYPAL_CLIENT_SECRET="EP17Nhh0FHFwhSwMX5m1Lf3WY46hfUxt8QRXxJcJC6QOYdIQEvNj-_7HxRbt08hnmKlfsIPk8zW2etha"
 export PAYPAL_BASE_URL="https://api-m.paypal.com"
 ```
@@ -56,7 +56,7 @@ export PAYPAL_BASE_URL="https://api-m.paypal.com"
 2. Navigate to your backend service
 3. Go to "Variables" tab
 4. Add these environment variables:
-   - `PAYPAL_CLIENT_ID` = `Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX`
+   - `PAYPAL_CLIENT_ID` = `YOUR_PAYPAL_CLIENT_ID_HERE`
    - `PAYPAL_CLIENT_SECRET` = `EP17Nhh0FHFwhSwMX5m1Lf3WY46hfUxt8QRXxJcJC6QOYdIQEvNj-_7HxRbt08hnmKlfsIPk8zW2etha`
    - `PAYPAL_BASE_URL` = `https://api-m.paypal.com`
 

@@ -21,15 +21,15 @@ Based on analysis of PayPal's official toolkit and your current setup, the "unau
 
 **Remove these variables** (they're wrong):
 ```
-PAYPAL_API_USERNAME=rilindishpk1_api1.gmail.com
-PAYPAL_API_PASSWORD=3GQE66V5Q4BEJ5UT
-PAYPAL_API_SIGNATURE=A31fFfXfoxG9kgdtT-o.xQAQ7OWgAKtiGap7.Pzf3OUT0114cvPCPM3-
+PAYPAL_API_USERNAME=YOUR_PAYPAL_API_USERNAME
+PAYPAL_API_PASSWORD=YOUR_PAYPAL_API_PASSWORD
+PAYPAL_API_SIGNATURE=YOUR_PAYPAL_API_SIGNATURE
 ```
 
 **Keep/Update these variables** (this is correct):
 ```
 PAYPAL_BASE_URL=https://api-m.paypal.com
-PAYPAL_CLIENT_ID=Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX
+PAYPAL_CLIENT_ID=YOUR_PAYPAL_CLIENT_ID_HERE
 PAYPAL_CLIENT_SECRET=your_actual_secret_key_here
 ```
 
@@ -37,7 +37,7 @@ PAYPAL_CLIENT_SECRET=your_actual_secret_key_here
 
 Add these to your **Frontend service**:
 ```
-NEXT_PUBLIC_PAYPAL_CLIENT_ID=Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX
+NEXT_PUBLIC_PAYPAL_CLIENT_ID=YOUR_PAYPAL_CLIENT_ID_HERE
 NEXT_PUBLIC_PAYPAL_CURRENCY=EUR
 ```
 

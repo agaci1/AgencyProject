@@ -29,7 +29,7 @@ The "unauthorized order" error was caused by **missing frontend environment vari
 **Add these to your Railway Frontend service:**
 
 ```bash
-NEXT_PUBLIC_PAYPAL_CLIENT_ID=Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX
+NEXT_PUBLIC_PAYPAL_CLIENT_ID=YOUR_PAYPAL_CLIENT_ID_HERE
 NEXT_PUBLIC_PAYPAL_CURRENCY=EUR
 ```
 
@@ -59,7 +59,7 @@ NEXT_PUBLIC_PAYPAL_CURRENCY=EUR
 4. **Add these variables:**
 
 ```
-NEXT_PUBLIC_PAYPAL_CLIENT_ID=Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX
+NEXT_PUBLIC_PAYPAL_CLIENT_ID=YOUR_PAYPAL_CLIENT_ID_HERE
 NEXT_PUBLIC_PAYPAL_CURRENCY=EUR
 ```
 

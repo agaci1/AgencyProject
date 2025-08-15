@@ -14,7 +14,7 @@ You experienced a **massive currency conversion issue** where:
 3. **Account Mismatch**: Frontend and backend are using different PayPal accounts
 
 ### **PayPal Accounts Identified:**
-- **Production Account** (Railway): `Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX`
+- **Production Account** (Railway): `YOUR_PAYPAL_CLIENT_ID_HERE`
 - **Test Account** (Local): `AZiaAPXJQxzMqKGYAS49_T2fu-ihY700Kivl-8CqSkusYh48ee-9MXH-fszfpBhwkW9UjUjj8fraw99U`
 
 ## ✅ SOLUTION IMPLEMENTED
@@ -25,11 +25,11 @@ You experienced a **massive currency conversion issue** where:
 
 ```bash
 # Frontend (.env.local)
-NEXT_PUBLIC_PAYPAL_CLIENT_ID=Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX
+NEXT_PUBLIC_PAYPAL_CLIENT_ID=YOUR_PAYPAL_CLIENT_ID_HERE
 NEXT_PUBLIC_PAYPAL_CURRENCY=EUR
 
 # Backend (.env)
-PAYPAL_CLIENT_ID=Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX
+PAYPAL_CLIENT_ID=YOUR_PAYPAL_CLIENT_ID_HERE
 ```
 
 ### 2. **Currency Configuration**

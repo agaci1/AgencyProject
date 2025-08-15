@@ -1,7 +1,7 @@
 const axios = require('axios');
 
 // PayPal API credentials
-const CLIENT_ID = 'Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX';
+const CLIENT_ID = 'YOUR_PAYPAL_CLIENT_ID_HERE';
 const CLIENT_SECRET = 'EP17NhhOFHFwhSwMX5mlLf3WY46hfUxt8QRXxJcJC6QOYdIQEvNj-_7HxRbtO8hnmKlfsIPk8zW2etha';
 const BASE_URL = 'https://api-m.paypal.com'; // Live environment
 

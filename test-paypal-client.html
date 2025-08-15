@@ -22,7 +22,7 @@
     <div class="info">
         <h3>Configuration Check</h3>
         <p><strong>Domain:</strong> <span id="domain"></span></p>
-        <p><strong>Expected Client ID:</strong> Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX</p>
+        <p><strong>Expected Client ID:</strong> YOUR_PAYPAL_CLIENT_ID_HERE</p>
         <p><strong>Environment:</strong> <span id="environment"></span></p>
     </div>
     
@@ -65,7 +65,7 @@
         document.getElementById('environment').textContent = window.location.hostname.includes('railway') ? 'Railway' : 'Local';
         
         // PayPal configuration
-        const clientId = 'Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX';
+        const clientId = 'YOUR_PAYPAL_CLIENT_ID_HERE';
         
         console.log('Testing PayPal with client ID:', clientId);
         console.log('Domain:', window.location.hostname);

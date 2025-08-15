@@ -21,7 +21,7 @@ if (!clientId) {
 
 ## **ISSUE 3: PayPal Client ID Mismatch** ⚠️ NEEDS ATTENTION
 **Problem:** Frontend and backend are using different PayPal Client IDs
-- **Railway Backend:** `Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX`
+- **Railway Backend:** `YOUR_PAYPAL_CLIENT_ID_HERE`
 - **Frontend Local:** `AZiaAPXJQxzMqKGYAS49_T2fu-ihY700Kivl-8CqSkusYh48ee-9MXH-fszfpBhwkW9UjUjj8fraw99U`
 - **Frontend Production:** `AZiaAPXJQxzMqKGYAS49_T2fu-ihY700KivI-8CqSkusYh48ee-9MXH-fszfpBhwkW9UjUjj8fraw99U`
 
@@ -42,12 +42,12 @@ You need to update your frontend environment variables to match the Railway back
 
 **For Production (Railway):**
 ```bash
-NEXT_PUBLIC_PAYPAL_CLIENT_ID=Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX
+NEXT_PUBLIC_PAYPAL_CLIENT_ID=YOUR_PAYPAL_CLIENT_ID_HERE
 ```
 
 **For Local Development:**
 ```bash
-NEXT_PUBLIC_PAYPAL_CLIENT_ID=Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX
+NEXT_PUBLIC_PAYPAL_CLIENT_ID=YOUR_PAYPAL_CLIENT_ID_HERE
 ```
 
 ### **2. Deploy the Fixes**

@@ -72,7 +72,7 @@ paypal: {
 
 ### **PayPal Client ID Mismatch** ⚠️ REQUIRES ACTION
 **Problem:** Frontend and backend use different PayPal Client IDs
-- **Railway Backend:** `Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX`
+- **Railway Backend:** `YOUR_PAYPAL_CLIENT_ID_HERE`
 - **Frontend:** `AZiaAPXJQxzMqKGYAS49_T2fu-ihY700Kivl-8CqSkusYh48ee-9MXH-fszfpBhwkW9UjUjj8fraw99U`
 
 **Solution:** Update frontend environment variables to match Railway backend

@@ -22,13 +22,13 @@ PAYPAL_CLIENT_SECRET=your_paypal_client_secret_here  # ❌ WRONG
 1. **Go to PayPal Developer Portal**: https://developer.paypal.com/
 2. **Login to your PayPal Business account**
 3. **Go to "My Apps & Credentials"**
-4. **Find your app** (Client ID: `Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX`)
+4. **Find your app** (Client ID: `YOUR_PAYPAL_CLIENT_ID_HERE`)
 5. **Copy the Client Secret**
 6. **Update Railway environment variables**:
 
 ```bash
 # In Railway Dashboard → Your Backend Service → Variables
-PAYPAL_CLIENT_ID=Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX
+PAYPAL_CLIENT_ID=YOUR_PAYPAL_CLIENT_ID_HERE
 PAYPAL_CLIENT_SECRET=YOUR_ACTUAL_SECRET_HERE  # ✅ ADD THIS
 PAYPAL_BASE_URL=https://api-m.paypal.com
 ```

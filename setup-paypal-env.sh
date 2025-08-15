@@ -7,7 +7,7 @@ echo "🔧 Setting up PayPal Environment Variables..."
 echo ""
 
 # Set PayPal environment variables
-export PAYPAL_CLIENT_ID="Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX"
+export PAYPAL_CLIENT_ID="YOUR_PAYPAL_CLIENT_ID_HERE"
 export PAYPAL_CLIENT_SECRET="EP17Nhh0FHFwhSwMX5m1Lf3WY46hfUxt8QRXxJcJC6QOYdIQEvNj-_7HxRbt08hnmKlfsIPk8zW2etha"
 export PAYPAL_BASE_URL="https://api-m.paypal.com"
 

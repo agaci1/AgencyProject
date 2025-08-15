@@ -26,7 +26,7 @@
         <h3>Configuration Check</h3>
         <div id="config-checks"></div>
         <p><strong>Domain:</strong> <span id="domain"></span></p>
-        <p><strong>Expected Client ID:</strong> Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX</p>
+        <p><strong>Expected Client ID:</strong> YOUR_PAYPAL_CLIENT_ID_HERE</p>
         <p><strong>Environment:</strong> <span id="environment"></span></p>
     </div>
     
@@ -89,7 +89,7 @@
         addConfigCheck(`HTTPS protocol: ${window.location.protocol}`, isHttps);
         
         // PayPal configuration
-        const clientId = 'Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX';
+        const clientId = 'YOUR_PAYPAL_CLIENT_ID_HERE';
         
         // Check client ID format
         const isValidClientId = clientId && clientId.length > 50 && !clientId.includes('test');

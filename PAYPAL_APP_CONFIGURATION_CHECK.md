@@ -15,7 +15,7 @@ Since you already have the environment variables set, the "unauthorized order" e
 
 ### **Step 2: Find Your App**
 
-1. **Look for your app** with Client ID: `Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX`
+1. **Look for your app** with Client ID: `YOUR_PAYPAL_CLIENT_ID_HERE`
 2. **Click on the app name** to open settings
 
 ### **Step 3: Check App Settings**

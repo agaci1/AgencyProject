@@ -66,14 +66,14 @@ Visit: `https://rilindishpk.com/tours` and try booking a tour
 
 ### **Backend (Railway)**
 ```bash
-PAYPAL_CLIENT_ID=Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX
+PAYPAL_CLIENT_ID=YOUR_PAYPAL_CLIENT_ID_HERE
 PAYPAL_CLIENT_SECRET=your_live_secret_here
 PAYPAL_BASE_URL=https://api-m.paypal.com
 ```
 
 ### **Frontend (Railway)**
 ```bash
-NEXT_PUBLIC_PAYPAL_CLIENT_ID=Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX
+NEXT_PUBLIC_PAYPAL_CLIENT_ID=YOUR_PAYPAL_CLIENT_ID_HERE
 NEXT_PUBLIC_PAYPAL_CURRENCY=EUR
 ```
 
