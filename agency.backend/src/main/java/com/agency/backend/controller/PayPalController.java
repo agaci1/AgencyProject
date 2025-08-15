@@ -1,5 +1,6 @@
 package com.agency.backend.controller;
 
+import com.agency.backend.service.PaymentService;
 import com.agency.backend.service.impl.PayPalPaymentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,124 +13,137 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/paypal")
+@RequestMapping("/api")
 @CrossOrigin(origins = "*")
 public class PayPalController {
 
     private static final Logger logger = LoggerFactory.getLogger(PayPalController.class);
-    
+
     @Autowired
     private PayPalPaymentService payPalPaymentService;
 
     /**
-     * Create a PayPal order
-     * This follows the official PayPal pattern
+     * Create a PayPal order (following PayPal Standard pattern)
+     * This endpoint is called by the frontend to create an order
      */
-    @PostMapping("/create-order")
-    public ResponseEntity<Map<String, Object>> createOrder(@RequestBody Map<String, Object> request) {
+    @PostMapping("/orders")
+    public ResponseEntity<?> createOrder(@RequestBody Map<String, Object> request) {
         try {
             logger.info("Creating PayPal order with request: {}", request);
             
-            // Extract parameters from request
-            BigDecimal amount = new BigDecimal(request.get("amount").toString());
-            String currency = (String) request.get("currency");
-            String description = (String) request.get("description");
-            String customId = (String) request.get("custom_id");
+            // Extract cart information (following PayPal Standard pattern)
+            @SuppressWarnings("unchecked")
+            Map<String, Object> cart = (Map<String, Object>) request.get("cart");
             
-            if (currency == null) {
-                currency = "EUR"; // Default to EUR
-            }
+            // Calculate total amount from cart
+            BigDecimal amount = calculateTotalFromCart(cart);
+            String description = generateDescriptionFromCart(cart);
+            String customId = generateCustomId();
             
-            // Create PayPal order with additional details
-            String orderId = payPalPaymentService.createPayPalOrder(amount, currency, description, customId);
+            // Create order using PayPal service
+            String orderId = payPalPaymentService.createPayPalOrder(amount, "EUR", description, customId);
             
             if (orderId != null) {
                 Map<String, Object> response = new HashMap<>();
                 response.put("id", orderId);
-                response.put("status", "CREATED");
-                
-                logger.info("PayPal order created successfully: {}", orderId);
+                logger.info("✅ PayPal order created successfully: {}", orderId);
                 return ResponseEntity.ok(response);
             } else {
-                logger.error("Failed to create PayPal order");
-                return ResponseEntity.status(500).body(Map.of("error", "Failed to create PayPal order"));
+                logger.error("❌ Failed to create PayPal order");
+                return ResponseEntity.status(500).body(Map.of("error", "Failed to create order"));
             }
             
         } catch (Exception e) {
-            logger.error("Error creating PayPal order: {}", e.getMessage(), e);
-            return ResponseEntity.status(500).body(Map.of("error", "Internal server error"));
+            logger.error("❌ Error creating PayPal order: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to create order: " + e.getMessage()));
         }
     }
 
     /**
-     * Capture a PayPal order
-     * This follows the official PayPal pattern
+     * Capture a PayPal order (following PayPal Standard pattern)
+     * This endpoint is called by the frontend to capture payment
      */
-    @PostMapping("/capture-order")
-    public ResponseEntity<Map<String, Object>> captureOrder(@RequestBody Map<String, Object> request) {
+    @PostMapping("/orders/{orderID}/capture")
+    public ResponseEntity<?> captureOrder(@PathVariable String orderID) {
         try {
-            logger.info("🔄 Capture order request received: {}", request);
+            logger.info("🔄 Capturing PayPal order: {}", orderID);
             
-            String orderId = (String) request.get("orderId");
-            logger.info("📋 Order ID from request: {}", orderId);
-            
-            if (orderId == null || orderId.trim().isEmpty()) {
-                logger.error("❌ Order ID is null or empty in request");
-                return ResponseEntity.badRequest().body(Map.of("error", "Order ID is required"));
-            }
-            
-            logger.info("🔄 Calling PayPal service to capture order: {}", orderId);
-            
-            // Capture PayPal order
-            Map<String, Object> captureResult = payPalPaymentService.capturePayPalOrder(orderId);
+            // Capture order using PayPal service
+            Map<String, Object> captureResult = payPalPaymentService.capturePayPalOrder(orderID);
             
             if (captureResult != null) {
-                logger.info("✅ PayPal order captured successfully: {}", orderId);
-                logger.info("📋 Capture result: {}", captureResult);
+                logger.info("✅ PayPal order captured successfully: {}", orderID);
                 return ResponseEntity.ok(captureResult);
             } else {
-                logger.error("❌ PayPal service returned null for order: {}", orderId);
-                return ResponseEntity.status(500).body(Map.of("error", "Failed to capture PayPal order - service returned null"));
+                logger.error("❌ Failed to capture PayPal order: {}", orderID);
+                return ResponseEntity.status(500).body(Map.of("error", "Failed to capture order"));
             }
             
         } catch (Exception e) {
-            logger.error("❌ Error capturing PayPal order: {}", e.getMessage(), e);
-            return ResponseEntity.status(500).body(Map.of("error", "Internal server error: " + e.getMessage()));
+            logger.error("❌ Error capturing PayPal order {}: {}", orderID, e.getMessage(), e);
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to capture order: " + e.getMessage()));
         }
     }
 
     /**
-     * Test PayPal configuration
+     * Calculate total amount from cart (following PayPal Standard pattern)
      */
-    @GetMapping("/test")
-    public ResponseEntity<Map<String, Object>> testPayPal() {
+    private BigDecimal calculateTotalFromCart(Map<String, Object> cart) {
         try {
-            logger.info("Testing PayPal configuration");
-            
-            // Try to create a test order for 1 EUR
-            String testOrderId = payPalPaymentService.createPayPalOrder(new BigDecimal("1.00"), "EUR", "Test Order", "test_" + System.currentTimeMillis());
-            
-            if (testOrderId != null) {
-                logger.info("PayPal test successful - created order: {}", testOrderId);
-                return ResponseEntity.ok(Map.of(
-                    "status", "success",
-                    "message", "PayPal configuration is working",
-                    "test_order_id", testOrderId
-                ));
-            } else {
-                logger.error("PayPal test failed - could not create order");
-                return ResponseEntity.status(500).body(Map.of(
-                    "status", "error",
-                    "message", "PayPal configuration test failed"
-                ));
+            if (cart != null && cart.containsKey("0")) {
+                // Extract price from cart item
+                @SuppressWarnings("unchecked")
+                Map<String, Object> cartItem = (Map<String, Object>) cart.get("0");
+                Object price = cartItem.get("price");
+                
+                if (price != null) {
+                    return new BigDecimal(price.toString());
+                }
             }
             
+            // Fallback to default amount
+            logger.warn("Could not extract price from cart, using default amount");
+            return new BigDecimal("100.00");
         } catch (Exception e) {
-            logger.error("PayPal test error: {}", e.getMessage(), e);
-            return ResponseEntity.status(500).body(Map.of(
-                "status", "error",
-                "message", "PayPal test error: " + e.getMessage()
-            ));
+            logger.error("Error calculating total from cart: {}", e.getMessage());
+            return new BigDecimal("100.00");
         }
     }
+
+    /**
+     * Generate description from cart (following PayPal Standard pattern)
+     */
+    private String generateDescriptionFromCart(Map<String, Object> cart) {
+        try {
+            if (cart != null && cart.containsKey("0")) {
+                // Extract title from cart item
+                @SuppressWarnings("unchecked")
+                Map<String, Object> cartItem = (Map<String, Object>) cart.get("0");
+                Object title = cartItem.get("title");
+                Object quantity = cartItem.get("quantity");
+                
+                if (title != null) {
+                    String description = title.toString();
+                    if (quantity != null) {
+                        description += " - " + quantity + " guest(s)";
+                    }
+                    return description;
+                }
+            }
+            
+            // Fallback to default description
+            return "Tour Booking - Standard Checkout";
+        } catch (Exception e) {
+            logger.error("Error generating description from cart: {}", e.getMessage());
+            return "Tour Booking - Standard Checkout";
+        }
+    }
+
+    /**
+     * Generate custom ID (following PayPal Standard pattern)
+     */
+    private String generateCustomId() {
+        return "tour_booking_" + System.currentTimeMillis();
+    }
 }
+

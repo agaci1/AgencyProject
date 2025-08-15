@@ -258,28 +258,41 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
 
 
 
-          createOrder: (data: any, actions: any) => {
+          createOrder: async (data: any, actions: any) => {
             console.log('Creating PayPal order for amount:', finalTotal)
-            const orderData = {
-              purchase_units: [
-                {
-                  amount: {
-                    value: finalTotal.toString(),
-                    currency_code: "EUR",
-                  },
-                  description: `${tour.title} - ${bookingData.guests} guest(s)`,
-                  custom_id: `tour_${tour.id}_${Date.now()}`,
-                },
-              ],
-              application_context: {
-                shipping_preference: 'NO_SHIPPING',
-                user_action: 'PAY_NOW',
-              },
-            }
-            console.log('Order data:', orderData)
             
             try {
-              return actions.order.create(orderData)
+              // Follow PayPal Standard pattern - create order on server
+              const response = await fetch("/api/orders", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  cart: [
+                    {
+                      id: `tour_${tour.id}`,
+                      quantity: bookingData.guests,
+                      price: finalTotal,
+                      title: tour.title,
+                    },
+                  ],
+                }),
+              });
+
+              const orderData = await response.json();
+              console.log('Server order response:', orderData);
+
+              if (orderData.id) {
+                return orderData.id;
+              }
+              
+              const errorDetail = orderData?.details?.[0];
+              const errorMessage = errorDetail
+                ? `${errorDetail.issue} ${errorDetail.description} (${orderData.debug_id})`
+                : JSON.stringify(orderData);
+
+              throw new Error(errorMessage);
             } catch (error: any) {
               console.error('PayPal order creation failed:', error)
               console.error('Error details:', {
@@ -309,8 +322,35 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
             let paymentDetails: any = null
             try {
               console.log('Capturing PayPal order...')
-              paymentDetails = await actions.order.capture()
-              console.log('Payment captured successfully:', paymentDetails)
+              
+              // Follow PayPal Standard pattern - capture on server
+              const response = await fetch(`/api/orders/${data.orderID}/capture`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+              });
+
+              const orderData = await response.json();
+              console.log('Server capture response:', orderData);
+              
+              // Handle specific PayPal errors (following Standard pattern)
+              const errorDetail = orderData?.details?.[0];
+
+              if (errorDetail?.issue === "INSTRUMENT_DECLINED") {
+                // Recoverable error - restart the flow
+                console.log('INSTRUMENT_DECLINED - restarting payment flow');
+                return actions.restart();
+              } else if (errorDetail) {
+                // Non-recoverable error
+                throw new Error(`${errorDetail.description} (${orderData.debug_id})`);
+              } else if (!orderData.purchase_units) {
+                throw new Error(JSON.stringify(orderData));
+              } else {
+                // Successful capture
+                paymentDetails = orderData;
+                console.log('Payment captured successfully:', paymentDetails);
+              }
 
               // Send booking request to your backend
               const bookingPayload = {

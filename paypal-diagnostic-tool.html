@@ -206,7 +206,9 @@
         function runPayPalConfigTests() {
             console.log('Running PayPal configuration tests...');
             
-            const clientId = 'YOUR_PAYPAL_CLIENT_ID_HERE';
+            // IMPORTANT: Replace this with your actual PayPal Client ID from Railway
+            // You can find it in your Railway environment variables: NEXT_PUBLIC_PAYPAL_CLIENT_ID
+            const clientId = 'Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX';
             
             // Check client ID format
             const isValidFormat = clientId && clientId.length > 50 && !clientId.includes('test');
@@ -237,7 +239,9 @@
         function runPayPalSDKTests() {
             console.log('Running PayPal SDK tests...');
             
-            const clientId = 'YOUR_PAYPAL_CLIENT_ID_HERE';
+            // IMPORTANT: Replace this with your actual PayPal Client ID from Railway
+            // You can find it in your Railway environment variables: NEXT_PUBLIC_PAYPAL_CLIENT_ID
+            const clientId = 'Abnz_dIwA50AWSeKzCk-021q3fosUWLg6JDFmmmKFmVawGGhNaJr9rEjPSWEiqLdk5Qnn0NTR_XsZarX';
             
             // Load PayPal SDK
             const script = document.createElement('script');
