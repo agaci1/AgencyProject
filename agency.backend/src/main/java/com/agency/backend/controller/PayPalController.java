@@ -34,18 +34,21 @@ public class PayPalController {
             
             // Extract cart information (following PayPal Standard pattern)
             Object cartObj = request.get("cart");
-            Map<String, Object> cart = new HashMap<>();
+            Map<String, Object> cart;
             
             if (cartObj instanceof List) {
                 // Convert List to Map for processing
                 @SuppressWarnings("unchecked")
                 List<Map<String, Object>> cartList = (List<Map<String, Object>>) cartObj;
+                cart = new HashMap<>();
                 if (!cartList.isEmpty()) {
                     cart.put("0", cartList.get(0));
                 }
             } else if (cartObj instanceof Map) {
                 @SuppressWarnings("unchecked")
                 cart = (Map<String, Object>) cartObj;
+            } else {
+                cart = new HashMap<>();
             }
             
             // Calculate total amount from cart
