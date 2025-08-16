@@ -211,34 +211,7 @@ public class PayPalPaymentService implements PaymentService {
             
             logger.info("Got PayPal access token, proceeding with capture");
             
-            // First check the order status before attempting capture
-            String orderUrl = paypalBaseUrl + "/v2/checkout/orders/" + orderId;
-            logger.info("Checking order status at: {}", orderUrl);
-            
-            HttpHeaders checkHeaders = new HttpHeaders();
-            checkHeaders.setBearerAuth(accessToken);
-            checkHeaders.setContentType(MediaType.APPLICATION_JSON);
-            
-            HttpEntity<String> checkEntity = new HttpEntity<>(checkHeaders);
-            ResponseEntity<Map> orderResponse = restTemplate.exchange(orderUrl, HttpMethod.GET, checkEntity, Map.class);
-            
-            if (orderResponse.getStatusCode() != HttpStatus.OK) {
-                logger.error("Failed to get order status: {} - Status: {}", orderId, orderResponse.getStatusCode());
-                return null;
-            }
-            
-            Map<String, Object> orderData = orderResponse.getBody();
-            String orderStatus = (String) orderData.get("status");
-            logger.info("Order status: {}", orderStatus);
-            
-            if (!"APPROVED".equals(orderStatus)) {
-                logger.error("Order is not approved. Status: {} for order: {}", orderStatus, orderId);
-                return null;
-            }
-            
-            logger.info("Order is approved, proceeding with capture");
-            
-            // Capture the order
+            // Capture the order directly without status check
             String captureUrl = paypalBaseUrl + "/v2/checkout/orders/" + orderId + "/capture";
             logger.info("Calling PayPal capture URL: {}", captureUrl);
             
