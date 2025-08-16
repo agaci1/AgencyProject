@@ -112,16 +112,14 @@ public class PayPalController {
             // Capture order using PayPal service
             Map<String, Object> captureResult = payPalPaymentService.capturePayPalOrder(orderID);
             
-            if (captureResult != null) {
+            // Check if the result contains an error
+            if (captureResult.containsKey("error")) {
+                logger.error("PayPal capture failed: {}", captureResult.get("error"));
+                captureResult.put("orderId", orderID);
+                return ResponseEntity.status(500).body(captureResult);
+            } else {
                 logger.info("PayPal order captured successfully: {}", orderID);
                 return ResponseEntity.ok(captureResult);
-            } else {
-                logger.error("Failed to capture PayPal order: {}", orderID);
-                Map<String, Object> errorResponse = new HashMap<>();
-                errorResponse.put("error", "Failed to capture order");
-                errorResponse.put("details", "The order could not be captured. This may be due to an invalid order state, expired order, or PayPal API error.");
-                errorResponse.put("orderId", orderID);
-                return ResponseEntity.status(500).body(errorResponse);
             }
             
         } catch (Exception e) {
@@ -241,6 +239,38 @@ public class PayPalController {
             error.put("status", "error");
             error.put("message", "PayPal API test failed: " + e.getMessage());
             return ResponseEntity.status(500).body(error);
+        }
+    }
+    
+    /**
+     * Test endpoint to check specific order status
+     */
+    @GetMapping("/orders/{orderID}/status")
+    public ResponseEntity<?> checkOrderStatus(@PathVariable String orderID) {
+        try {
+            logger.info("Checking status for order: {}", orderID);
+            
+            // Get order status using PayPal service
+            Map<String, Object> orderStatus = payPalPaymentService.getOrderStatus(orderID);
+            
+            if (orderStatus != null) {
+                logger.info("Order status retrieved successfully: {}", orderID);
+                return ResponseEntity.ok(orderStatus);
+            } else {
+                logger.error("Failed to get order status: {}", orderID);
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("error", "Failed to get order status");
+                errorResponse.put("orderId", orderID);
+                return ResponseEntity.status(500).body(errorResponse);
+            }
+            
+        } catch (Exception e) {
+            logger.error("Error checking order status {}: {}", orderID, e.getMessage(), e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Failed to check order status");
+            errorResponse.put("details", e.getMessage());
+            errorResponse.put("orderId", orderID);
+            return ResponseEntity.status(500).body(errorResponse);
         }
     }
 }

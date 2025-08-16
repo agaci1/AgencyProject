@@ -348,7 +348,16 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                     throw new Error("Payment order format error. Please try again.");
                   }
                 } else if (response.status === 500) {
-                  if (orderData.error === "Failed to capture order") {
+                  // Handle specific PayPal errors
+                  if (orderData.error === "Order not approved for capture") {
+                    throw new Error("Payment was not completed. Please try the payment again.");
+                  } else if (orderData.error === "Authentication failed") {
+                    throw new Error("Payment system configuration error. Please contact support.");
+                  } else if (orderData.error === "PayPal capture failed") {
+                    // Show specific PayPal error if available
+                    const paypalError = orderData.paypalErrorMessage || orderData.details;
+                    throw new Error(`Payment failed: ${paypalError}`);
+                  } else if (orderData.error === "Failed to capture order") {
                     throw new Error("Payment capture failed. This may be due to an expired order or PayPal API issue. Please try again.");
                   }
                 }

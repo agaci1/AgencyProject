@@ -200,19 +200,28 @@ public class PayPalPaymentService implements PaymentService {
             
             if (orderId == null || orderId.trim().isEmpty()) {
                 logger.error("Order ID is null or empty");
-                return null;
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("error", "Invalid order ID");
+                errorResponse.put("details", "Order ID cannot be null or empty");
+                return errorResponse;
             }
             
-            // Validate order ID format
+            // Validate order ID format (PayPal order IDs are typically EC-XXXXXXXXXXXXXXX format)
             if (!orderId.matches("[A-Z0-9_-]+")) {
                 logger.error("Invalid order ID format: {}", orderId);
-                return null;
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("error", "Invalid order ID format");
+                errorResponse.put("details", "Order ID contains invalid characters");
+                return errorResponse;
             }
             
             String accessToken = getPayPalAccessToken();
             if (accessToken == null) {
                 logger.error("Failed to get PayPal access token for order capture");
-                return null;
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("error", "Authentication failed");
+                errorResponse.put("details", "Could not authenticate with PayPal");
+                return errorResponse;
             }
             
             logger.info("Got PayPal access token, proceeding with capture");
@@ -232,7 +241,11 @@ public class PayPalPaymentService implements PaymentService {
                 if (orderResponse.getStatusCode() != HttpStatus.OK) {
                     logger.error("Failed to get order status: {} - Status: {}", orderId, orderResponse.getStatusCode());
                     logger.error("Order status response: {}", orderResponse.getBody());
-                    return null;
+                    Map<String, Object> errorResponse = new HashMap<>();
+                    errorResponse.put("error", "Failed to get order status");
+                    errorResponse.put("details", "PayPal returned status: " + orderResponse.getStatusCode());
+                    errorResponse.put("paypalResponse", orderResponse.getBody());
+                    return errorResponse;
                 }
                 
                 // Parse order status
@@ -240,15 +253,29 @@ public class PayPalPaymentService implements PaymentService {
                 String orderStatus = orderData.path("status").asText();
                 logger.info("Order status: {}", orderStatus);
                 
+                // Check if order is already completed
+                if ("COMPLETED".equals(orderStatus)) {
+                    logger.info("Order is already completed, returning existing order data");
+                    return objectMapper.convertValue(orderData, Map.class);
+                }
+                
                 // Only proceed if order is APPROVED
                 if (!"APPROVED".equals(orderStatus)) {
                     logger.error("Order is not in APPROVED state. Current status: {}", orderStatus);
-                    return null;
+                    Map<String, Object> errorResponse = new HashMap<>();
+                    errorResponse.put("error", "Order not approved for capture");
+                    errorResponse.put("details", "Order status is: " + orderStatus + ". Order must be approved by the buyer before capture.");
+                    errorResponse.put("orderStatus", orderStatus);
+                    errorResponse.put("paypalResponse", objectMapper.convertValue(orderData, Map.class));
+                    return errorResponse;
                 }
                 
             } catch (Exception orderError) {
                 logger.error("Error checking order status: {}", orderError.getMessage());
-                // Continue with capture attempt anyway
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("error", "Failed to check order status");
+                errorResponse.put("details", orderError.getMessage());
+                return errorResponse;
             }
             
             // Capture the order
@@ -259,7 +286,8 @@ public class PayPalPaymentService implements PaymentService {
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.setBearerAuth(accessToken);
             
-            HttpEntity<String> entity = new HttpEntity<>(headers);
+            // Create empty body for capture request
+            HttpEntity<String> entity = new HttpEntity<>("{}", headers);
             
             try {
                 logger.info("Making capture request to PayPal...");
@@ -280,45 +308,79 @@ public class PayPalPaymentService implements PaymentService {
                     } catch (Exception parseError) {
                         logger.error("Error parsing capture response: {}", parseError.getMessage());
                         logger.error("Raw response body: {}", response.getBody());
-                        return null;
+                        Map<String, Object> errorResponse = new HashMap<>();
+                        errorResponse.put("error", "Failed to parse capture response");
+                        errorResponse.put("details", parseError.getMessage());
+                        errorResponse.put("rawResponse", response.getBody());
+                        return errorResponse;
                     }
                 } else {
                     logger.error("Failed to capture PayPal order: {} - Status: {}", orderId, response.getStatusCode());
                     logger.error("Error response body: {}", response.getBody());
                     
                     // Try to parse error details
+                    Map<String, Object> errorResponse = new HashMap<>();
+                    errorResponse.put("error", "PayPal capture failed");
+                    errorResponse.put("details", "PayPal returned status: " + response.getStatusCode());
+                    errorResponse.put("paypalResponse", response.getBody());
+                    
                     try {
                         JsonNode errorData = objectMapper.readTree(response.getBody());
                         String errorMessage = errorData.path("message").asText();
                         String errorName = errorData.path("name").asText();
+                        JsonNode details = errorData.path("details");
+                        
                         logger.error("PayPal error details - Name: {}, Message: {}", errorName, errorMessage);
+                        errorResponse.put("paypalErrorName", errorName);
+                        errorResponse.put("paypalErrorMessage", errorMessage);
+                        
+                        if (details.isArray() && details.size() > 0) {
+                            for (JsonNode detail : details) {
+                                String issue = detail.path("issue").asText();
+                                String description = detail.path("description").asText();
+                                logger.error("PayPal error detail - Issue: {}, Description: {}", issue, description);
+                            }
+                        }
                     } catch (Exception parseError) {
                         logger.error("Could not parse error response");
                     }
                     
-                    return null;
+                    return errorResponse;
                 }
                 
             } catch (Exception e) {
                 logger.error("HTTP error during PayPal capture: {}", e.getMessage(), e);
                 logger.error("Exception type: {}", e.getClass().getSimpleName());
                 
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("error", "PayPal API error");
+                errorResponse.put("details", e.getMessage());
+                
                 // Check if it's a specific PayPal error
                 if (e.getMessage().contains("400")) {
                     logger.error("PayPal returned 400 error - likely invalid order state or already captured");
+                    errorResponse.put("paypalErrorType", "INVALID_ORDER_STATE");
                 } else if (e.getMessage().contains("404")) {
                     logger.error("PayPal returned 404 error - order not found");
+                    errorResponse.put("paypalErrorType", "ORDER_NOT_FOUND");
                 } else if (e.getMessage().contains("401")) {
                     logger.error("PayPal returned 401 error - authentication failed");
+                    errorResponse.put("paypalErrorType", "AUTHENTICATION_FAILED");
+                } else if (e.getMessage().contains("422")) {
+                    logger.error("PayPal returned 422 error - unprocessable entity, likely order already captured");
+                    errorResponse.put("paypalErrorType", "ORDER_ALREADY_CAPTURED");
                 }
                 
-                return null;
+                return errorResponse;
             }
             
         } catch (Exception e) {
             logger.error("Error capturing PayPal order: {}", e.getMessage(), e);
             logger.error("Exception type: {}", e.getClass().getSimpleName());
-            return null;
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Unexpected error");
+            errorResponse.put("details", e.getMessage());
+            return errorResponse;
         }
     }
     
@@ -474,5 +536,55 @@ public class PayPalPaymentService implements PaymentService {
      */
     public String getPayPalAccessTokenForTest() {
         return getPayPalAccessToken();
+    }
+    
+    /**
+     * Get order status from PayPal
+     */
+    public Map<String, Object> getOrderStatus(String orderId) {
+        try {
+            logger.info("Getting order status for: {}", orderId);
+            
+            if (orderId == null || orderId.trim().isEmpty()) {
+                logger.error("Order ID is null or empty");
+                return null;
+            }
+            
+            String accessToken = getPayPalAccessToken();
+            if (accessToken == null) {
+                logger.error("Failed to get PayPal access token for order status check");
+                return null;
+            }
+            
+            String orderUrl = paypalBaseUrl + "/v2/checkout/orders/" + orderId;
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth(accessToken);
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+            
+            ResponseEntity<String> response = restTemplate.exchange(orderUrl, HttpMethod.GET, entity, String.class);
+            
+            logger.info("Order status response status: {}", response.getStatusCode());
+            
+            if (response.getStatusCode() == HttpStatus.OK) {
+                try {
+                    Map<String, Object> orderData = objectMapper.readValue(response.getBody(), Map.class);
+                    logger.info("Order status retrieved successfully: {}", orderId);
+                    return orderData;
+                } catch (Exception parseError) {
+                    logger.error("Error parsing order status response: {}", parseError.getMessage());
+                    return null;
+                }
+            } else {
+                logger.error("Failed to get order status: {} - Status: {}", orderId, response.getStatusCode());
+                logger.error("Error response body: {}", response.getBody());
+                return null;
+            }
+            
+        } catch (Exception e) {
+            logger.error("Error getting order status for {}: {}", orderId, e.getMessage(), e);
+            return null;
+        }
     }
 } 
