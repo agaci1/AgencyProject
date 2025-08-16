@@ -89,6 +89,8 @@ public class PayPalController {
     public ResponseEntity<?> captureOrder(@PathVariable String orderID) {
         try {
             logger.info("Capturing PayPal order: {}", orderID);
+            logger.info("Order ID length: {}", orderID != null ? orderID.length() : 0);
+            logger.info("Order ID format valid: {}", orderID != null && orderID.matches("[A-Z0-9]+"));
             
             // Capture order using PayPal service
             Map<String, Object> captureResult = payPalPaymentService.capturePayPalOrder(orderID);
