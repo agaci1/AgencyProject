@@ -192,5 +192,33 @@ public class PayPalController {
             return ResponseEntity.status(500).body(error);
         }
     }
+    
+    /**
+     * Test endpoint to check PayPal API connectivity
+     */
+    @GetMapping("/paypal-test")
+    public ResponseEntity<?> testPayPalAPI() {
+        try {
+            // Test getting access token
+            String accessToken = payPalPaymentService.getPayPalAccessTokenForTest();
+            if (accessToken != null) {
+                Map<String, Object> result = new HashMap<>();
+                result.put("status", "success");
+                result.put("accessTokenLength", accessToken.length());
+                result.put("message", "PayPal API is accessible");
+                return ResponseEntity.ok(result);
+            } else {
+                Map<String, Object> error = new HashMap<>();
+                error.put("status", "error");
+                error.put("message", "Failed to get PayPal access token");
+                return ResponseEntity.status(500).body(error);
+            }
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("status", "error");
+            error.put("message", "PayPal API test failed: " + e.getMessage());
+            return ResponseEntity.status(500).body(error);
+        }
+    }
 }
 

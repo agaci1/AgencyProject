@@ -403,4 +403,11 @@ public class PayPalPaymentService implements PaymentService {
     public String getPaypalClientSecret() {
         return paypalClientSecret;
     }
+    
+    /**
+     * Test method to get PayPal access token (public for testing)
+     */
+    public String getPayPalAccessTokenForTest() {
+        return getPayPalAccessToken();
+    }
 } 
