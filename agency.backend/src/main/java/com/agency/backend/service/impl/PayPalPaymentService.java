@@ -223,6 +223,9 @@ public class PayPalPaymentService implements PaymentService {
             
             try {
                 logger.info("Making capture request to PayPal...");
+                logger.info("Capture URL: {}", captureUrl);
+                logger.info("Request headers: {}", headers);
+                
                 ResponseEntity<String> response = restTemplate.exchange(captureUrl, HttpMethod.POST, entity, String.class);
                 
                 logger.info("PayPal capture response status: {}", response.getStatusCode());
@@ -247,6 +250,7 @@ public class PayPalPaymentService implements PaymentService {
             } catch (Exception e) {
                 logger.error("HTTP error during PayPal capture: {}", e.getMessage(), e);
                 logger.error("Exception type: {}", e.getClass().getSimpleName());
+                logger.error("Exception stack trace: {}", e.getStackTrace());
                 return null;
             }
             
