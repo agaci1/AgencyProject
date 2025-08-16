@@ -282,6 +282,13 @@ public class EmailService {
         
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy");
         
+        // Build conditional content
+        String paypalEmailSection = booking.getPaypalEmail() != null ? 
+            "<div class=\"detail-row\"><span class=\"detail-label\">PayPal Email:</span><span class=\"detail-value\">" + booking.getPaypalEmail() + "</span></div>" : "";
+        
+        String roundTripSection = isRoundTrip ? 
+            "<div class=\"payment-row\"><span>Round trip (x2):</span><span>€" + String.format("%.2f", baseTotal) + "</span></div>" : "";
+        
         return """
             <!DOCTYPE html>
             <html>
@@ -420,7 +427,7 @@ public class EmailService {
                 booking.getUserName(),
                 booking.getUserEmail(),
                 booking.getPaymentMethod().toUpperCase(),
-                booking.getPaypalEmail() != null ? "<div class=\"detail-row\"><span class=\"detail-label\">PayPal Email:</span><span class=\"detail-value\">" + booking.getPaypalEmail() + "</span></div>" : "",
+                paypalEmailSection,
                 booking.getTourName(),
                 isRoundTrip ? "Round Trip" : "One Way",
                 booking.getDepartureDate().format(formatter),
@@ -429,7 +436,7 @@ public class EmailService {
                 pricePerPerson,
                 guests,
                 baseTotal,
-                isRoundTrip ? "<div class=\"payment-row\"><span>Round trip (x2):</span><span>€" + String.format("%.2f", baseTotal) + "</span></div>" : "",
+                roundTripSection,
                 total,
                 booking.getUserEmail(),
                 booking.getId(),
