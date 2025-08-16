@@ -12,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/tours")
@@ -27,6 +29,15 @@ public class TourController {
     public TourController(TourRepository tourRepository, BookingRepository bookingRepository) {
         this.tourRepository = tourRepository;
         this.bookingRepository = bookingRepository;
+    }
+
+    @GetMapping("/test")
+    public ResponseEntity<Map<String, Object>> testEndpoint() {
+        logger.info("Tour test endpoint called");
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Tour controller is working");
+        response.put("timestamp", System.currentTimeMillis());
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping
