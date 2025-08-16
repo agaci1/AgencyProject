@@ -426,8 +426,13 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                 paymentDetails: paymentDetails
               })
               
-              // If payment was captured successfully, treat it as success even if backend has issues
-              if (paymentDetails && paymentDetails.id) {
+              // Check if this is a specific PayPal error that indicates the payment was actually successful
+              if (error.message.includes('Payment was already processed')) {
+                console.log("Payment was already processed - showing success message")
+                setNotification("Payment successful! Your booking has been confirmed.")
+                clearStorage() // Clear saved state
+                setTimeout(() => onComplete(), 2000)
+              } else if (paymentDetails && paymentDetails.id) {
                 console.log("Payment was successful, showing success message despite backend error")
                 setNotification("Payment successful! Your booking has been confirmed.")
                 clearStorage() // Clear saved state
@@ -441,6 +446,8 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                   setPaypalError("Payment session expired. Please try again.")
                 } else if (error.message.includes('order not found')) {
                   setPaypalError("Payment order not found. Please try again.")
+                } else if (error.message.includes('ORDER_ALREADY_CAPTURED')) {
+                  setPaypalError("This payment was already processed. Please check your email for confirmation.")
                 } else if (error.message.includes('network')) {
                   setPaypalError("Network error during payment. Please check your connection and try again.")
                 } else if (error.message.includes('timeout')) {

@@ -259,6 +259,21 @@ public class PayPalPaymentService implements PaymentService {
                     return objectMapper.convertValue(orderData, Map.class);
                 }
                 
+                // Check if order is already captured but not completed
+                JsonNode purchaseUnits = orderData.path("purchase_units");
+                if (purchaseUnits.isArray() && purchaseUnits.size() > 0) {
+                    JsonNode payments = purchaseUnits.get(0).path("payments");
+                    JsonNode captures = payments.path("captures");
+                    
+                    if (captures.isArray() && captures.size() > 0) {
+                        String captureStatus = captures.get(0).path("status").asText();
+                        if ("COMPLETED".equals(captureStatus)) {
+                            logger.info("Order is already captured and completed, returning existing order data");
+                            return objectMapper.convertValue(orderData, Map.class);
+                        }
+                    }
+                }
+                
                 // Only proceed if order is APPROVED
                 if (!"APPROVED".equals(orderStatus)) {
                     logger.error("Order is not in APPROVED state. Current status: {}", orderStatus);
