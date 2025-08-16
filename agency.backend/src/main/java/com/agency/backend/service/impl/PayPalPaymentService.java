@@ -196,24 +196,24 @@ public class PayPalPaymentService implements PaymentService {
      */
     public Map<String, Object> capturePayPalOrder(String orderId) {
         try {
-            logger.info("🔄 Attempting to capture PayPal order: {}", orderId);
+            logger.info("Attempting to capture PayPal order: {}", orderId);
             
             if (orderId == null || orderId.trim().isEmpty()) {
-                logger.error("❌ Order ID is null or empty");
+                logger.error("Order ID is null or empty");
                 return null;
             }
             
             String accessToken = getPayPalAccessToken();
             if (accessToken == null) {
-                logger.error("❌ Failed to get PayPal access token for order capture");
+                logger.error("Failed to get PayPal access token for order capture");
                 return null;
             }
             
-            logger.info("✅ Got PayPal access token, proceeding with capture");
+            logger.info("Got PayPal access token, proceeding with capture");
             
             // First check the order status before attempting capture
             String orderUrl = paypalBaseUrl + "/v2/checkout/orders/" + orderId;
-            logger.info("🔄 Checking order status at: {}", orderUrl);
+            logger.info("Checking order status at: {}", orderUrl);
             
             HttpHeaders checkHeaders = new HttpHeaders();
             checkHeaders.setBearerAuth(accessToken);
@@ -223,24 +223,24 @@ public class PayPalPaymentService implements PaymentService {
             ResponseEntity<Map> orderResponse = restTemplate.exchange(orderUrl, HttpMethod.GET, checkEntity, Map.class);
             
             if (orderResponse.getStatusCode() != HttpStatus.OK) {
-                logger.error("❌ Failed to get order status: {} - Status: {}", orderId, orderResponse.getStatusCode());
+                logger.error("Failed to get order status: {} - Status: {}", orderId, orderResponse.getStatusCode());
                 return null;
             }
             
             Map<String, Object> orderData = orderResponse.getBody();
             String orderStatus = (String) orderData.get("status");
-            logger.info("📋 Order status: {}", orderStatus);
+            logger.info("Order status: {}", orderStatus);
             
             if (!"APPROVED".equals(orderStatus)) {
-                logger.error("❌ Order is not approved. Status: {} for order: {}", orderStatus, orderId);
+                logger.error("Order is not approved. Status: {} for order: {}", orderStatus, orderId);
                 return null;
             }
             
-            logger.info("✅ Order is approved, proceeding with capture");
+            logger.info("Order is approved, proceeding with capture");
             
             // Capture the order
             String captureUrl = paypalBaseUrl + "/v2/checkout/orders/" + orderId + "/capture";
-            logger.info("🔄 Calling PayPal capture URL: {}", captureUrl);
+            logger.info("Calling PayPal capture URL: {}", captureUrl);
             
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -251,28 +251,28 @@ public class PayPalPaymentService implements PaymentService {
             try {
                 ResponseEntity<Map> response = restTemplate.exchange(captureUrl, HttpMethod.POST, entity, Map.class);
                 
-                logger.info("📡 PayPal capture response status: {}", response.getStatusCode());
+                logger.info("PayPal capture response status: {}", response.getStatusCode());
                 
                 if (response.getStatusCode() == HttpStatus.CREATED) {
                     Map<String, Object> captureResponse = response.getBody();
-                    logger.info("✅ PayPal order captured successfully: {}", orderId);
-                    logger.info("📋 Capture response: {}", captureResponse);
+                    logger.info("PayPal order captured successfully: {}", orderId);
+                    logger.info("Capture response: {}", captureResponse);
                     return captureResponse;
                 } else {
-                    logger.error("❌ Failed to capture PayPal order: {} - Status: {}", orderId, response.getStatusCode());
+                    logger.error("Failed to capture PayPal order: {} - Status: {}", orderId, response.getStatusCode());
                     if (response.getBody() != null) {
-                        logger.error("📋 Error response body: {}", response.getBody());
+                        logger.error("Error response body: {}", response.getBody());
                     }
                     return null;
                 }
                 
             } catch (Exception e) {
-                logger.error("❌ HTTP error during PayPal capture: {}", e.getMessage(), e);
+                logger.error("HTTP error during PayPal capture: {}", e.getMessage(), e);
                 return null;
             }
             
         } catch (Exception e) {
-            logger.error("❌ Error capturing PayPal order: {}", e.getMessage(), e);
+            logger.error("Error capturing PayPal order: {}", e.getMessage(), e);
             return null;
         }
     }
