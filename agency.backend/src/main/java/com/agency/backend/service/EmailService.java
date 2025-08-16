@@ -124,6 +124,10 @@ public class EmailService {
         
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy");
         
+        // Build conditional content
+        String roundTripSection = isRoundTrip ? 
+            "<div class=\"payment-row\"><span>Round trip (x2):</span><span>€" + String.format("%.2f", baseTotal) + "</span></div>" : "";
+        
         return """
             <!DOCTYPE html>
             <html>
@@ -268,7 +272,7 @@ public class EmailService {
                 pricePerPerson,
                 guests,
                 baseTotal,
-                isRoundTrip ? "<div class=\"payment-row\"><span>Round trip (x2):</span><span>€" + String.format("%.2f", baseTotal) + "</span></div>" : "",
+                roundTripSection,
                 total
             );
     }
