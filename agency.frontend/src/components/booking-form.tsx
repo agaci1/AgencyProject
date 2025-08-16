@@ -357,6 +357,16 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                     // Show specific PayPal error if available
                     const paypalError = orderData.paypalErrorMessage || orderData.details;
                     throw new Error(`Payment failed: ${paypalError}`);
+                  } else if (orderData.error === "PayPal API error") {
+                    // Handle specific PayPal API errors
+                    if (orderData.paypalErrorType === "ORDER_ALREADY_CAPTURED") {
+                      throw new Error("Payment was already processed. Please check your email for confirmation.");
+                    } else if (orderData.details && orderData.details.includes("COMPLIANCE_VIOLATION")) {
+                      throw new Error("Payment configuration issue. Please contact support with error: COMPLIANCE_VIOLATION");
+                    } else {
+                      const paypalError = orderData.details || "PayPal API error occurred";
+                      throw new Error(`Payment error: ${paypalError}`);
+                    }
                   } else if (orderData.error === "Failed to capture order") {
                     throw new Error("Payment capture failed. This may be due to an expired order or PayPal API issue. Please try again.");
                   }
