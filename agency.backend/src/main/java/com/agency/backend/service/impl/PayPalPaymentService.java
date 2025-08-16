@@ -177,15 +177,15 @@ public class PayPalPaymentService implements PaymentService {
             if (response.getStatusCode() == HttpStatus.CREATED) {
                 Map<String, Object> orderResponse = response.getBody();
                 String orderId = (String) orderResponse.get("id");
-                logger.info("✅ PayPal order created successfully: {}", orderId);
+                logger.info("PayPal order created successfully: {}", orderId);
                 return orderId;
             } else {
-                logger.error("❌ Failed to create PayPal order: {}", response.getStatusCode());
+                logger.error("Failed to create PayPal order: {}", response.getStatusCode());
                 return null;
             }
             
         } catch (Exception e) {
-            logger.error("❌ Error creating PayPal order: {}", e.getMessage(), e);
+            logger.error("Error creating PayPal order: {}", e.getMessage(), e);
             return null;
         }
     }
@@ -388,7 +388,7 @@ public class PayPalPaymentService implements PaymentService {
             if (response.getStatusCode() == HttpStatus.OK) {
                 JsonNode tokenData = objectMapper.readTree(response.getBody());
                 String accessToken = tokenData.path("access_token").asText();
-                logger.info("✅ Successfully obtained PayPal access token");
+                logger.info("Successfully obtained PayPal access token");
                 return accessToken;
             } else {
                 logger.error("Failed to get PayPal access token. Status: {}", response.getStatusCode());
