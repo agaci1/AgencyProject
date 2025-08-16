@@ -26,9 +26,14 @@ public class TourController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Tour>> getAllTours() {
-        List<Tour> tours = tourRepository.findAll();
-        return ResponseEntity.ok(tours);
+    public ResponseEntity<?> getAllTours() {
+        try {
+            List<Tour> tours = tourRepository.findAll();
+            return ResponseEntity.ok(tours);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error fetching tours: " + e.getMessage());
+        }
     }
 
     @PostMapping
