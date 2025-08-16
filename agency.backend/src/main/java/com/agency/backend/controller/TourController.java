@@ -1,12 +1,10 @@
 package com.agency.backend.controller;
 
 import com.agency.backend.model.Tour;
-import com.agency.backend.repository.BookingRepository;
 import com.agency.backend.repository.TourRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,12 +18,10 @@ import java.util.Arrays;
 public class TourController {
 
     private final TourRepository tourRepository;
-    private final BookingRepository bookingRepository;
 
     @Autowired
-    public TourController(TourRepository tourRepository, BookingRepository bookingRepository) {
+    public TourController(TourRepository tourRepository) {
         this.tourRepository = tourRepository;
-        this.bookingRepository = bookingRepository;
     }
 
     @GetMapping("/test")
@@ -94,15 +90,12 @@ public class TourController {
     }
 
     @DeleteMapping("/{id}")
-    @Transactional
     public ResponseEntity<Void> deleteTour(@PathVariable Long id) {
         if (!tourRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
 
-        bookingRepository.deleteByTourId(id);  // 💥 delete child bookings first
-        tourRepository.deleteById(id);         // ✅ then delete the tour
-
+        tourRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 }
