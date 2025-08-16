@@ -15,7 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = {"https://rilindishpk.com", "https://www.rilindishpk.com", "http://localhost:3000"})
 public class PayPalController {
 
     private static final Logger logger = LoggerFactory.getLogger(PayPalController.class);
