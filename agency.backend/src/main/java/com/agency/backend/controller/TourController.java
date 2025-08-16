@@ -1,14 +1,12 @@
 package com.agency.backend.controller;
 
 import com.agency.backend.model.Tour;
-import com.agency.backend.repository.BookingRepository;
 import com.agency.backend.repository.TourRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,12 +21,11 @@ public class TourController {
     private static final Logger logger = LoggerFactory.getLogger(TourController.class);
     
     private final TourRepository tourRepository;
-    private final BookingRepository bookingRepository;
 
     @Autowired
-    public TourController(TourRepository tourRepository, BookingRepository bookingRepository) {
+    public TourController(TourRepository tourRepository) {
         this.tourRepository = tourRepository;
-        this.bookingRepository = bookingRepository;
+        logger.info("TourController initialized with TourRepository");
     }
 
     @GetMapping("/test")
@@ -65,27 +62,6 @@ public class TourController {
             logger.error("Error creating tour: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ErrorResponse("Failed to create tour", e.getMessage()));
-        }
-    }
-
-    @DeleteMapping("/{id}")
-    @Transactional
-    public ResponseEntity<?> deleteTour(@PathVariable Long id) {
-        try {
-            logger.info("Attempting to delete tour with ID: {}", id);
-            if (!tourRepository.existsById(id)) {
-                logger.warn("Tour with ID {} not found", id);
-                return ResponseEntity.notFound().build();
-            }
-
-            bookingRepository.deleteByTourId(id);
-            tourRepository.deleteById(id);
-            logger.info("Successfully deleted tour with ID: {}", id);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            logger.error("Error deleting tour with ID {}: {}", id, e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("Failed to delete tour", e.getMessage()));
         }
     }
 
