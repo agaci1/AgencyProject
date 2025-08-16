@@ -222,6 +222,7 @@ public class PayPalPaymentService implements PaymentService {
             HttpEntity<String> entity = new HttpEntity<>(headers);
             
             try {
+                logger.info("Making capture request to PayPal...");
                 ResponseEntity<Map> response = restTemplate.exchange(captureUrl, HttpMethod.POST, entity, Map.class);
                 
                 logger.info("PayPal capture response status: {}", response.getStatusCode());
@@ -241,11 +242,13 @@ public class PayPalPaymentService implements PaymentService {
                 
             } catch (Exception e) {
                 logger.error("HTTP error during PayPal capture: {}", e.getMessage(), e);
+                logger.error("Exception type: {}", e.getClass().getSimpleName());
                 return null;
             }
             
         } catch (Exception e) {
             logger.error("Error capturing PayPal order: {}", e.getMessage(), e);
+            logger.error("Exception type: {}", e.getClass().getSimpleName());
             return null;
         }
     }
@@ -337,7 +340,13 @@ public class PayPalPaymentService implements PaymentService {
      */
     private String getPayPalAccessToken() {
         try {
+            logger.info("Getting PayPal access token...");
+            logger.info("PayPal Base URL: {}", paypalBaseUrl);
+            logger.info("PayPal Client ID length: {}", paypalClientId != null ? paypalClientId.length() : 0);
+            logger.info("PayPal Client Secret length: {}", paypalClientSecret != null ? paypalClientSecret.length() : 0);
+            
             String tokenUrl = paypalBaseUrl + "/v1/oauth2/token";
+            logger.info("Token URL: {}", tokenUrl);
             
             // Create basic auth header with Client ID and Secret
             String credentials = paypalClientId + ":" + paypalClientSecret;
@@ -351,6 +360,7 @@ public class PayPalPaymentService implements PaymentService {
             
             HttpEntity<String> entity = new HttpEntity<>(body, headers);
             
+            logger.info("Making token request...");
             ResponseEntity<String> response = restTemplate.exchange(
                 tokenUrl, 
                 HttpMethod.POST, 
@@ -358,10 +368,12 @@ public class PayPalPaymentService implements PaymentService {
                 String.class
             );
             
+            logger.info("Token response status: {}", response.getStatusCode());
+            
             if (response.getStatusCode() == HttpStatus.OK) {
                 JsonNode tokenData = objectMapper.readTree(response.getBody());
                 String accessToken = tokenData.path("access_token").asText();
-                logger.info("Successfully obtained PayPal access token");
+                logger.info("Successfully obtained PayPal access token, length: {}", accessToken.length());
                 return accessToken;
             } else {
                 logger.error("Failed to get PayPal access token. Status: {}", response.getStatusCode());
