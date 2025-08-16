@@ -28,11 +28,17 @@ public class TourController {
     @GetMapping
     public ResponseEntity<?> getAllTours() {
         try {
+            System.out.println("Attempting to fetch tours...");
+            long count = tourRepository.count();
+            System.out.println("Tour count: " + count);
             List<Tour> tours = tourRepository.findAll();
+            System.out.println("Successfully fetched " + tours.size() + " tours");
             return ResponseEntity.ok(tours);
         } catch (Exception e) {
+            System.err.println("Error fetching tours: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error fetching tours: " + e.getMessage());
+                .body("Error fetching tours: " + e.getMessage() + " - " + e.getClass().getSimpleName());
         }
     }
 
