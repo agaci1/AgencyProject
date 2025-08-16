@@ -223,20 +223,24 @@ public class PayPalPaymentService implements PaymentService {
             
             try {
                 logger.info("Making capture request to PayPal...");
-                ResponseEntity<Map> response = restTemplate.exchange(captureUrl, HttpMethod.POST, entity, Map.class);
+                ResponseEntity<String> response = restTemplate.exchange(captureUrl, HttpMethod.POST, entity, String.class);
                 
                 logger.info("PayPal capture response status: {}", response.getStatusCode());
+                logger.info("PayPal capture response body: {}", response.getBody());
                 
                 if (response.getStatusCode() == HttpStatus.CREATED) {
-                    Map<String, Object> captureResponse = response.getBody();
-                    logger.info("PayPal order captured successfully: {}", orderId);
-                    logger.info("Capture response: {}", captureResponse);
-                    return captureResponse;
+                    try {
+                        Map<String, Object> captureResponse = objectMapper.readValue(response.getBody(), Map.class);
+                        logger.info("PayPal order captured successfully: {}", orderId);
+                        logger.info("Capture response: {}", captureResponse);
+                        return captureResponse;
+                    } catch (Exception parseError) {
+                        logger.error("Error parsing capture response: {}", parseError.getMessage());
+                        return null;
+                    }
                 } else {
                     logger.error("Failed to capture PayPal order: {} - Status: {}", orderId, response.getStatusCode());
-                    if (response.getBody() != null) {
-                        logger.error("Error response body: {}", response.getBody());
-                    }
+                    logger.error("Error response body: {}", response.getBody());
                     return null;
                 }
                 
