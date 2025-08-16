@@ -23,7 +23,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/bookings")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = {"https://rilindishpk.com", "https://www.rilindishpk.com", "http://localhost:3000"})
 public class BookingController {
 
     private static final Logger logger = LoggerFactory.getLogger(BookingController.class);
