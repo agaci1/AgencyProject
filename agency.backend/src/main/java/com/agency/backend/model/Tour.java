@@ -25,13 +25,10 @@ public class Tour {
     private String routeDescription;
     private String startLocationLink;
 
-    // Temporarily comment out highlights to test
-    /*
     @ElementCollection
     @CollectionTable(name = "tour_highlights", joinColumns = @JoinColumn(name = "tour_id"))
     @Column(name = "highlight")
     private List<String> highlights = new ArrayList<>();
-    */
 
     public Tour() { }
 
@@ -56,7 +53,7 @@ public class Tour {
         this.maxGuests = maxGuests;
         this.routeDescription = routeDescription;
         this.startLocationLink = startLocationLink;
-        // this.highlights = highlights;
+        this.highlights = highlights;
     }
 
 
@@ -148,7 +145,6 @@ public class Tour {
         this.startLocationLink = startLocationLink;
     }
 
-    /*
     public List<String> getHighlights() {
         return highlights;
     }
@@ -156,5 +152,4 @@ public class Tour {
     public void setHighlights(List<String> highlights) {
         this.highlights = highlights;
     }
-    */
 }
