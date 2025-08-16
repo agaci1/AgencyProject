@@ -90,7 +90,24 @@ public class PayPalController {
         try {
             logger.info("Capturing PayPal order: {}", orderID);
             logger.info("Order ID length: {}", orderID != null ? orderID.length() : 0);
-            logger.info("Order ID format valid: {}", orderID != null && orderID.matches("[A-Z0-9]+"));
+            logger.info("Order ID format valid: {}", orderID != null && orderID.matches("[A-Z0-9_-]+"));
+            
+            // Validate order ID
+            if (orderID == null || orderID.trim().isEmpty()) {
+                logger.error("Order ID is null or empty");
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("error", "Invalid order ID");
+                errorResponse.put("details", "Order ID cannot be null or empty");
+                return ResponseEntity.status(400).body(errorResponse);
+            }
+            
+            if (!orderID.matches("[A-Z0-9_-]+")) {
+                logger.error("Invalid order ID format: {}", orderID);
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("error", "Invalid order ID format");
+                errorResponse.put("details", "Order ID contains invalid characters");
+                return ResponseEntity.status(400).body(errorResponse);
+            }
             
             // Capture order using PayPal service
             Map<String, Object> captureResult = payPalPaymentService.capturePayPalOrder(orderID);
@@ -102,13 +119,17 @@ public class PayPalController {
                 logger.error("Failed to capture PayPal order: {}", orderID);
                 Map<String, Object> errorResponse = new HashMap<>();
                 errorResponse.put("error", "Failed to capture order");
+                errorResponse.put("details", "The order could not be captured. This may be due to an invalid order state, expired order, or PayPal API error.");
+                errorResponse.put("orderId", orderID);
                 return ResponseEntity.status(500).body(errorResponse);
             }
             
         } catch (Exception e) {
             logger.error("Error capturing PayPal order {}: {}", orderID, e.getMessage(), e);
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("error", "Failed to capture order: " + e.getMessage());
+            errorResponse.put("error", "Failed to capture order");
+            errorResponse.put("details", e.getMessage());
+            errorResponse.put("orderId", orderID);
             return ResponseEntity.status(500).body(errorResponse);
         }
     }

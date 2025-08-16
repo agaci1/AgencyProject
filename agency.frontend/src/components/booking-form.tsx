@@ -333,6 +333,30 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
 
               const orderData = await response.json();
               console.log('Server capture response:', orderData);
+              console.log('Response status:', response.status);
+              
+              // Check if the response indicates an error
+              if (!response.ok) {
+                console.error('Capture failed with status:', response.status);
+                console.error('Error response:', orderData);
+                
+                // Handle specific error cases
+                if (response.status === 400) {
+                  if (orderData.error === "Invalid order ID") {
+                    throw new Error("Invalid payment order. Please try again.");
+                  } else if (orderData.error === "Invalid order ID format") {
+                    throw new Error("Payment order format error. Please try again.");
+                  }
+                } else if (response.status === 500) {
+                  if (orderData.error === "Failed to capture order") {
+                    throw new Error("Payment capture failed. This may be due to an expired order or PayPal API issue. Please try again.");
+                  }
+                }
+                
+                // Generic error handling
+                const errorMessage = orderData.details || orderData.error || "Payment capture failed";
+                throw new Error(errorMessage);
+              }
               
               // Handle specific PayPal errors (following Standard pattern)
               const errorDetail = orderData?.details?.[0];
