@@ -1,6 +1,10 @@
 package com.agency.backend.controller;
 
+import com.agency.backend.model.Tour;
+import com.agency.backend.repository.TourRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -11,6 +15,13 @@ import java.util.Arrays;
 @RestController
 @RequestMapping("/tours")
 public class TourController {
+
+    private final TourRepository tourRepository;
+
+    @Autowired
+    public TourController(TourRepository tourRepository) {
+        this.tourRepository = tourRepository;
+    }
 
     @GetMapping("/test")
     public ResponseEntity<Map<String, Object>> testEndpoint() {
@@ -26,7 +37,29 @@ public class TourController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Map<String, Object>>> getAllTours() {
+    public ResponseEntity<?> getAllTours() {
+        try {
+            System.out.println("Attempting to fetch tours from database...");
+            long count = tourRepository.count();
+            System.out.println("Tour count in database: " + count);
+            
+            if (count == 0) {
+                System.out.println("No tours found in database, returning hardcoded tours as fallback");
+                return ResponseEntity.ok(getHardcodedTours());
+            }
+            
+            List<Tour> tours = tourRepository.findAll();
+            System.out.println("Successfully fetched " + tours.size() + " tours from database");
+            return ResponseEntity.ok(tours);
+        } catch (Exception e) {
+            System.err.println("Error fetching tours from database: " + e.getMessage());
+            e.printStackTrace();
+            System.out.println("Falling back to hardcoded tours due to database error");
+            return ResponseEntity.ok(getHardcodedTours());
+        }
+    }
+
+    private List<Map<String, Object>> getHardcodedTours() {
         Map<String, Object> tour1 = new HashMap<>();
         tour1.put("id", 1);
         tour1.put("title", "Tirana [Terminal] → Koman");
@@ -97,7 +130,22 @@ public class TourController {
         tour5.put("startLocationLink", "https://maps.app.goo.gl/CbEDq9ZmBcyqH5jS6");
         tour5.put("highlights", Arrays.asList("Test Tour", "Low Cost", "Payment Testing"));
 
-        List<Map<String, Object>> tours = Arrays.asList(tour1, tour2, tour3, tour4, tour5);
-        return ResponseEntity.ok(tours);
+        return Arrays.asList(tour1, tour2, tour3, tour4, tour5);
+    }
+
+    @PostMapping
+    public ResponseEntity<Tour> createTour(@RequestBody Tour tour) {
+        Tour savedTour = tourRepository.save(tour);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedTour);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTour(@PathVariable Long id) {
+        if (!tourRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        tourRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }
