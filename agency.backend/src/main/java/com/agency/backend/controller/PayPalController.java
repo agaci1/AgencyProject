@@ -171,5 +171,26 @@ public class PayPalController {
     private String generateCustomId() {
         return "tour_booking_" + System.currentTimeMillis();
     }
+    
+    /**
+     * Test endpoint to check PayPal configuration
+     */
+    @GetMapping("/paypal-config")
+    public ResponseEntity<?> checkPayPalConfig() {
+        try {
+            Map<String, Object> config = new HashMap<>();
+            config.put("baseUrl", payPalPaymentService.getPaypalBaseUrl());
+            config.put("clientIdLength", payPalPaymentService.getPaypalClientId() != null ? payPalPaymentService.getPaypalClientId().length() : 0);
+            config.put("clientSecretLength", payPalPaymentService.getPaypalClientSecret() != null ? payPalPaymentService.getPaypalClientSecret().length() : 0);
+            config.put("clientIdSet", payPalPaymentService.getPaypalClientId() != null && !payPalPaymentService.getPaypalClientId().isEmpty());
+            config.put("clientSecretSet", payPalPaymentService.getPaypalClientSecret() != null && !payPalPaymentService.getPaypalClientSecret().isEmpty());
+            
+            return ResponseEntity.ok(config);
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", "Failed to check PayPal config: " + e.getMessage());
+            return ResponseEntity.status(500).body(error);
+        }
+    }
 }
 

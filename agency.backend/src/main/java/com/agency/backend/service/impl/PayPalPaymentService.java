@@ -386,4 +386,17 @@ public class PayPalPaymentService implements PaymentService {
             return null;
         }
     }
+    
+    // Getter methods for configuration testing
+    public String getPaypalBaseUrl() {
+        return paypalBaseUrl;
+    }
+    
+    public String getPaypalClientId() {
+        return paypalClientId;
+    }
+    
+    public String getPaypalClientSecret() {
+        return paypalClientSecret;
+    }
 } 
