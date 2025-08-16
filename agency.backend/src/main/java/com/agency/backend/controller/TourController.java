@@ -83,7 +83,21 @@ public class TourController {
         tour4.put("startLocationLink", "https://maps.app.goo.gl/ieNwY6kLX8Ea6gKz8");
         tour4.put("highlights", Arrays.asList("Valbonë departure", "Ferry connection", "Scenic transfer", "Fierza ferry dock"));
 
-        List<Map<String, Object>> tours = Arrays.asList(tour1, tour2, tour3, tour4);
+        Map<String, Object> tour5 = new HashMap<>();
+        tour5.put("id", 5);
+        tour5.put("title", "🧪 Test Tour - €0.01");
+        tour5.put("description", "This is a test tour for payment system testing. Very low cost for testing purposes.");
+        tour5.put("price", 0.01);
+        tour5.put("departureTime", "14:00");
+        tour5.put("location", "Test Location");
+        tour5.put("rating", 5.0);
+        tour5.put("image", "/Tirana.webp");
+        tour5.put("maxGuests", 10);
+        tour5.put("routeDescription", "Test departure for payment system validation");
+        tour5.put("startLocationLink", "https://maps.app.goo.gl/CbEDq9ZmBcyqH5jS6");
+        tour5.put("highlights", Arrays.asList("Test Tour", "Low Cost", "Payment Testing"));
+
+        List<Map<String, Object>> tours = Arrays.asList(tour1, tour2, tour3, tour4, tour5);
         return ResponseEntity.ok(tours);
     }
 }
