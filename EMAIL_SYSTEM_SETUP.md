@@ -1,117 +1,165 @@
-# 📧 Email System Setup Guide
+# Email System Setup Guide
 
-## 🚨 **Current Issue: Email Not Working**
+## 🚨 Current Issue
+The email system is currently disabled because the email credentials are not properly configured. This means:
+- ❌ No booking confirmation emails are sent to customers
+- ❌ No notification emails are sent to the agency
+- ❌ Customers don't receive receipts for their bookings
 
-The email system is not working because the **email password is not configured** in Railway. Here's how to fix it:
+## 🔧 How to Fix
 
-## 🔧 **Step 1: Configure Email Password in Railway**
+### Option 1: Gmail Setup (Recommended)
 
-### **For Hotmail/Outlook (Current Setup):**
-1. **Go to Railway Dashboard** - https://railway.app/
-2. **Select your backend project**
-3. **Go to "Variables" tab**
-4. **Add this environment variable:**
+1. **Create a Gmail App Password:**
+   - Go to your Google Account settings: https://myaccount.google.com/
+   - Navigate to "Security" → "2-Step Verification" (enable if not already)
+   - Go to "App passwords"
+   - Select "Mail" and "Other (Custom name)"
+   - Name it "RILINDI SHPK Booking System"
+   - Copy the generated 16-character password
+
+2. **Set Environment Variables:**
+   ```bash
+   # For Railway deployment
+   MAIL_USERNAME=rilindishpk1@gmail.com
+   MAIL_PASSWORD=your-16-character-app-password
+   
+   # For local development
+   export MAIL_USERNAME=rilindishpk1@gmail.com
+   export MAIL_PASSWORD=your-16-character-app-password
    ```
-   MAIL_PASSWORD=your_hotmail_password_here
+
+### Option 2: Outlook/Hotmail Setup
+
+1. **Enable App Passwords:**
+   - Go to https://account.live.com/proofs/AppPassword
+   - Generate an app password for "Mail"
+   - Copy the generated password
+
+2. **Set Environment Variables:**
+   ```bash
+   # For Railway deployment
+   MAIL_USERNAME=rilindishpk1@gmail.com
+   MAIL_PASSWORD=your-outlook-app-password
+   
+   # For local development
+   export MAIL_USERNAME=rilindishpk1@gmail.com
+   export MAIL_PASSWORD=your-outlook-app-password
    ```
 
-### **For Gmail (Alternative):**
-If you prefer Gmail, update these variables:
-```
-MAIL_USERNAME=your_gmail@gmail.com
-MAIL_PASSWORD=your_gmail_app_password
-```
+## 🚀 Railway Deployment Setup
 
-And update `application.properties`:
-```properties
-spring.mail.host=smtp.gmail.com
-spring.mail.port=587
-```
+1. **Go to Railway Dashboard:**
+   - Navigate to your project: https://railway.app/dashboard
+   - Click on your backend service
 
-## 🔐 **Step 2: Get Email Password**
+2. **Add Environment Variables:**
+   - Go to "Variables" tab
+   - Add these variables:
+     ```
+     MAIL_USERNAME=rilindishpk1@gmail.com
+     MAIL_PASSWORD=your-app-password
+     ```
 
-### **For Hotmail/Outlook:**
-1. **Go to** https://account.live.com/proofs/AppPassword
-2. **Sign in** with `rilindi-shpk@hotmail.com`
-3. **Generate App Password** for "Mail"
-4. **Copy the password** (16 characters)
-5. **Add to Railway** as `MAIL_PASSWORD`
+3. **Redeploy:**
+   - Railway will automatically redeploy when you add environment variables
+   - Check the logs to see if email system is configured
 
-### **For Gmail:**
-1. **Go to** https://myaccount.google.com/apppasswords
-2. **Sign in** with your Gmail
-3. **Generate App Password** for "Mail"
-4. **Copy the password** (16 characters)
-5. **Add to Railway** as `MAIL_PASSWORD`
+## 🧪 Testing the Email System
 
-## 🧪 **Step 3: Test Email System**
+### Test Endpoint
+Once configured, you can test the email system using this endpoint:
 
-### **Option 1: Test via API (After Setup)**
 ```bash
-curl -X POST "https://agencyproject-production-dbfc.up.railway.app/bookings/test-email?email=keogaci@gmail.com"
+# Test with your email
+curl -X POST "https://your-railway-url/api/bookings/test-email?email=your-email@example.com"
 ```
 
-### **Option 2: Test via Booking**
-1. **Go to your website**
-2. **Book the €0.01 test tour**
-3. **Use your email: keogaci@gmail.com**
-4. **Check your inbox**
+### Expected Response
+- ✅ Success: "Test email sent successfully to: your-email@example.com"
+- ❌ Error: Check the logs for specific error messages
 
-## 📋 **Step 4: Verify Email Configuration**
+## 📧 Email Templates
 
-### **Current Email Settings:**
-- **Host:** smtp-mail.outlook.com
-- **Port:** 587
-- **Username:** rilindi-shpk@hotmail.com
-- **Password:** [NOT CONFIGURED - NEEDS TO BE SET]
+The system sends two types of emails:
 
-### **Required Railway Variables:**
-```
-MAIL_USERNAME=rilindi-shpk@hotmail.com
-MAIL_PASSWORD=[YOUR_HOTMAIL_APP_PASSWORD]
-```
+### 1. Customer Booking Confirmation
+- **Recipient:** Customer's email address
+- **Content:** Beautiful HTML receipt with booking details
+- **Includes:** Booking ID, tour details, payment breakdown, contact info
 
-## 🎯 **Step 5: Beautiful Email Features**
+### 2. Agency Notification
+- **Recipient:** rilindishpk1@gmail.com (agency email)
+- **Content:** Professional notification with customer and booking details
+- **Includes:** Customer info, trip details, payment summary, action buttons
 
-Once configured, you'll get:
+## 🔍 Troubleshooting
 
-### **Customer Email Features:**
-- ✅ **Professional HTML design**
-- ✅ **Invoice-like appearance**
-- ✅ **Booking ID prominently displayed**
-- ✅ **Trip details in organized sections**
-- ✅ **Payment breakdown**
-- ✅ **Contact information**
-- ✅ **Next steps guidance**
-- ✅ **Mobile-responsive design**
+### Common Issues:
 
-### **Agency Email Features:**
-- ✅ **Professional notification design**
-- ✅ **Customer information**
-- ✅ **Trip details**
-- ✅ **Payment summary**
-- ✅ **Action buttons for reply/call**
-- ✅ **Revenue tracking**
+1. **"Email system not configured"**
+   - Check that MAIL_USERNAME and MAIL_PASSWORD are set
+   - Verify the app password is correct
 
-## 🚨 **Why Emails Aren't Working Now:**
+2. **"Authentication failed"**
+   - Ensure 2-factor authentication is enabled
+   - Generate a new app password
+   - Check that you're using the app password, not your regular password
 
-1. **Missing Password** - `MAIL_PASSWORD` not set in Railway
-2. **Authentication Failed** - Can't connect to email server
-3. **System Graceful** - Booking still works, emails just fail silently
+3. **"Connection timeout"**
+   - Check your internet connection
+   - Verify the SMTP settings are correct
 
-## ✅ **After Setup:**
+### Debug Steps:
 
-1. **Deploy changes** to Railway
-2. **Test with €0.01 booking**
-3. **Check both customer and agency emails**
-4. **Verify beautiful HTML design**
+1. **Check Railway Logs:**
+   ```bash
+   # View real-time logs
+   railway logs
+   ```
 
-## 📞 **Need Help?**
+2. **Look for Email Logs:**
+   - Search for "📧" in the logs
+   - Look for "✅ Email system configured successfully"
+   - Check for any "❌" error messages
 
-- **Hotmail App Password:** https://account.live.com/proofs/AppPassword
-- **Gmail App Password:** https://myaccount.google.com/apppasswords
-- **Railway Variables:** https://railway.app/dashboard
+3. **Test Locally:**
+   ```bash
+   # Set environment variables
+   export MAIL_USERNAME=rilindishpk1@gmail.com
+   export MAIL_PASSWORD=your-app-password
+   
+   # Run the backend
+   cd agency.backend
+   ./mvnw spring-boot:run
+   ```
 
-**The email system is ready - just needs the password configured!** 🚀
+## 🎯 Expected Behavior After Setup
+
+1. **When a booking is made:**
+   - Customer receives a beautiful HTML confirmation email
+   - Agency receives a notification email
+   - Both emails include all booking details and payment information
+
+2. **Email Content:**
+   - Professional branding with RILINDI SHPK logo
+   - Complete booking details (dates, guests, payment)
+   - Contact information and next steps
+   - Mobile-responsive design
+
+## 🔐 Security Notes
+
+- ✅ App passwords are more secure than regular passwords
+- ✅ Environment variables keep credentials secure
+- ✅ Emails are sent over encrypted SMTP connections
+- ✅ No sensitive data is logged in production
+
+## 📞 Support
+
+If you continue to have issues:
+1. Check the Railway logs for specific error messages
+2. Verify your email provider's SMTP settings
+3. Test with a different email provider if needed
+4. Contact support with the specific error messages from the logs
 
 

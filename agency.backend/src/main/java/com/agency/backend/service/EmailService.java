@@ -34,6 +34,15 @@ public class EmailService {
 
     public void sendSimpleMessage(String to, String subject, String text) {
         try {
+            // Check if mail sender is available
+            if (mailSender == null) {
+                logger.error("❌ EMAIL SYSTEM NOT AVAILABLE - JavaMailSender is null");
+                logger.error("Email to: {}", to);
+                logger.error("Subject: {}", subject);
+                logger.error("Content: {}", text);
+                throw new RuntimeException("Email system not available. JavaMailSender is null.");
+            }
+            
             // Check if email credentials are configured
             if (mailPassword == null || mailPassword.isEmpty()) {
                 logger.error("❌ EMAIL SYSTEM NOT CONFIGURED - Missing MAIL_PASSWORD environment variable");
@@ -49,17 +58,27 @@ public class EmailService {
             msg.setSubject(subject);
             msg.setText(text);
             mailSender.send(msg);
-            logger.info("Simple email sent successfully to: {}", to);
+            logger.info("✅ Simple email sent successfully to: {}", to);
         } catch (Exception e) {
-            logger.error("Failed to send simple email to: {}", to, e);
+            logger.error("❌ Failed to send simple email to: {}", to, e);
             // Log the email content for debugging
             logger.error("Failed email subject: {}", subject);
             logger.error("Failed email content: {}", text);
+            throw e; // Re-throw to let caller handle the error
         }
     }
 
     public void sendHtmlMessage(String to, String subject, String htmlContent) {
         try {
+            // Check if mail sender is available
+            if (mailSender == null) {
+                logger.error("❌ EMAIL SYSTEM NOT AVAILABLE - JavaMailSender is null");
+                logger.error("HTML Email to: {}", to);
+                logger.error("Subject: {}", subject);
+                logger.error("HTML content length: {} characters", htmlContent.length());
+                throw new RuntimeException("Email system not available. JavaMailSender is null.");
+            }
+            
             // Check if email credentials are configured
             if (mailPassword == null || mailPassword.isEmpty()) {
                 logger.error("❌ EMAIL SYSTEM NOT CONFIGURED - Missing MAIL_PASSWORD environment variable");
@@ -78,12 +97,13 @@ public class EmailService {
             helper.setText(htmlContent, true); // true indicates HTML content
             
             mailSender.send(message);
-            logger.info("HTML email sent successfully to: {}", to);
+            logger.info("✅ HTML email sent successfully to: {}", to);
         } catch (MessagingException e) {
-            logger.error("Failed to send HTML email to: {}", to, e);
+            logger.error("❌ Failed to send HTML email to: {}", to, e);
             // Log the email content for debugging
             logger.error("Failed email subject: {}", subject);
             logger.error("Failed email HTML content length: {} characters", htmlContent.length());
+            throw new RuntimeException("Failed to send HTML email", e);
         }
     }
 
