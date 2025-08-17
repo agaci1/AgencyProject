@@ -168,10 +168,17 @@ public class BookingController {
 
         // 6a) email customer with beautiful HTML template
         try {
-            emailService.sendCustomerBookingConfirmation(saved);
-            logger.info("Customer confirmation email sent to: {}", saved.getUserEmail());
+            logger.info("Attempting to send customer confirmation email to: {}", saved.getUserEmail());
+            logger.info("Customer email field value: '{}'", saved.getUserEmail());
+            
+            if (saved.getUserEmail() == null || saved.getUserEmail().trim().isEmpty()) {
+                logger.error("❌ Customer email is null or empty - cannot send confirmation email");
+            } else {
+                emailService.sendCustomerBookingConfirmation(saved);
+                logger.info("✅ Customer confirmation email sent to: {}", saved.getUserEmail());
+            }
         } catch (Exception e) {
-            logger.error("Failed to send customer confirmation email to: {}", saved.getUserEmail(), e);
+            logger.error("❌ Failed to send customer confirmation email to: {}", saved.getUserEmail(), e);
             // Don't fail the booking if email fails
         }
 
