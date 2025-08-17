@@ -67,6 +67,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
               returnDate: parsed.returnDate || "",
               guests: parsed.guests || 1,
               specialRequests: parsed.specialRequests || "",
+              userEmail: parsed.userEmail || "", // Add email field
             }
           }
         }
@@ -80,6 +81,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
       returnDate: "",
       guests: 1,
       specialRequests: "",
+      userEmail: "", // Add email field
     }
   })
 
@@ -399,7 +401,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
               const bookingPayload = {
                 tourId: tour.id,
                 name: `${paymentDetails.payer.name.given_name} ${paymentDetails.payer.name.surname}`,
-                email: paymentDetails.payer.email_address,
+                email: bookingData.userEmail, // Use email from booking form
                 departureDate: bookingData.departureDate,
                 returnDate: bookingData.tripType === "round-trip" ? bookingData.returnDate : null,
                 guests: bookingData.guests,
@@ -642,6 +644,10 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
 
               <div className="space-y-2">
                 <div className="flex justify-between">
+                  <span>Email:</span>
+                  <span className="text-sm">{bookingData.userEmail}</span>
+                </div>
+                <div className="flex justify-between">
                   <span>Trip Type:</span>
                   <span className="capitalize">{bookingData.tripType}</span>
                 </div>
@@ -745,6 +751,27 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                 </Select>
               </div>
 
+              {/* Email Field */}
+              <div className="space-y-2">
+                <Label htmlFor="userEmail">Email Address</Label>
+                <Input
+                  id="userEmail"
+                  type="email"
+                  placeholder="your.email@example.com"
+                  value={bookingData.userEmail}
+                  onChange={(e) =>
+                    setBookingData((p: any) => ({
+                      ...p,
+                      userEmail: e.target.value,
+                    }))
+                  }
+                  required
+                />
+                <p className="text-xs text-gray-500">
+                  We'll send your booking confirmation to this email address
+                </p>
+              </div>
+
               {/* Departure Date */}
               <div className="space-y-2">
                 <Label htmlFor="departureDate">Departure Date</Label>
@@ -835,6 +862,7 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                   disabled={
                     !bookingData.departureDate ||
                     !bookingData.guests ||
+                    !bookingData.userEmail ||
                     (bookingData.tripType === "round-trip" && !bookingData.returnDate)
                   }
                 >
