@@ -161,26 +161,32 @@ public class EmailService {
             }
             
             String subject = "📋 New Booking Received — ID " + booking.getId();
+            logger.info("Generating agency email HTML for booking ID: {}", booking.getId());
             String htmlContent = generateAgencyEmailHtml(booking);
+            logger.info("Agency email HTML generated successfully, length: {} characters", htmlContent.length());
             sendHtmlMessage(agencyEmail, subject, htmlContent);
             logger.info("Agency booking notification sent to: {}", agencyEmail);
         } catch (Exception e) {
             logger.error("Failed to send agency booking notification to: {}", agencyEmail, e);
+            // Log additional details for debugging
+            logger.error("Booking details - ID: {}, Customer: {}, Tour: {}", 
+                booking.getId(), booking.getUserName(), booking.getTourName());
         }
     }
 
     private String generateCustomerEmailHtml(Booking booking) {
-        double pricePerPerson = booking.getTour().getPrice();
-        int guests = booking.getGuests();
-        double baseTotal = pricePerPerson * guests;
-        boolean isRoundTrip = booking.getReturnDate() != null;
-        double total = isRoundTrip ? baseTotal * 2 : baseTotal;
-        
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy");
-        
-        // Build conditional content
-        String roundTripSection = isRoundTrip ? 
-            "<div class=\"payment-row\"><span>Round trip (x2):</span><span>€" + String.format("%.2f", baseTotal) + "</span></div>" : "";
+        try {
+            double pricePerPerson = booking.getTour().getPrice();
+            int guests = booking.getGuests();
+            double baseTotal = pricePerPerson * guests;
+            boolean isRoundTrip = booking.getReturnDate() != null;
+            double total = isRoundTrip ? baseTotal * 2 : baseTotal;
+            
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy");
+            
+            // Build conditional content
+            String roundTripSection = isRoundTrip ? 
+                "<div class=\"payment-row\"><span>Round trip (x2):</span><span>€" + String.format("%.2f", baseTotal) + "</span></div>" : "";
         
         return """
             <!DOCTYPE html>
@@ -329,23 +335,30 @@ public class EmailService {
                 roundTripSection,
                 total
             );
+        } catch (Exception e) {
+            logger.error("❌ Failed to generate customer email HTML for booking ID: {}", booking.getId(), e);
+            logger.error("Booking details - Customer: {}, Tour: {}, Guests: {}", 
+                booking.getUserName(), booking.getTourName(), booking.getGuests());
+            throw new RuntimeException("Failed to generate customer email HTML", e);
+        }
     }
 
     private String generateAgencyEmailHtml(Booking booking) {
-        double pricePerPerson = booking.getTour().getPrice();
-        int guests = booking.getGuests();
-        double baseTotal = pricePerPerson * guests;
-        boolean isRoundTrip = booking.getReturnDate() != null;
-        double total = isRoundTrip ? baseTotal * 2 : baseTotal;
-        
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy");
-        
-        // Build conditional content
-        String paypalEmailSection = booking.getPaypalEmail() != null ? 
-            "<div class=\"detail-row\"><span class=\"detail-label\">PayPal Email:</span><span class=\"detail-value\">" + booking.getPaypalEmail() + "</span></div>" : "";
-        
-        String roundTripSection = isRoundTrip ? 
-            "<div class=\"payment-row\"><span>Round trip (x2):</span><span>€" + String.format("%.2f", baseTotal) + "</span></div>" : "";
+        try {
+            double pricePerPerson = booking.getTour().getPrice();
+            int guests = booking.getGuests();
+            double baseTotal = pricePerPerson * guests;
+            boolean isRoundTrip = booking.getReturnDate() != null;
+            double total = isRoundTrip ? baseTotal * 2 : baseTotal;
+            
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy");
+            
+            // Build conditional content
+            String paypalEmailSection = booking.getPaypalEmail() != null ? 
+                "<div class=\"detail-row\"><span class=\"detail-label\">PayPal Email:</span><span class=\"detail-value\">" + booking.getPaypalEmail() + "</span></div>" : "";
+            
+            String roundTripSection = isRoundTrip ? 
+                "<div class=\"payment-row\"><span>Round trip (x2):</span><span>€" + String.format("%.2f", baseTotal) + "</span></div>" : "";
         
         return """
             <!DOCTYPE html>
@@ -467,7 +480,7 @@ public class EmailService {
                         </div>
                         
                         <div class="action-buttons">
-                            <a href="mailto:%s?subject=Booking #%d - %s" class="action-btn">📧 Reply to Customer</a>
+                            <a href="mailto:%s?subject=Booking ID %d - %s" class="action-btn">📧 Reply to Customer</a>
                             <a href="tel:+355672121800" class="action-btn">📞 Call Customer</a>
                         </div>
                     </div>
@@ -500,6 +513,12 @@ public class EmailService {
                 booking.getId(),
                 booking.getTourName()
             );
+        } catch (Exception e) {
+            logger.error("❌ Failed to generate agency email HTML for booking ID: {}", booking.getId(), e);
+            logger.error("Booking details - Customer: {}, Tour: {}, Guests: {}", 
+                booking.getUserName(), booking.getTourName(), booking.getGuests());
+            throw new RuntimeException("Failed to generate agency email HTML", e);
+        }
     }
 
     /**
