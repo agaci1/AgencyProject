@@ -114,9 +114,24 @@ public class PayPalController {
             
             // Check if the result contains an error
             if (captureResult.containsKey("error")) {
-                logger.error("PayPal capture failed: {}", captureResult.get("error"));
-                captureResult.put("orderId", orderID);
-                return ResponseEntity.status(500).body(captureResult);
+                String errorType = (String) captureResult.get("paypalErrorType");
+                String errorMessage = (String) captureResult.get("error");
+                
+                logger.error("PayPal capture failed: {} - Type: {}", errorMessage, errorType);
+                
+                // Handle specific PayPal errors
+                if ("ORDER_ALREADY_CAPTURED".equals(errorType)) {
+                    logger.info("PayPal order already captured - this is actually a success case");
+                    // If order is already captured, it's actually successful
+                    return ResponseEntity.ok(captureResult);
+                } else if ("INVALID_ORDER_STATE".equals(errorType)) {
+                    logger.error("PayPal order in invalid state for capture");
+                    captureResult.put("orderId", orderID);
+                    return ResponseEntity.status(400).body(captureResult);
+                } else {
+                    captureResult.put("orderId", orderID);
+                    return ResponseEntity.status(500).body(captureResult);
+                }
             } else {
                 logger.info("PayPal order captured successfully: {}", orderID);
                 return ResponseEntity.ok(captureResult);

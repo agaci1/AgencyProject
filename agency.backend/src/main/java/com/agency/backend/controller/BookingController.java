@@ -147,9 +147,21 @@ public class BookingController {
 
         // 3) process payment (PayPal or Card validation)
         try {
+            logger.info("Processing payment for booking - Method: {}, Guests: {}, Round Trip: {}", 
+                req.getPaymentMethod(), req.getGuests(), req.getReturnDate() != null);
+            
             boolean paid = paymentServiceFactory.processPayment(req, booking);
             booking.setStatus(paid ? "PAID" : "FAILED");
+            
+            logger.info("Payment processing result: {} for booking", paid ? "SUCCESS" : "FAILED");
+            
+            if (!paid) {
+                logger.error("❌ Payment failed for booking - Method: {}, Guests: {}, Round Trip: {}", 
+                    req.getPaymentMethod(), req.getGuests(), req.getReturnDate() != null);
+            }
         } catch (Exception ex) {
+            logger.error("❌ Payment processing exception for booking - Method: {}, Guests: {}, Round Trip: {}", 
+                req.getPaymentMethod(), req.getGuests(), req.getReturnDate() != null, ex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Payment failed: " + ex.getMessage());
         }
@@ -170,8 +182,13 @@ public class BookingController {
         try {
             logger.info("Attempting to send customer confirmation email to: {}", saved.getUserEmail());
             logger.info("Customer email field value: '{}'", saved.getUserEmail());
+            logger.info("Booking details - ID: {}, Status: {}, Guests: {}, Round Trip: {}", 
+                saved.getId(), saved.getStatus(), saved.getGuests(), saved.getReturnDate() != null);
             
-            if (saved.getUserEmail() == null || saved.getUserEmail().trim().isEmpty()) {
+            // Only send confirmation email if payment was successful
+            if (!"PAID".equals(saved.getStatus())) {
+                logger.warn("⚠️ Skipping customer confirmation email - Payment status is: {}", saved.getStatus());
+            } else if (saved.getUserEmail() == null || saved.getUserEmail().trim().isEmpty()) {
                 logger.error("❌ Customer email is null or empty - cannot send confirmation email");
             } else {
                 emailService.sendCustomerBookingConfirmation(saved);
@@ -179,15 +196,23 @@ public class BookingController {
             }
         } catch (Exception e) {
             logger.error("❌ Failed to send customer confirmation email to: {}", saved.getUserEmail(), e);
+            logger.error("Booking details for failed email - ID: {}, Status: {}, Guests: {}, Round Trip: {}", 
+                saved.getId(), saved.getStatus(), saved.getGuests(), saved.getReturnDate() != null);
             // Don't fail the booking if email fails
         }
 
         // 6b) email agency with beautiful HTML template
         try {
+            logger.info("Attempting to send agency notification email for booking ID: {}", saved.getId());
+            logger.info("Agency email: {}, Booking status: {}", agencyEmail, saved.getStatus());
+            
+            // Always send agency notification (even for failed payments) so they know about the attempt
             emailService.sendAgencyBookingNotification(saved);
-            logger.info("Agency notification email sent to: {}", agencyEmail);
+            logger.info("✅ Agency notification email sent to: {}", agencyEmail);
         } catch (Exception e) {
-            logger.error("Failed to send agency notification email to: {}", agencyEmail, e);
+            logger.error("❌ Failed to send agency notification email to: {}", agencyEmail, e);
+            logger.error("Booking details for failed agency email - ID: {}, Status: {}, Guests: {}, Round Trip: {}", 
+                saved.getId(), saved.getStatus(), saved.getGuests(), saved.getReturnDate() != null);
             // Don't fail the booking if email fails
         }
 
