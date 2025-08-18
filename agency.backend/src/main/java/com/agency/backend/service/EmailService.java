@@ -30,10 +30,22 @@ public class EmailService {
 
     public EmailService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
+        logger.info("📧 EmailService initialized");
+        logger.info("📧 From email: {}", fromEmail);
+        logger.info("📧 Agency email: {}", agencyEmail);
+        logger.info("📧 Mail password configured: {}", (mailPassword != null && !mailPassword.isEmpty()) ? "YES" : "NO");
     }
 
     public void sendSimpleMessage(String to, String subject, String text) {
         try {
+            // Check if recipient email is valid
+            if (to == null || to.trim().isEmpty()) {
+                logger.error("❌ INVALID RECIPIENT EMAIL - Email address is null or empty");
+                logger.error("Subject: {}", subject);
+                logger.error("Content: {}", text);
+                throw new RuntimeException("Invalid recipient email address");
+            }
+            
             // Check if mail sender is available
             if (mailSender == null) {
                 logger.error("❌ EMAIL SYSTEM NOT AVAILABLE - JavaMailSender is null");
@@ -70,6 +82,14 @@ public class EmailService {
 
     public void sendHtmlMessage(String to, String subject, String htmlContent) {
         try {
+            // Check if recipient email is valid
+            if (to == null || to.trim().isEmpty()) {
+                logger.error("❌ INVALID RECIPIENT EMAIL - Email address is null or empty");
+                logger.error("Subject: {}", subject);
+                logger.error("HTML content length: {} characters", htmlContent.length());
+                throw new RuntimeException("Invalid recipient email address");
+            }
+            
             // Check if mail sender is available
             if (mailSender == null) {
                 logger.error("❌ EMAIL SYSTEM NOT AVAILABLE - JavaMailSender is null");
@@ -112,6 +132,13 @@ public class EmailService {
      */
     public void sendCustomerBookingConfirmation(Booking booking) {
         try {
+            // Check if customer email is available
+            if (booking.getUserEmail() == null || booking.getUserEmail().trim().isEmpty()) {
+                logger.error("❌ CUSTOMER EMAIL MISSING - Cannot send booking confirmation");
+                logger.error("Booking ID: {}, Customer Name: {}", booking.getId(), booking.getUserName());
+                return;
+            }
+            
             String subject = "🎫 Your Booking Confirmation — " + booking.getTourName();
             String htmlContent = generateCustomerEmailHtml(booking);
             sendHtmlMessage(booking.getUserEmail(), subject, htmlContent);
@@ -126,6 +153,13 @@ public class EmailService {
      */
     public void sendAgencyBookingNotification(Booking booking) {
         try {
+            // Check if agency email is configured
+            if (agencyEmail == null || agencyEmail.trim().isEmpty()) {
+                logger.error("❌ AGENCY EMAIL NOT CONFIGURED - Missing app.agency.email property");
+                logger.error("Cannot send agency notification. Please set app.agency.email in application.properties or environment variable");
+                return;
+            }
+            
             String subject = "📋 New Booking Received — ID " + booking.getId();
             String htmlContent = generateAgencyEmailHtml(booking);
             sendHtmlMessage(agencyEmail, subject, htmlContent);
@@ -482,5 +516,18 @@ public class EmailService {
                 "If you didn't ask for this, you can safely ignore this email."
         );
         sendSimpleMessage(to, subject, text);
+    }
+    
+    /**
+     * Get email configuration status for debugging
+     */
+    public String getEmailConfigurationStatus() {
+        StringBuilder status = new StringBuilder();
+        status.append("📧 Email Configuration Status:\n");
+        status.append("  - From Email: ").append(fromEmail != null ? fromEmail : "NULL").append("\n");
+        status.append("  - Agency Email: ").append(agencyEmail != null ? agencyEmail : "NULL").append("\n");
+        status.append("  - Mail Password: ").append(mailPassword != null && !mailPassword.isEmpty() ? "CONFIGURED" : "MISSING").append("\n");
+        status.append("  - Mail Sender: ").append(mailSender != null ? "AVAILABLE" : "NULL").append("\n");
+        return status.toString();
     }
 }

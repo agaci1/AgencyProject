@@ -222,4 +222,16 @@ public class BookingController {
                     .body("Failed to send test email: " + e.getMessage());
         }
     }
+    
+    @GetMapping("/email-config")
+    public ResponseEntity<String> getEmailConfiguration() {
+        try {
+            String configStatus = emailService.getEmailConfigurationStatus();
+            return ResponseEntity.ok(configStatus);
+        } catch (Exception e) {
+            logger.error("Failed to get email configuration", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to get email configuration: " + e.getMessage());
+        }
+    }
 }
