@@ -82,6 +82,17 @@ public class PayPalPaymentService implements PaymentService {
                 // REAL PayPal API validation using Client ID/Secret
                 if (!validatePayPalPayment(transactionId)) {
                     logger.error("PayPal payment validation failed for transaction: {}", transactionId);
+                    
+                    // Additional error logging for debugging
+                    try {
+                        Map<String, Object> orderStatus = getOrderStatus(transactionId);
+                        if (orderStatus != null) {
+                            logger.error("PayPal order status details: {}", orderStatus);
+                        }
+                    } catch (Exception statusError) {
+                        logger.error("Could not get order status for debugging: {}", statusError.getMessage());
+                    }
+                    
                     return false;
                 }
                 
@@ -449,7 +460,7 @@ public class PayPalPaymentService implements PaymentService {
                 return false;
             }
             
-            // Check payment status
+            // Check payment status and ensure payment was captured
             JsonNode purchaseUnits = orderData.path("purchase_units");
             if (purchaseUnits.isArray() && purchaseUnits.size() > 0) {
                 JsonNode payments = purchaseUnits.get(0).path("payments");
@@ -465,6 +476,24 @@ public class PayPalPaymentService implements PaymentService {
                     // Get the actual capture ID (this is the real transaction ID)
                     String captureId = captures.get(0).path("id").asText();
                     logger.info("PayPal payment validated successfully - Order: {}, Capture: {}", orderId, captureId);
+                    
+                    // Additional validation: Check if capture is final (not pending)
+                    String captureFinalStatus = captures.get(0).path("final_capture").asText();
+                    if (!"true".equals(captureFinalStatus)) {
+                        logger.warn("PayPal capture is not final for order: {}", orderId);
+                        // This might indicate a pending capture that could fail
+                    }
+                    
+                    // Check for any fraud indicators or holds
+                    JsonNode captureStatusDetails = captures.get(0).path("status_details");
+                    if (!captureStatusDetails.isMissingNode()) {
+                        String reason = captureStatusDetails.path("reason").asText();
+                        if ("BUYER_COMPLAINT".equals(reason) || "CHARGEBACK".equals(reason)) {
+                            logger.error("PayPal capture has fraud indicator: {} for order: {}", reason, orderId);
+                            return false;
+                        }
+                    }
+                    
                 } else {
                     logger.error("No captures found for PayPal order: {}", orderId);
                     return false;
