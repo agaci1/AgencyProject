@@ -1,198 +1,38 @@
 package com.agency.backend.service;
 
 import com.agency.backend.model.Booking;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 import java.time.format.DateTimeFormatter;
 
 @Service
-public class EmailService {
-    private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
-    
-    private final JavaMailSender mailSender;
-    
-    @Autowired
-    private EmailTemplateService emailTemplateService;
-    
-    @Value("${spring.mail.username}")
-    private String fromEmail;
-    
-    @Value("${spring.mail.password:}")
-    private String mailPassword;
-    
-    @Value("${app.agency.email}")
-    private String agencyEmail;
+public class EmailTemplateService {
 
-    public EmailService(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
-        logger.info("📧 EmailService initialized");
-        logger.info("📧 From email: {}", fromEmail);
-        logger.info("📧 Agency email: {}", agencyEmail);
-        logger.info("📧 Mail password configured: {}", (mailPassword != null && !mailPassword.isEmpty()) ? "YES" : "NO");
+    private static String escapePercent(String input) {
+        return input == null ? "" : input.replace("%", "%%");
     }
 
-    public void sendSimpleMessage(String to, String subject, String text) {
-        try {
-            // Check if recipient email is valid
-            if (to == null || to.trim().isEmpty()) {
-                logger.error("❌ INVALID RECIPIENT EMAIL - Email address is null or empty");
-                logger.error("Subject: {}", subject);
-                logger.error("Content: {}", text);
-                throw new RuntimeException("Invalid recipient email address");
-            }
-            
-            // Check if mail sender is available
-            if (mailSender == null) {
-                logger.error("❌ EMAIL SYSTEM NOT AVAILABLE - JavaMailSender is null");
-                logger.error("Email to: {}", to);
-                logger.error("Subject: {}", subject);
-                logger.error("Content: {}", text);
-                throw new RuntimeException("Email system not available. JavaMailSender is null.");
-            }
-            
-            // Check if email credentials are configured
-            if (mailPassword == null || mailPassword.isEmpty()) {
-                logger.error("❌ EMAIL SYSTEM NOT CONFIGURED - Missing MAIL_PASSWORD environment variable");
-                logger.error("Email to: {}", to);
-                logger.error("Subject: {}", subject);
-                logger.error("Content: {}", text);
-                throw new RuntimeException("Email system not configured. Please set MAIL_PASSWORD environment variable.");
-            }
-            
-            SimpleMailMessage msg = new SimpleMailMessage();
-            msg.setFrom(fromEmail);
-            msg.setTo(to);
-            msg.setSubject(subject);
-            msg.setText(text);
-            mailSender.send(msg);
-            logger.info("✅ Simple email sent successfully to: {}", to);
-        } catch (Exception e) {
-            logger.error("❌ Failed to send simple email to: {}", to, e);
-            // Log the email content for debugging
-            logger.error("Failed email subject: {}", subject);
-            logger.error("Failed email content: {}", text);
-            throw e; // Re-throw to let caller handle the error
-        }
-    }
-
-    public void sendHtmlMessage(String to, String subject, String htmlContent) {
-        try {
-            // Check if recipient email is valid
-            if (to == null || to.trim().isEmpty()) {
-                logger.error("❌ INVALID RECIPIENT EMAIL - Email address is null or empty");
-                logger.error("Subject: {}", subject);
-                logger.error("HTML content length: {} characters", htmlContent.length());
-                throw new RuntimeException("Invalid recipient email address");
-            }
-            
-            // Check if mail sender is available
-            if (mailSender == null) {
-                logger.error("❌ EMAIL SYSTEM NOT AVAILABLE - JavaMailSender is null");
-                logger.error("HTML Email to: {}", to);
-                logger.error("Subject: {}", subject);
-                logger.error("HTML content length: {} characters", htmlContent.length());
-                throw new RuntimeException("Email system not available. JavaMailSender is null.");
-            }
-            
-            // Check if email credentials are configured
-            if (mailPassword == null || mailPassword.isEmpty()) {
-                logger.error("❌ EMAIL SYSTEM NOT CONFIGURED - Missing MAIL_PASSWORD environment variable");
-                logger.error("HTML Email to: {}", to);
-                logger.error("Subject: {}", subject);
-                logger.error("HTML content length: {} characters", htmlContent.length());
-                throw new RuntimeException("Email system not configured. Please set MAIL_PASSWORD environment variable.");
-            }
-            
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            
-            helper.setFrom(fromEmail);
-            helper.setTo(to);
-            helper.setSubject(subject);
-            helper.setText(htmlContent, true); // true indicates HTML content
-            
-            mailSender.send(message);
-            logger.info("✅ HTML email sent successfully to: {}", to);
-        } catch (MessagingException e) {
-            logger.error("❌ Failed to send HTML email to: {}", to, e);
-            // Log the email content for debugging
-            logger.error("Failed email subject: {}", subject);
-            logger.error("Failed email HTML content length: {} characters", htmlContent.length());
-            throw new RuntimeException("Failed to send HTML email", e);
-        }
-    }
-
-    /**
-     * Send beautiful invoice-like email to customer
-     */
-    public void sendCustomerBookingConfirmation(Booking booking) {
-        try {
-            // Check if customer email is available
-            if (booking.getUserEmail() == null || booking.getUserEmail().trim().isEmpty()) {
-                logger.error("❌ CUSTOMER EMAIL MISSING - Cannot send booking confirmation");
-                logger.error("Booking ID: {}, Customer Name: {}", booking.getId(), booking.getUserName());
-                return;
-            }
-            
-            String subject = "🎫 Your Booking Confirmation — " + booking.getTourName();
-            String htmlContent = emailTemplateService.getCustomerBookingConfirmationTemplate(booking);
-            sendHtmlMessage(booking.getUserEmail(), subject, htmlContent);
-            logger.info("Customer booking confirmation sent to: {}", booking.getUserEmail());
-        } catch (Exception e) {
-            logger.error("Failed to send customer booking confirmation to: {}", booking.getUserEmail(), e);
-        }
-    }
-
-    /**
-     * Send notification email to agency
-     */
-    public void sendAgencyBookingNotification(Booking booking) {
-        try {
-            // Check if agency email is configured
-            if (agencyEmail == null || agencyEmail.trim().isEmpty()) {
-                logger.error("❌ AGENCY EMAIL NOT CONFIGURED - Missing app.agency.email property");
-                logger.error("Cannot send agency notification. Please set app.agency.email in application.properties or environment variable");
-                return;
-            }
-            
-            String subject = "📋 New Booking Received — ID " + booking.getId();
-            logger.info("Generating agency email HTML for booking ID: {}", booking.getId());
-            String htmlContent = emailTemplateService.getAgencyBookingNotificationTemplate(booking);
-            logger.info("Agency email HTML generated successfully, length: {} characters", htmlContent.length());
-            sendHtmlMessage(agencyEmail, subject, htmlContent);
-            logger.info("Agency booking notification sent to: {}", agencyEmail);
-        } catch (Exception e) {
-            logger.error("Failed to send agency booking notification to: {}", agencyEmail, e);
-            // Log additional details for debugging
-            logger.error("Booking details - ID: {}, Customer: {}, Tour: {}", 
-                booking.getId(), booking.getUserName(), booking.getTourName());
-        }
-    }
-
-    private String generateCustomerEmailHtml(Booking booking) {
-        try {
-            double pricePerPerson = booking.getTour().getPrice();
-            int guests = booking.getGuests();
-            double baseTotal = pricePerPerson * guests;
-            boolean isRoundTrip = booking.getReturnDate() != null;
-            double total = isRoundTrip ? baseTotal * 2 : baseTotal;
-            
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy");
-            
-            // Build conditional content
-            String roundTripSection = isRoundTrip ? 
-                "<div class=\"payment-row\"><span>Round trip (x2):</span><span>€" + String.format("%.2f", baseTotal) + "</span></div>" : "";
+    public String getCustomerBookingConfirmationTemplate(Booking booking) {
+        double pricePerPerson = booking.getTour().getPrice();
+        int guests = booking.getGuests();
+        double baseTotal = pricePerPerson * guests;
+        boolean isRoundTrip = booking.getReturnDate() != null;
+        double total = isRoundTrip ? baseTotal * 2 : baseTotal;
         
-        return """
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy");
+        
+        // Build conditional content
+        String roundTripSection = isRoundTrip ? 
+            "<div class=\"payment-row\"><span>Round trip (x2):</span><span>€" + String.format("%.2f", baseTotal) + "</span></div>" : "";
+        
+        String customerName = escapePercent(booking.getUserName());
+        String tourName = escapePercent(booking.getTourName());
+        String tripType = isRoundTrip ? "Round Trip" : "One Way";
+        String departureDate = booking.getDepartureDate().format(formatter);
+        String returnDate = booking.getReturnDate() == null ? "—" : booking.getReturnDate().format(formatter);
+        String paymentMethod = escapePercent(booking.getPaymentMethod().toUpperCase());
+        
+        return String.format("""
             <!DOCTYPE html>
             <html>
             <head>
@@ -202,7 +42,7 @@ public class EmailService {
                 <style>
                     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5; }
                     .container { max-width: 600px; margin: 0 auto; background-color: white; }
-                    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
+                    .header { background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%); color: white; padding: 30px; text-align: center; }
                     .header h1 { margin: 0; font-size: 28px; font-weight: 300; }
                     .header .logo { font-size: 18px; margin-top: 10px; opacity: 0.9; }
                     .content { padding: 40px; }
@@ -324,47 +164,48 @@ public class EmailService {
                 </div>
             </body>
             </html>
-            """.formatted(
-                booking.getId(),
-                booking.getUserName(),
-                booking.getTourName(),
-                isRoundTrip ? "Round Trip" : "One Way",
-                booking.getDepartureDate().format(formatter),
-                booking.getReturnDate() == null ? "—" : booking.getReturnDate().format(formatter),
-                guests,
-                booking.getPaymentMethod().toUpperCase(),
-                pricePerPerson,
-                guests,
-                baseTotal,
-                roundTripSection,
-                total
-            );
-        } catch (Exception e) {
-            logger.error("❌ Failed to generate customer email HTML for booking ID: {}", booking.getId(), e);
-            logger.error("Booking details - Customer: {}, Tour: {}, Guests: {}", 
-                booking.getUserName(), booking.getTourName(), booking.getGuests());
-            throw new RuntimeException("Failed to generate customer email HTML", e);
-        }
+            """, 
+            booking.getId(),
+            customerName,
+            tourName,
+            tripType,
+            departureDate,
+            returnDate,
+            guests,
+            paymentMethod,
+            pricePerPerson,
+            guests,
+            baseTotal,
+            roundTripSection,
+            total
+        );
     }
 
-    private String generateAgencyEmailHtml(Booking booking) {
-        try {
-            double pricePerPerson = booking.getTour().getPrice();
-            int guests = booking.getGuests();
-            double baseTotal = pricePerPerson * guests;
-            boolean isRoundTrip = booking.getReturnDate() != null;
-            double total = isRoundTrip ? baseTotal * 2 : baseTotal;
-            
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy");
-            
-            // Build conditional content
-            String paypalEmailSection = booking.getPaypalEmail() != null ? 
-                "<div class=\"detail-row\"><span class=\"detail-label\">PayPal Email:</span><span class=\"detail-value\">" + booking.getPaypalEmail() + "</span></div>" : "";
-            
-            String roundTripSection = isRoundTrip ? 
-                "<div class=\"payment-row\"><span>Round trip (x2):</span><span>€" + String.format("%.2f", baseTotal) + "</span></div>" : "";
+    public String getAgencyBookingNotificationTemplate(Booking booking) {
+        double pricePerPerson = booking.getTour().getPrice();
+        int guests = booking.getGuests();
+        double baseTotal = pricePerPerson * guests;
+        boolean isRoundTrip = booking.getReturnDate() != null;
+        double total = isRoundTrip ? baseTotal * 2 : baseTotal;
         
-        return """
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy");
+        
+        // Build conditional content
+        String paypalEmailSection = booking.getPaypalEmail() != null ? 
+            "<div class=\"detail-row\"><span class=\"detail-label\">PayPal Email:</span><span class=\"detail-value\">" + escapePercent(booking.getPaypalEmail()) + "</span></div>" : "";
+        
+        String roundTripSection = isRoundTrip ? 
+            "<div class=\"payment-row\"><span>Round trip (x2):</span><span>€" + String.format("%.2f", baseTotal) + "</span></div>" : "";
+        
+        String customerName = escapePercent(booking.getUserName());
+        String customerEmail = escapePercent(booking.getUserEmail());
+        String tourName = escapePercent(booking.getTourName());
+        String tripType = isRoundTrip ? "Round Trip" : "One Way";
+        String departureDate = booking.getDepartureDate().format(formatter);
+        String returnDate = booking.getReturnDate() == null ? "—" : booking.getReturnDate().format(formatter);
+        String paymentMethod = escapePercent(booking.getPaymentMethod().toUpperCase());
+        
+        return String.format("""
             <!DOCTYPE html>
             <html>
             <head>
@@ -374,7 +215,7 @@ public class EmailService {
                 <style>
                     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5; }
                     .container { max-width: 600px; margin: 0 auto; background-color: white; }
-                    .header { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 30px; text-align: center; }
+                    .header { background: linear-gradient(135deg, #28a745 0%%, #20c997 100%%); color: white; padding: 30px; text-align: center; }
                     .header h1 { margin: 0; font-size: 28px; font-weight: 300; }
                     .header .logo { font-size: 18px; margin-top: 10px; opacity: 0.9; }
                     .content { padding: 40px; }
@@ -497,53 +338,82 @@ public class EmailService {
                 </div>
             </body>
             </html>
-            """.formatted(
-                booking.getId(),
-                booking.getUserName(),
-                booking.getUserEmail(),
-                booking.getPaymentMethod().toUpperCase(),
-                paypalEmailSection,
-                booking.getTourName(),
-                isRoundTrip ? "Round Trip" : "One Way",
-                booking.getDepartureDate().format(formatter),
-                booking.getReturnDate() == null ? "—" : booking.getReturnDate().format(formatter),
-                guests,
-                pricePerPerson,
-                guests,
-                baseTotal,
-                roundTripSection,
-                total,
-                booking.getUserEmail(),
-                booking.getId(),
-                booking.getTourName()
-            );
-        } catch (Exception e) {
-            logger.error("❌ Failed to generate agency email HTML for booking ID: {}", booking.getId(), e);
-            logger.error("Booking details - Customer: {}, Tour: {}, Guests: {}", 
-                booking.getUserName(), booking.getTourName(), booking.getGuests());
-            throw new RuntimeException("Failed to generate agency email HTML", e);
-        }
+            """, 
+            booking.getId(),
+            customerName,
+            customerEmail,
+            paymentMethod,
+            paypalEmailSection,
+            tourName,
+            tripType,
+            departureDate,
+            returnDate,
+            guests,
+            pricePerPerson,
+            guests,
+            baseTotal,
+            roundTripSection,
+            total,
+            customerEmail,
+            booking.getId(),
+            tourName
+        );
     }
 
-    /**
-     * Convenience for password-reset emails
-     */
-    public void sendPasswordResetMail(String to, String link) {
-        String subject = "🔐 Your password reset link";
-        String htmlContent = emailTemplateService.getPasswordResetTemplate(link);
-        sendHtmlMessage(to, subject, htmlContent);
-    }
-    
-    /**
-     * Get email configuration status for debugging
-     */
-    public String getEmailConfigurationStatus() {
-        StringBuilder status = new StringBuilder();
-        status.append("📧 Email Configuration Status:\n");
-        status.append("  - From Email: ").append(fromEmail != null ? fromEmail : "NULL").append("\n");
-        status.append("  - Agency Email: ").append(agencyEmail != null ? agencyEmail : "NULL").append("\n");
-        status.append("  - Mail Password: ").append(mailPassword != null && !mailPassword.isEmpty() ? "CONFIGURED" : "MISSING").append("\n");
-        status.append("  - Mail Sender: ").append(mailSender != null ? "AVAILABLE" : "NULL").append("\n");
-        return status.toString();
+    public String getPasswordResetTemplate(String resetLink) {
+        return String.format("""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Password Reset - RILINDI SHPK</title>
+            </head>
+            <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f5f5;">
+                <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                    <div style="background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%); padding: 40px 20px; text-align: center;">
+                        <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                            🔐 Password Reset
+                        </h1>
+                    </div>
+                    <div style="padding: 40px 30px;">
+                        <h2 style="color: #667eea; margin: 0 0 20px 0; font-size: 24px; text-align: center;">
+                            Reset Your Password
+                        </h2>
+                        <div style="background-color: #f8f9fa; padding: 25px; border-radius: 15px; margin: 20px 0;">
+                            <p style="color: #374151; line-height: 1.6; margin: 0 0 20px 0;">
+                                We received a request to reset your password for your RILINDI SHPK account.
+                            </p>
+                            <div style="text-align: center; margin: 25px 0;">
+                                <a href="%s" style="background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; font-weight: 600; display: inline-block; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
+                                    🔐 Reset Password
+                                </a>
+                            </div>
+                            <p style="color: #6b7280; font-size: 14px; margin: 20px 0 0 0;">
+                                If you didn't request this password reset, please ignore this email. Your password will remain unchanged.
+                            </p>
+                        </div>
+                        <div style="background: #fff3cd; padding: 20px; border-radius: 12px; margin: 25px 0; border-left: 4px solid #ffc107;">
+                            <p style="margin: 0; color: #374151; font-size: 14px;">
+                                <strong>🔒 Security Note:</strong> This link will expire in 24 hours for your security.
+                            </p>
+                        </div>
+                        <div style="background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%); color: white; padding: 25px; border-radius: 15px; text-align: center;">
+                            <h3 style="margin: 0 0 15px 0; font-size: 18px; font-weight: 700; text-shadow: 0 1px 0 #fff;">📍 Visit Us</h3>
+                            <p style="margin: 5px 0; font-size: 16px;"><strong>Across the Museum, Bajram Curri, Tropoja</strong></p>
+                            <p style="margin: 5px 0; font-size: 16px;">📞 <strong>+355 672 121 800</strong></p>
+                            <p style="margin: 5px 0; font-size: 16px;">📧 <strong>rilindi-shpk@hotmail.com</strong></p>
+                        </div>
+                        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 2px solid #f3f4f6;">
+                            <p style="color: #6b7280; font-size: 14px; margin: 0;">
+                                Safe travels,<br>
+                                <strong style="color: #667eea; font-size: 16px;">RILINDI SHPK ❤️</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """, resetLink);
     }
 }
