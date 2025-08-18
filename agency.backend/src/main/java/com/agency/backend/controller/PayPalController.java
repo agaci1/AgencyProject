@@ -123,7 +123,22 @@ public class PayPalController {
                 if ("ORDER_ALREADY_CAPTURED".equals(errorType)) {
                     logger.info("PayPal order already captured - this is actually a success case");
                     // If order is already captured, it's actually successful
-                    return ResponseEntity.ok(captureResult);
+                    // Return the original order data instead of error response
+                    try {
+                        Map<String, Object> orderStatus = payPalPaymentService.getOrderStatus(orderID);
+                        if (orderStatus != null) {
+                            logger.info("Returning order status for already captured order: {}", orderID);
+                            return ResponseEntity.ok(orderStatus);
+                        } else {
+                            // Fallback to error response if we can't get order status
+                            captureResult.put("orderId", orderID);
+                            return ResponseEntity.ok(captureResult);
+                        }
+                    } catch (Exception statusError) {
+                        logger.error("Could not get order status for already captured order: {}", statusError.getMessage());
+                        captureResult.put("orderId", orderID);
+                        return ResponseEntity.ok(captureResult);
+                    }
                 } else if ("INVALID_ORDER_STATE".equals(errorType)) {
                     logger.error("PayPal order in invalid state for capture");
                     captureResult.put("orderId", orderID);

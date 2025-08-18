@@ -379,6 +379,13 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                 throw new Error(errorMessage);
               }
               
+              // Check if this is a success response but contains error info (ORDER_ALREADY_CAPTURED case)
+              if (orderData.error && orderData.paypalErrorType === "ORDER_ALREADY_CAPTURED") {
+                console.log("Order already captured - treating as success");
+                // This is actually a success case, treat it as such
+                paymentDetails = orderData;
+              }
+              
               // Handle specific PayPal errors (following Standard pattern)
               const errorDetail = orderData?.details?.[0];
 
@@ -422,14 +429,14 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
             } catch (error: any) {
               console.error("Payment processing error:", error)
               console.error("Error details:", {
-                message: error.message,
-                response: error.response?.data,
-                status: error.response?.status,
-                paymentDetails: paymentDetails
+                message: error.message || "Unknown error",
+                response: error.response?.data || "No response data",
+                status: error.response?.status || "No status",
+                paymentDetails: paymentDetails || "No payment details"
               })
               
               // Check if this is a specific PayPal error that indicates the payment was actually successful
-              if (error.message.includes('Payment was already processed')) {
+              if (error.message && error.message.includes('Payment was already processed')) {
                 console.log("Payment was already processed - showing success message")
                 setNotification("Payment successful! Your booking has been confirmed.")
                 clearStorage() // Clear saved state
@@ -441,19 +448,22 @@ export function BookingForm({ tour, onComplete, onCancel }: BookingFormProps) {
                 setTimeout(() => onComplete(), 2000)
               } else {
                 // If PayPal capture failed, the payment was not successful
-                console.error("PayPal capture failed - payment was not processed:", error.message);
+                const errorMsg = error.message || "Unknown payment error";
+                console.error("PayPal capture failed - payment was not processed:", errorMsg);
                 
                 // Handle specific PayPal errors
-                if (error.message.includes('unauthorized order')) {
+                if (error.message && error.message.includes('unauthorized order')) {
                   setPaypalError("Payment session expired. Please try again.")
-                } else if (error.message.includes('order not found')) {
+                } else if (error.message && error.message.includes('order not found')) {
                   setPaypalError("Payment order not found. Please try again.")
-                } else if (error.message.includes('ORDER_ALREADY_CAPTURED')) {
+                } else if (error.message && error.message.includes('ORDER_ALREADY_CAPTURED')) {
                   setPaypalError("This payment was already processed. Please check your email for confirmation.")
-                } else if (error.message.includes('network')) {
+                } else if (error.message && error.message.includes('network')) {
                   setPaypalError("Network error during payment. Please check your connection and try again.")
-                } else if (error.message.includes('timeout')) {
+                } else if (error.message && error.message.includes('timeout')) {
                   setPaypalError("Payment timeout. Please try again.")
+                } else if (error.message && error.message.includes('undefined')) {
+                  setPaypalError("Payment processing error. Please try again or contact support.")
                 } else {
                   setPaypalError("Payment failed. Please try again or contact support if the issue persists.")
                 }
